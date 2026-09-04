@@ -25,13 +25,13 @@ document.addEventListener("DOMContentLoaded", () => {
   renderLatex();
 
   // Navigasi Tab Tersimpan / URL Hash saat Refresh (Anti-Reset ke Beranda)
+  const hashTab = window.location.hash ? window.location.hash.replace("#", "") : null;
   const savedTab = localStorage.getItem("tembusptn_active_tab");
-  const hashTab = (window.location.hash || "").replace("#", "").toLowerCase();
   const validTabs = ["dashboard", "drill", "cbt", "rapor", "bank-soal", "flashcards", "ptn-explorer", "leaderboard", "profile"];
   const initialTargetTab = validTabs.includes(hashTab) ? hashTab : (validTabs.includes(savedTab) ? savedTab : "dashboard");
   if (initialTargetTab && initialTargetTab !== "dashboard") {
     // Jika tab tujuan adalah fitur terlindungi dan belum login, arahkan ke Beranda
-    const protectedTabs = ["drill", "cbt", "rapor", "flashcards"];
+    const protectedTabs = ["drill", "cbt", "rapor", "flashcards", "profile"];
     if (protectedTabs.includes(initialTargetTab) && (typeof isUserLoggedIn === "function" && !isUserLoggedIn())) {
       switchTab("dashboard");
     } else {
@@ -299,63 +299,90 @@ window.showXpToast = showXpToast;
 
 // Header Stats Bar (Streak, XP, Level, Target PTN, User Info)
 function renderHeaderStats() {
+  const loggedIn = typeof isUserLoggedIn === "function" ? isUserLoggedIn() : false;
   const profile = getUserProfile();
   const user = typeof getCurrentUser === "function" ? getCurrentUser() : null;
   const { tier, level } = getTierAndLevel(profile.xp);
 
-  // Pro Max Header Stats
-  const streakCount = document.getElementById("streak-count");
-  if (streakCount) {
-    streakCount.textContent = profile.streak || 1;
+  const streakEl = document.getElementById("header-streak");
+  const xpEl = document.getElementById("header-xp");
+  const tierEl = document.getElementById("header-tier");
+  const targetPtnEl = document.getElementById("header-target-ptn");
+  const loginBtn = document.getElementById("header-login-btn");
+  const userMenuWrap = document.getElementById("header-user-menu-wrap");
+
+  if (!loggedIn) {
+    // Sembunyikan streak, xp, level/tier, dan target ptn jika belum login
+    if (streakEl) streakEl.classList.add("hidden");
+    if (xpEl) xpEl.classList.add("hidden");
+    if (tierEl) tierEl.classList.add("hidden");
+    if (targetPtnEl) {
+      targetPtnEl.classList.add("hidden");
+      targetPtnEl.classList.remove("xl:flex");
+    }
+
+    if (loginBtn) {
+      loginBtn.classList.remove("hidden");
+      loginBtn.classList.add("flex");
+    }
+    if (userMenuWrap) userMenuWrap.classList.add("hidden");
   } else {
-    const streakEl = document.getElementById("header-streak");
-    if (streakEl) streakEl.innerHTML = `🔥 <span class="font-bold">${profile.streak || 1}</span> <span class="hidden sm:inline text-xs text-orange-200">Hari</span>`;
+    // Tampilkan streak, xp, level/tier, dan target ptn jika sudah login
+    if (streakEl) streakEl.classList.remove("hidden");
+    if (xpEl) xpEl.classList.remove("hidden");
+    if (tierEl) tierEl.classList.remove("hidden");
+    if (targetPtnEl) {
+      targetPtnEl.classList.remove("hidden");
+      targetPtnEl.classList.add("xl:flex");
+    }
+
+    if (loginBtn) {
+      loginBtn.classList.add("hidden");
+      loginBtn.classList.remove("flex");
+    }
+    if (userMenuWrap) userMenuWrap.classList.remove("hidden");
+
+    // Pro Max Header Stats
+    const streakCount = document.getElementById("streak-count");
+    if (streakCount) {
+      streakCount.textContent = profile.streak || 1;
+    } else if (streakEl) {
+      streakEl.innerHTML = `🔥 <span class="font-bold">${profile.streak || 1}</span> <span class="hidden sm:inline text-xs text-orange-200">Hari</span>`;
+    }
+
+    const xpCount = document.getElementById("xp-count");
+    if (xpCount) {
+      xpCount.textContent = profile.xp || 0;
+    } else if (xpEl) {
+      xpEl.innerHTML = `⚡ <span class="font-bold">${profile.xp || 0}</span> <span class="hidden sm:inline text-xs text-yellow-200">XP</span>`;
+    }
+
+    const tierBadge = document.getElementById("tier-badge");
+    if (tierBadge) {
+      tierBadge.className = `px-2.5 py-1 rounded-xl text-xs font-bold ${tier.bg} ${tier.color} border ${tier.border}`;
+      tierBadge.textContent = `Lvl ${level} • ${tier.name.split(" ")[0]}`;
+    } else if (tierEl) {
+      tierEl.innerHTML = `<span class="px-2 py-0.5 rounded-full text-xs font-bold ${tier.bg} ${tier.color} border ${tier.border}">Lvl ${level} • ${tier.name.split(" ")[0]}</span>`;
+    }
+
+    const targetName = document.getElementById("header-target-name");
+    if (targetName) {
+      const m1 = typeof findMajorById === "function" ? findMajorById(profile.targetMajorId) : null;
+      targetName.textContent = m1 ? `${m1.ptnShort} • ${m1.name.slice(0, 15)} (${m1.targetScore})` : (profile.targetMajorName || "Pilih PTN");
+    }
+
+    const avatarIcon = document.getElementById("header-avatar-icon");
+    if (avatarIcon) avatarIcon.textContent = profile.avatar || "👨‍🎓";
+
+    const avatarName = document.getElementById("header-avatar-name");
+    if (avatarName) avatarName.textContent = (profile.name || "Pejuang PTN").split(" ")[0];
+
+    // Update Dropdown Info
+    const dropName = document.getElementById("dropdown-user-name");
+    const dropEmail = document.getElementById("dropdown-user-email");
+    if (dropName) dropName.textContent = profile.name || (user ? user.name : "Pejuang PTN");
+    if (dropEmail) dropEmail.textContent = user && user.username ? `@${user.username}` : "@pejuangptn";
   }
-
-  const xpCount = document.getElementById("xp-count");
-  if (xpCount) {
-    xpCount.textContent = profile.xp || 0;
-  } else {
-    const xpEl = document.getElementById("header-xp");
-    if (xpEl) xpEl.innerHTML = `⚡ <span class="font-bold">${profile.xp || 0}</span> <span class="hidden sm:inline text-xs text-yellow-200">XP</span>`;
-  }
-
-  const tierBadge = document.getElementById("tier-badge");
-  if (tierBadge) {
-    tierBadge.className = `px-2.5 py-1 rounded-xl text-xs font-bold ${tier.bg} ${tier.color} border ${tier.border}`;
-    tierBadge.textContent = `Lvl ${level} • ${tier.name.split(" ")[0]}`;
-  } else {
-    const tierEl = document.getElementById("header-tier");
-    if (tierEl) tierEl.innerHTML = `<span class="px-2 py-0.5 rounded-full text-xs font-bold ${tier.bg} ${tier.color} border ${tier.border}">Lvl ${level} • ${tier.name.split(" ")[0]}</span>`;
-  }
-
-  const targetName = document.getElementById("header-target-name");
-  if (targetName) {
-    const m1 = typeof findMajorById === "function" ? findMajorById(profile.targetMajorId) : null;
-    targetName.textContent = m1 ? `${m1.ptnShort} • ${m1.name.slice(0, 15)} (${m1.targetScore})` : (profile.targetMajorName || "Pilih PTN");
-  }
-
-  const avatarIcon = document.getElementById("header-avatar-icon");
-  if (avatarIcon) avatarIcon.textContent = profile.avatar || "👨‍🎓";
-
-  const avatarName = document.getElementById("header-avatar-name");
-  if (avatarName) avatarName.textContent = (profile.name || "Pejuang PTN").split(" ")[0];
-
-  const avatarBtn = document.getElementById("header-avatar-btn");
-  if (avatarBtn && !avatarName) {
-    avatarBtn.innerHTML = `
-      <span class="text-xl">${profile.avatar || "👨‍🎓"}</span>
-      <span class="hidden md:inline font-semibold text-sm text-slate-700 dark:text-slate-200">${(profile.name || "Pejuang PTN").split(" ")[0]}</span>
-      <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
-    `;
-    if (window.lucide) lucide.createIcons();
-  }
-
-  // Update Dropdown Info
-  const dropName = document.getElementById("dropdown-user-name");
-  const dropEmail = document.getElementById("dropdown-user-email");
-  if (dropName) dropName.textContent = profile.name || (user ? user.name : "Pejuang PTN");
-  if (dropEmail) dropEmail.textContent = user && user.username ? `@${user.username}` : "@pejuangptn";
 
   // Update Theme Icon
   updateThemeButtonUI(localStorage.getItem("utbk_theme") || "light");
@@ -381,8 +408,8 @@ function switchTab(tabName) {
     }
   }
 
-  // Cek proteksi autentikasi: Latihan Soal, TO CBT, Rapor, dan Flashcard wajib Login/Register
-  const protectedTabs = ["drill", "cbt", "rapor", "flashcards"];
+  // Cek proteksi autentikasi: Latihan Soal, TO CBT, Rapor, Flashcard, Bank Soal, dan Profil wajib Login/Register
+  const protectedTabs = ["drill", "cbt", "rapor", "flashcards", "bank-soal", "profile"];
   if (protectedTabs.includes(tabName)) {
     if (typeof isUserLoggedIn === "function" && !isUserLoggedIn()) {
       pendingTargetTab = tabName;
@@ -391,6 +418,8 @@ function switchTab(tabName) {
       else if (tabName === "cbt") label = "Simulasi Try Out CBT";
       else if (tabName === "rapor") label = "Rasionalisasi Rapor & Peluang PTN";
       else if (tabName === "flashcards") label = "Flashcard Rumus";
+      else if (tabName === "bank-soal") label = "Bank Soal & Pembahasan";
+      else if (tabName === "profile") label = "Profil Siswa";
 
       openAuthModal("login", false, `Silakan Masuk atau Buat Akun terlebih dahulu untuk mengakses ${label}.`);
       showAuthAlert(`🔒 Fitur ${label} memerlukan akun pengguna. Silakan Masuk (Login) atau Daftar (Register) gratis untuk melanjutkan!`, false);
@@ -739,167 +768,202 @@ window.renderDailyQuests = renderDailyQuests;
 // 1. DASHBOARD CONTROLLER (Skuling & Pahamify hybrid)
 // ============================================================
 function renderDashboard() {
+  const loggedIn = typeof isUserLoggedIn === "function" ? isUserLoggedIn() : false;
   const profile = getUserProfile();
   const { tier, level, levelProgress, nextLevelXp } = getTierAndLevel(profile.xp);
 
   // Update Hero Greeting (Dinamis, Ramah Tamu, Tanpa Pemotongan Teks)
   const heroGreeting = document.getElementById("hero-greeting");
-  const major1 = findMajorById(profile.targetMajorId);
-  const major2 = findMajorById(profile.targetMajorId2);
+  const major1 = loggedIn ? findMajorById(profile.targetMajorId) : null;
+  const major2 = loggedIn ? findMajorById(profile.targetMajorId2) : null;
   const highestScore = profile.highestScore || 0;
   const dualStrategy = analyzeDualStrategy(highestScore, major1, major2);
 
   if (heroGreeting) {
-    const isGuest = profile.isGuest || !profile.name || profile.name === "Pejuang PTN";
-    const firstName = isGuest ? "Pejuang PTN" : profile.name.split(" ")[0];
-    const targetLabel = major1 
-      ? `${major1.name} (${major1.ptnShort})` 
-      : (profile.targetMajorName && profile.targetMajorName !== "Belum Memilih Target" ? profile.targetMajorName : "Pilih Kampus Impianmu 🎯");
-    heroGreeting.textContent = isGuest && !major1
-      ? "Semangat Belajar, Pejuang PTN 2027! 🚀"
-      : `Semangat Belajar, ${firstName}! Target: ${targetLabel} 🚀`;
+    if (!loggedIn) {
+      heroGreeting.textContent = "Semangat Belajar, Pejuang PTN 2027! 🚀";
+    } else {
+      const firstName = profile.name ? profile.name.split(" ")[0] : "Pejuang";
+      const targetLabel = major1 
+        ? `${major1.name} (${major1.ptnShort})` 
+        : (profile.targetMajorName && profile.targetMajorName !== "Belum Memilih Target" ? profile.targetMajorName : "Pilih Kampus Impianmu 🎯");
+      heroGreeting.textContent = major1
+        ? `Semangat Belajar, ${firstName}! Target: ${targetLabel} 🚀`
+        : `Semangat Belajar, ${firstName}! Target: ${targetLabel}`;
+    }
   }
 
   // Elemen Target PTN Impian (Modern, Informatif, Rasionalisasi Jelas)
   const targetEl = document.getElementById("dash-target-ptn");
-  if (targetEl) {
-    if (!major1 && !major2) {
-      targetEl.innerHTML = `
-        <div class="space-y-3">
-          <div class="flex items-center justify-between pb-2 border-b border-slate-700/80">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-300 font-heading">Target PTN Impian</span>
-            <span class="text-xs font-semibold text-slate-400">Skor Max: <strong class="text-slate-300">-</strong></span>
-          </div>
-          <div class="text-center py-5 px-3 bg-slate-800/60 rounded-2xl border border-dashed border-slate-700 space-y-2">
-            <div class="text-2xl">🏛️</div>
-            <div class="text-xs font-bold text-white">Belum Memilih Kampus Impian</div>
-            <p class="text-[11px] text-slate-400 leading-relaxed max-w-xs mx-auto">
-              Tentukan Pilihan 1 & 2 untuk mengaktifkan kalkulator rasionalisasi dan memantau passing grade.
-            </p>
-            <div class="pt-1 flex items-center justify-center gap-2">
-              <button onclick="openSettingsModal()" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-sm transition">
-                Pilih Target Sekarang 🎯
-              </button>
-              <button onclick="switchTab('ptn-explorer')" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold text-xs rounded-xl transition">
-                Katalog PTN 📖
-              </button>
-            </div>
-          </div>
-        </div>
-      `;
-    } else {
-      const hasScore = highestScore > 0;
-      const r1BadgeText = hasScore && dualStrategy && dualStrategy.r1
-        ? `${dualStrategy.r1.status} (${dualStrategy.r1.chancePercent}%)`
-        : "Belum Ada Skor CBT";
-      const r1BadgeClass = hasScore && dualStrategy && dualStrategy.r1
-        ? dualStrategy.r1.badgeClass
-        : "bg-slate-700/80 text-slate-300 border border-slate-600";
-      const r1Percent = hasScore && dualStrategy && dualStrategy.r1 ? dualStrategy.r1.chancePercent : 0;
+  const heroContentCol = document.getElementById("hero-content-col");
 
-      const r2BadgeText = hasScore && dualStrategy && dualStrategy.r2
-        ? `${dualStrategy.r2.status} (${dualStrategy.r2.chancePercent}%)`
-        : "Belum Ada Skor CBT";
-      const r2BadgeClass = hasScore && dualStrategy && dualStrategy.r2
-        ? dualStrategy.r2.badgeClass
-        : "bg-slate-700/80 text-slate-300 border border-slate-600";
-      const r2Percent = hasScore && dualStrategy && dualStrategy.r2 ? dualStrategy.r2.chancePercent : 0;
+  if (!loggedIn) {
+    // Sembunyikan target PTN di Dashboard jika belum login & lebarkan hero content
+    if (targetEl) targetEl.classList.add("hidden");
+    if (heroContentCol) {
+      heroContentCol.classList.remove("lg:col-span-2");
+      heroContentCol.classList.add("lg:col-span-3");
+    }
+  } else {
+    // Tampilkan target PTN jika sudah login
+    if (targetEl) targetEl.classList.remove("hidden");
+    if (heroContentCol) {
+      heroContentCol.classList.remove("lg:col-span-3");
+      heroContentCol.classList.add("lg:col-span-2");
+    }
 
-      targetEl.innerHTML = `
-        <div class="space-y-3">
-          <div class="flex items-center justify-between pb-2 border-b border-slate-700/80">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-300 font-heading">Target PTN Impian</span>
-            <span class="text-xs font-semibold text-slate-400">Skor Tertinggi: <strong class="text-amber-400 font-bold">${hasScore ? highestScore : '-'}</strong></span>
-          </div>
-
+    if (targetEl) {
+      if (!major1 && !major2) {
+        targetEl.innerHTML = `
           <div class="space-y-3">
-            <!-- Pilihan 1 -->
+            <div class="flex items-center justify-between pb-2 border-b border-slate-700/80">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-300 font-heading">Target PTN Impian</span>
+              <span class="text-xs font-semibold text-slate-400">Skor Max: <strong class="text-slate-300">-</strong></span>
+            </div>
+            <div class="text-center py-5 px-3 bg-slate-800/60 rounded-2xl border border-dashed border-slate-700 space-y-2">
+              <div class="text-2xl">🏛️</div>
+              <div class="text-xs font-bold text-white">Belum Memilih Kampus Impian</div>
+              <p class="text-[11px] text-slate-400 leading-relaxed max-w-xs mx-auto">
+                Tentukan Pilihan 1 & 2 untuk mengaktifkan kalkulator rasionalisasi dan memantau passing grade.
+              </p>
+              <div class="pt-1 flex items-center justify-center gap-2">
+                <button onclick="openSettingsModal()" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-sm transition">
+                  Pilih Target Sekarang 🎯
+                </button>
+                <button onclick="switchTab('ptn-explorer')" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold text-xs rounded-xl transition">
+                  Katalog PTN 📖
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        const hasScore = highestScore > 0;
+        const r1BadgeText = hasScore && dualStrategy && dualStrategy.r1
+          ? `${dualStrategy.r1.status} (${dualStrategy.r1.chancePercent}%)`
+          : "Belum Ada Skor CBT";
+        const r1BadgeClass = hasScore && dualStrategy && dualStrategy.r1
+          ? dualStrategy.r1.badgeClass
+          : "bg-slate-700/80 text-slate-300 border border-slate-600";
+        const r1Percent = hasScore && dualStrategy && dualStrategy.r1 ? dualStrategy.r1.chancePercent : 0;
+
+        const r2BadgeText = hasScore && dualStrategy && dualStrategy.r2
+          ? `${dualStrategy.r2.status} (${dualStrategy.r2.chancePercent}%)`
+          : "Belum Ada Skor CBT";
+        const r2BadgeClass = hasScore && dualStrategy && dualStrategy.r2
+          ? dualStrategy.r2.badgeClass
+          : "bg-slate-700/80 text-slate-300 border border-slate-600";
+        const r2Percent = hasScore && dualStrategy && dualStrategy.r2 ? dualStrategy.r2.chancePercent : 0;
+
+        targetEl.innerHTML = `
+          <div class="space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-700/80">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-300 font-heading">Target PTN Impian</span>
+              <span class="text-xs font-semibold text-slate-400">Skor Tertinggi: <strong class="text-amber-400 font-bold">${hasScore ? highestScore : '-'}</strong></span>
+            </div>
+
+            <div class="space-y-3">
+              <!-- Pilihan 1 -->
+              <div>
+                <div class="flex items-center justify-between text-xs mb-1">
+                  <span class="font-bold text-amber-400 flex items-center gap-1">
+                    <span>🎯</span> Pilihan 1 (Utama)
+                  </span>
+                  <span class="px-2 py-0.5 rounded text-[11px] font-bold ${r1BadgeClass}">
+                    ${r1BadgeText}
+                  </span>
+                </div>
+                <div class="text-sm font-bold text-white font-heading truncate" title="${major1 ? major1.name : 'Belum Dipilih'}">
+                  ${major1 ? major1.name : 'Belum Dipilih'}
+                </div>
+                <div class="text-xs text-slate-300 flex items-center justify-between mt-0.5">
+                  <span class="font-medium text-slate-400">${major1 ? major1.ptnShort + ' • ' + (major1.degree || 'S1') : '-'}</span>
+                  <span>Passing Grade: <strong class="text-white font-bold">${major1 ? major1.targetScore : '-'}</strong></span>
+                </div>
+                ${hasScore ? `
+                  <div class="w-full bg-slate-700/80 h-1.5 rounded-full overflow-hidden mt-1.5">
+                    <div class="h-full rounded-full ${r1Percent >= 70 ? 'bg-emerald-400' : r1Percent >= 40 ? 'bg-amber-400' : 'bg-rose-400'} transition-all duration-500" style="width: ${r1Percent}%"></div>
+                  </div>
+                ` : ''}
+              </div>
+
+              <!-- Pilihan 2 -->
+              <div class="pt-2.5 border-t border-slate-700/60">
+                <div class="flex items-center justify-between text-xs mb-1">
+                  <span class="font-bold text-blue-400 flex items-center gap-1">
+                    <span>🛡️</span> Pilihan 2 (Cadangan)
+                  </span>
+                  <span class="px-2 py-0.5 rounded text-[11px] font-bold ${r2BadgeClass}">
+                    ${r2BadgeText}
+                  </span>
+                </div>
+                <div class="text-sm font-bold text-white font-heading truncate" title="${major2 ? major2.name : 'Belum Dipilih'}">
+                  ${major2 ? major2.name : 'Belum Dipilih'}
+                </div>
+                <div class="text-xs text-slate-300 flex items-center justify-between mt-0.5">
+                  <span class="font-medium text-slate-400">${major2 ? major2.ptnShort + ' • ' + (major2.degree || 'S1') : '-'}</span>
+                  <span>Passing Grade: <strong class="text-white font-bold">${major2 ? major2.targetScore : '-'}</strong></span>
+                </div>
+                ${hasScore ? `
+                  <div class="w-full bg-slate-700/80 h-1.5 rounded-full overflow-hidden mt-1.5">
+                    <div class="h-full rounded-full ${r2Percent >= 70 ? 'bg-emerald-400' : r2Percent >= 40 ? 'bg-amber-400' : 'bg-rose-400'} transition-all duration-500" style="width: ${r2Percent}%"></div>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+
+            <!-- Action Links -->
+            <div class="pt-2.5 border-t border-slate-700/80 flex items-center justify-between text-xs text-slate-300">
+              <button onclick="switchTab('ptn-explorer')" class="text-amber-400 font-semibold hover:underline flex items-center gap-1">
+                <span>Eksplorasi PTN</span> <span>→</span>
+              </button>
+              <button onclick="openSettingsModal()" class="text-slate-300 font-medium hover:text-white hover:underline">
+                Ubah Target
+              </button>
+            </div>
+          </div>
+        `;
+      }
+    }
+  }
+
+  // Render Daily Quests (Hanya jika sudah login)
+  const questsEl = document.getElementById("dash-daily-quests");
+  if (questsEl) {
+    if (!loggedIn) {
+      questsEl.classList.add("hidden");
+    } else {
+      questsEl.classList.remove("hidden");
+      renderDailyQuests();
+    }
+  }
+
+  // Level & XP Progress (Hanya jika sudah login)
+  const lvlEl = document.getElementById("dash-level-card");
+  if (lvlEl) {
+    if (!loggedIn) {
+      lvlEl.classList.add("hidden");
+    } else {
+      lvlEl.classList.remove("hidden");
+      lvlEl.innerHTML = `
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2.5">
+            <span class="text-2xl">🎖️</span>
             <div>
-              <div class="flex items-center justify-between text-xs mb-1">
-                <span class="font-bold text-amber-400 flex items-center gap-1">
-                  <span>🎯</span> Pilihan 1 (Utama)
-                </span>
-                <span class="px-2 py-0.5 rounded text-[11px] font-bold ${r1BadgeClass}">
-                  ${r1BadgeText}
-                </span>
-              </div>
-              <div class="text-sm font-bold text-white font-heading truncate" title="${major1 ? major1.name : 'Belum Dipilih'}">
-                ${major1 ? major1.name : 'Belum Dipilih'}
-              </div>
-              <div class="text-xs text-slate-300 flex items-center justify-between mt-0.5">
-                <span class="font-medium text-slate-400">${major1 ? major1.ptnShort + ' • ' + (major1.degree || 'S1') : '-'}</span>
-                <span>Passing Grade: <strong class="text-white font-bold">${major1 ? major1.targetScore : '-'}</strong></span>
-              </div>
-              ${hasScore ? `
-                <div class="w-full bg-slate-700/80 h-1.5 rounded-full overflow-hidden mt-1.5">
-                  <div class="h-full rounded-full ${r1Percent >= 70 ? 'bg-emerald-400' : r1Percent >= 40 ? 'bg-amber-400' : 'bg-rose-400'} transition-all duration-500" style="width: ${r1Percent}%"></div>
-                </div>
-              ` : ''}
-            </div>
-
-            <!-- Pilihan 2 -->
-            <div class="pt-2.5 border-t border-slate-700/60">
-              <div class="flex items-center justify-between text-xs mb-1">
-                <span class="font-bold text-blue-400 flex items-center gap-1">
-                  <span>🛡️</span> Pilihan 2 (Cadangan)
-                </span>
-                <span class="px-2 py-0.5 rounded text-[11px] font-bold ${r2BadgeClass}">
-                  ${r2BadgeText}
-                </span>
-              </div>
-              <div class="text-sm font-bold text-white font-heading truncate" title="${major2 ? major2.name : 'Belum Dipilih'}">
-                ${major2 ? major2.name : 'Belum Dipilih'}
-              </div>
-              <div class="text-xs text-slate-300 flex items-center justify-between mt-0.5">
-                <span class="font-medium text-slate-400">${major2 ? major2.ptnShort + ' • ' + (major2.degree || 'S1') : '-'}</span>
-                <span>Passing Grade: <strong class="text-white font-bold">${major2 ? major2.targetScore : '-'}</strong></span>
-              </div>
-              ${hasScore ? `
-                <div class="w-full bg-slate-700/80 h-1.5 rounded-full overflow-hidden mt-1.5">
-                  <div class="h-full rounded-full ${r2Percent >= 70 ? 'bg-emerald-400' : r2Percent >= 40 ? 'bg-amber-400' : 'bg-rose-400'} transition-all duration-500" style="width: ${r2Percent}%"></div>
-                </div>
-              ` : ''}
+              <div class="font-bold text-slate-900 dark:text-slate-100 font-heading">Level ${level} • ${tier.name}</div>
+              <div class="text-xs text-slate-600 dark:text-slate-400">${profile.xp} / ${nextLevelXp} XP</div>
             </div>
           </div>
-
-          <!-- Action Links -->
-          <div class="pt-2.5 border-t border-slate-700/80 flex items-center justify-between text-xs text-slate-300">
-            <button onclick="switchTab('ptn-explorer')" class="text-amber-400 font-semibold hover:underline flex items-center gap-1">
-              <span>Eksplorasi PTN</span> <span>→</span>
-            </button>
-            <button onclick="openSettingsModal()" class="text-slate-300 font-medium hover:text-white hover:underline">
-              Ubah Target
-            </button>
-          </div>
+          <span class="text-xs font-bold text-blue-600 dark:text-blue-400">${levelProgress}%</span>
+        </div>
+        <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+          <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: ${levelProgress}%"></div>
         </div>
       `;
     }
   }
 
-  // Render Daily Quests
-  renderDailyQuests();
-
-  // Level & XP Progress
-  const lvlEl = document.getElementById("dash-level-card");
-  if (lvlEl) {
-    lvlEl.innerHTML = `
-      <div class="flex items-center justify-between mb-2">
-        <div class="flex items-center gap-2.5">
-          <span class="text-2xl">🎖️</span>
-          <div>
-            <div class="font-bold text-slate-900 dark:text-slate-100 font-heading">Level ${level} • ${tier.name}</div>
-            <div class="text-xs text-slate-600 dark:text-slate-400">${profile.xp} / ${nextLevelXp} XP</div>
-          </div>
-        </div>
-        <span class="text-xs font-bold text-blue-600 dark:text-blue-400">${levelProgress}%</span>
-      </div>
-      <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-        <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: ${levelProgress}%"></div>
-      </div>
-    `;
-  }
-
-  // Subtest Quick Grid
+  // Subtest Quick Grid (Bisa dilihat siapa pun)
   const subtestGrid = document.getElementById("dash-subtest-grid");
   if (subtestGrid) {
     subtestGrid.innerHTML = UTBK_SUBTESTS.map(st => `
@@ -916,9 +980,17 @@ function renderDashboard() {
     `).join("");
   }
 
-  // Badges Overview
+  // Badges Overview (Hanya jika sudah login)
+  const badgesSec = document.getElementById("dash-badges-section");
   const badgesEl = document.getElementById("dash-badges");
-  if (badgesEl) {
+  if (badgesSec) {
+    if (!loggedIn) {
+      badgesSec.classList.add("hidden");
+    } else {
+      badgesSec.classList.remove("hidden");
+    }
+  }
+  if (badgesEl && loggedIn) {
     const unlocked = profile.unlockedBadges || [];
     badgesEl.innerHTML = BADGES_LIST.map(b => {
       const isUnlocked = unlocked.includes(b.id);
@@ -3486,6 +3558,11 @@ function updatePtnModalInfo() {
 }
 
 function openSettingsModal() {
+  if (typeof isUserLoggedIn === "function" && !isUserLoggedIn()) {
+    openAuthModal("login", false, "Silakan Masuk atau Buat Akun terlebih dahulu untuk mengatur profil dan target jurusan impian.");
+    showAuthAlert("🔒 Kamu perlu masuk atau daftar akun terlebih dahulu untuk mengatur target jurusan impian!", false);
+    return;
+  }
   initSettingsModal();
   const modal = document.getElementById("settings-modal");
   if (modal) modal.classList.remove("hidden");
@@ -3968,10 +4045,11 @@ function renderDetailProdiList() {
   }
 
   const profile = getUserProfile();
+  const loggedIn = typeof isUserLoggedIn === "function" ? isUserLoggedIn() : false;
 
   container.innerHTML = filtered.map(m => {
-    const isP1 = profile.targetMajorId === m.id;
-    const isP2 = profile.targetMajorId2 === m.id;
+    const isP1 = loggedIn && profile.targetMajorId === m.id;
+    const isP2 = loggedIn && profile.targetMajorId2 === m.id;
     const degree = m.degree || "S1";
     const ratio = (m.quota && m.applicants) ? Math.round(m.applicants / m.quota) : "-";
 
@@ -4047,6 +4125,12 @@ function renderDetailProdiList() {
 
 // Set target choice langsung dari katalog / detail
 function setTargetChoice(majorId, choiceNumber) {
+  if (typeof isUserLoggedIn === "function" && !isUserLoggedIn()) {
+    openAuthModal("login", false, "Silakan Masuk atau Buat Akun terlebih dahulu untuk menyimpan target jurusan impianmu.");
+    showAuthAlert("🔒 Kamu perlu masuk atau daftar akun terlebih dahulu untuk menetapkan target jurusan impian!", false);
+    return;
+  }
+
   const m = findMajorById(majorId);
   if (!m) return;
 
