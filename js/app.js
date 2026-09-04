@@ -310,6 +310,8 @@ function renderHeaderStats() {
   const targetPtnEl = document.getElementById("header-target-ptn");
   const loginBtn = document.getElementById("header-login-btn");
   const userMenuWrap = document.getElementById("header-user-menu-wrap");
+  const profileTabNav = document.querySelector('[data-nav-tab="profile"]');
+  const mobileProfileBtn = document.querySelector('[data-mobile-nav="profile"]');
 
   if (!loggedIn) {
     // Sembunyikan streak, xp, level/tier, dan target ptn jika belum login
@@ -326,6 +328,14 @@ function renderHeaderStats() {
       loginBtn.classList.add("flex");
     }
     if (userMenuWrap) userMenuWrap.classList.add("hidden");
+
+    if (profileTabNav) profileTabNav.classList.add("hidden");
+    if (mobileProfileBtn) {
+      mobileProfileBtn.innerHTML = `
+        <span class="mobile-nav-icon-wrap text-lg">🔑</span>
+        <span>Masuk</span>
+      `;
+    }
   } else {
     // Tampilkan streak, xp, level/tier, dan target ptn jika sudah login
     if (streakEl) streakEl.classList.remove("hidden");
@@ -341,6 +351,14 @@ function renderHeaderStats() {
       loginBtn.classList.remove("flex");
     }
     if (userMenuWrap) userMenuWrap.classList.remove("hidden");
+
+    if (profileTabNav) profileTabNav.classList.remove("hidden");
+    if (mobileProfileBtn) {
+      mobileProfileBtn.innerHTML = `
+        <span class="mobile-nav-icon-wrap text-lg">👤</span>
+        <span>Profil</span>
+      `;
+    }
 
     // Pro Max Header Stats
     const streakCount = document.getElementById("streak-count");
@@ -1083,6 +1101,12 @@ window.shuffleDrillQuestions = function() {
 };
 
 function startDrillSubtest(subtestId) {
+  if (typeof isUserLoggedIn === "function" && !isUserLoggedIn()) {
+    pendingTargetTab = "drill";
+    openAuthModal("login", false, "Silakan Masuk atau Buat Akun terlebih dahulu untuk mengakses Latihan Kilat.");
+    showAuthAlert("🔒 Fitur Latihan Kilat memerlukan akun pengguna. Silakan Masuk (Login) atau Daftar (Register) gratis untuk melanjutkan!", false);
+    return;
+  }
   switchTab("drill");
   renderDrillMode(subtestId, true);
 }
