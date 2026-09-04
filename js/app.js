@@ -9,6 +9,7 @@ let filteredDrillQuestions = [];
 let currentCbtSession = null;
 let currentReviewResult = null;
 let flashcardIndex = 0;
+let pendingTargetTab = null;
 
 // Inisialisasi Aplikasi saat Dokumen Siap
 document.addEventListener("DOMContentLoaded", () => {
@@ -29,12 +30,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const validTabs = ["dashboard", "drill", "cbt", "rapor", "bank-soal", "flashcards", "ptn-explorer", "leaderboard", "profile"];
   const initialTargetTab = validTabs.includes(hashTab) ? hashTab : (validTabs.includes(savedTab) ? savedTab : "dashboard");
   if (initialTargetTab && initialTargetTab !== "dashboard") {
-    switchTab(initialTargetTab);
-  }
-
-  // Wajib Register atau Login jika perangkat ini belum memiliki sesi aktif
-  if (typeof isUserLoggedIn === "function" && !isUserLoggedIn()) {
-    openAuthModal("register", true);
+    // Jika tab tujuan adalah fitur terlindungi dan belum login, arahkan ke Beranda
+    const protectedTabs = ["drill", "cbt", "rapor", "flashcards"];
+    if (protectedTabs.includes(initialTargetTab) && (typeof isUserLoggedIn === "function" && !isUserLoggedIn())) {
+      switchTab("dashboard");
+    } else {
+      switchTab(initialTargetTab);
+    }
   }
 
   // Dismiss dropdown saat klik di luar area
@@ -375,6 +377,23 @@ function switchTab(tabName) {
   // Jika sedang ujian CBT dan mau keluar, beri konfirmasi
   if (activeTab === "cbt" && currentCbtSession && !currentCbtSession.isFinished) {
     if (!confirm("Ujian Try Out sedang berlangsung. Apakah kamu yakin ingin meninggalkan halaman ujian? Jawabanmu saat ini belum terkumpul.")) {
+      return;
+    }
+  }
+
+  // Cek proteksi autentikasi: Latihan Soal, TO CBT, Rapor, dan Flashcard wajib Login/Register
+  const protectedTabs = ["drill", "cbt", "rapor", "flashcards"];
+  if (protectedTabs.includes(tabName)) {
+    if (typeof isUserLoggedIn === "function" && !isUserLoggedIn()) {
+      pendingTargetTab = tabName;
+      let label = "fitur ini";
+      if (tabName === "drill") label = "Latihan Kilat";
+      else if (tabName === "cbt") label = "Simulasi Try Out CBT";
+      else if (tabName === "rapor") label = "Rasionalisasi Rapor & Peluang PTN";
+      else if (tabName === "flashcards") label = "Flashcard Rumus";
+
+      openAuthModal("login", false, `Silakan Masuk atau Buat Akun terlebih dahulu untuk mengakses ${label}.`);
+      showAuthAlert(`🔒 Fitur ${label} memerlukan akun pengguna. Silakan Masuk (Login) atau Daftar (Register) gratis untuk melanjutkan!`, false);
       return;
     }
   }
@@ -1459,6 +1478,13 @@ function renderCbtMode() {
 }
 
 function startCbtExam(mode = "stage", track = null, stage = 1) {
+  if (typeof isUserLoggedIn === "function" && !isUserLoggedIn()) {
+    pendingTargetTab = "cbt";
+    openAuthModal("login", false, "Silakan Masuk atau Buat Akun terlebih dahulu untuk mengikuti Simulasi Try Out CBT.");
+    showAuthAlert("🔒 Kamu perlu masuk atau daftar akun terlebih dahulu untuk mengikuti Simulasi Try Out CBT!", false);
+    return;
+  }
+
   const selectedTrack = track || currentCbtTrack || "saintek";
   let questions = [];
   let duration = 25;
@@ -4127,7 +4153,7 @@ function closeUserDropdown() {
 
 let authModalIsMandatory = false;
 
-function openAuthModal(defaultTab = "login", isMandatory = false) {
+function openAuthModal(defaultTab = "login", isMandatory = false, customSubtitle = null) {
   closeUserDropdown();
   authModalIsMandatory = isMandatory;
 
@@ -4145,9 +4171,13 @@ function openAuthModal(defaultTab = "login", isMandatory = false) {
 
   const subtitle = document.getElementById("auth-modal-subtitle");
   if (subtitle) {
-    subtitle.textContent = isMandatory 
-      ? "Daftar sekali di perangkat ini, progres belajarmu tersimpan otomatis!"
-      : "Progress belajar dan simulasi Try Out tersimpan per akun";
+    if (customSubtitle) {
+      subtitle.textContent = customSubtitle;
+    } else {
+      subtitle.textContent = isMandatory 
+        ? "Daftar sekali di perangkat ini, progres belajarmu tersimpan otomatis!"
+        : "Progress belajar dan simulasi Try Out tersimpan per akun";
+    }
   }
 
   modal.classList.remove("hidden");
@@ -4157,7 +4187,7 @@ function openAuthModal(defaultTab = "login", isMandatory = false) {
 
 function closeAuthModal() {
   if (authModalIsMandatory && (typeof isUserLoggedIn === "function" && !isUserLoggedIn())) {
-    showAuthAlert("⚠️ Silakan masuk (Login) atau daftar (Register) terlebih dahulu untuk mulai belajar!", false);
+    showAuthAlert("⚠️ Silakan masuk (Login) atau daftar (Register) terlebih dahulu untuk melanjutkan!", false);
     return;
   }
 
@@ -4216,6 +4246,11 @@ function handleLoginSubmit(event) {
     setTimeout(() => {
       closeAuthModal();
       onUserSessionChanged();
+      if (pendingTargetTab) {
+        const target = pendingTargetTab;
+        pendingTargetTab = null;
+        switchTab(target);
+      }
     }, 600);
   } else {
     showAuthAlert(res.message, false);
@@ -4226,6 +4261,11 @@ function handleQuickLogin(userId) {
   setActiveUserId(userId);
   closeAuthModal();
   onUserSessionChanged();
+  if (pendingTargetTab) {
+    const target = pendingTargetTab;
+    pendingTargetTab = null;
+    switchTab(target);
+  }
 }
 
 function handleRegisterSubmit(event) {
@@ -4245,6 +4285,11 @@ function handleRegisterSubmit(event) {
     setTimeout(() => {
       closeAuthModal();
       onUserSessionChanged();
+      if (pendingTargetTab) {
+        const target = pendingTargetTab;
+        pendingTargetTab = null;
+        switchTab(target);
+      }
     }, 800);
   } else {
     showAuthAlert(res.message, false);
