@@ -1,0 +1,428 @@
+/* ============================================================ */
+/* SNBT Master 2027 — HUMAN-CRAFTED DESIGN SYSTEM               */
+/* Authentic, accessible, editorial precision for UTBK SNBT     */
+/* ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Outfit:wght@500;600;700;800&display=swap');
+
+:root {
+  --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  
+  /* Authentic Editorial Palette */
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --accent: #d97706;
+  --success: #059669;
+  --danger: #dc2626;
+}
+
+html {
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: #f8fafc;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+  overflow-x: hidden;
+  width: 100%;
+}
+
+h1, h2, h3, h4, h5, h6, .font-heading, .font-display {
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
+}
+
+/* Custom Clean Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ============================================================ */
+/* SURFACE & ELEVATION                                         */
+/* ============================================================ */
+.glass-header {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.glass-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+}
+
+/* Subtle, Ergonomic Card Lift (Standard ease, no elastic bounce) */
+.card-hover-lift {
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out, border-color 0.15s ease-out;
+}
+.card-hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px -2px rgba(0, 0, 0, 0.06);
+}
+
+/* Daily Streak Flame Icon */
+.animate-flame {
+  display: inline-block;
+  transform-origin: center bottom;
+}
+
+/* ============================================================ */
+/* NAVIGATION & SEGMENTED TABS                                 */
+/* ============================================================ */
+.nav-tab-btn {
+  position: relative;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  font-weight: 600;
+  border-radius: 0.75rem;
+}
+
+.nav-active {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 2px 0 rgba(37, 99, 235, 0.25);
+}
+
+.nav-active i {
+  color: #ffffff !important;
+}
+
+/* ============================================================ */
+/* COUNTDOWN TIMER BOX                                         */
+/* ============================================================ */
+.countdown-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+}
+
+.countdown-num {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+/* ============================================================ */
+/* FLOATING XP TOAST                                           */
+/* ============================================================ */
+@keyframes floatXp {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+}
+
+.animate-xp-toast {
+  animation: floatXp 2s ease-out forwards;
+}
+
+/* ============================================================ */
+/* 3D FLIP CARD (FLASHCARDS)                                   */
+/* ============================================================ */
+.flashcard-container {
+  perspective: 1200px;
+  min-height: 330px;
+}
+
+.flashcard-inner {
+  position: relative;
+  width: 100%;
+  min-height: 330px;
+  text-align: center;
+  transition: transform 0.5s ease-out;
+  transform-style: preserve-3d;
+}
+
+.flashcard-inner.flipped {
+  transform: rotateY(180deg);
+}
+
+.flashcard-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: 1.5rem;
+}
+
+.flashcard-front {
+  z-index: 2;
+  transform: rotateY(0deg);
+}
+
+.flashcard-back {
+  transform: rotateY(180deg);
+}
+
+/* ============================================================ */
+/* FONT SIZING SCALER (CBT & DRILL ACCESSIBILITY)              */
+/* ============================================================ */
+body.font-scale-sm .exam-text {
+  font-size: 0.875rem !important;
+  line-height: 1.5 !important;
+}
+
+body.font-scale-md .exam-text {
+  font-size: 1rem !important;
+  line-height: 1.625 !important;
+}
+
+body.font-scale-lg .exam-text {
+  font-size: 1.15rem !important;
+  line-height: 1.75 !important;
+}
+
+/* ============================================================ */
+/* KATEX & FORMULA TYPOGRAPHY                                  */
+/* ============================================================ */
+.katex-display {
+  margin: 0.65rem 0 !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.35rem 0;
+}
+
+.katex {
+  font-size: 1.05em;
+  font-weight: 500;
+}
+
+.math-tex {
+  font-family: 'KaTeX_Math', 'Cambria Math', 'Latin Modern Math', Times, 'Times New Roman', serif;
+  font-style: italic;
+  letter-spacing: 0.02em;
+}
+
+.math-tex.inline-math {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  padding: 0 0.15em;
+  color: #1e3a8a;
+}
+
+.math-tex.display-math {
+  display: block;
+  text-align: center;
+  margin: 0.75rem 0;
+  overflow-x: auto;
+  padding: 0.5rem 0;
+  color: #1e3a8a;
+}
+
+.inline-fraction {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+  text-align: center;
+  padding: 0 0.25em;
+  font-size: 0.9em;
+  line-height: 1.05;
+}
+
+.fraction-num { padding-bottom: 2px; display: block; }
+.fraction-bar { display: block; width: 100%; height: 1.5px; background-color: currentColor; margin: 1px 0; }
+.fraction-den { padding-top: 2px; display: block; }
+.math-tex sup, .math-tex sub { font-size: 0.75em; font-style: normal; line-height: 0; }
+.math-tex strong { font-style: normal; font-weight: 700; }
+
+/* ============================================================ */
+/* DARK MODE THEME STYLES (SLATE OBSIDIAN NATURAL DARK)        */
+/* Clean, high-contrast, zero-glow aesthetic                   */
+/* ============================================================ */
+.dark body {
+  background-color: #0b0f19 !important;
+  color: #f1f5f9 !important;
+}
+
+.dark .glass-header {
+  background: rgba(15, 23, 42, 0.94) !important;
+  border-color: #1e293b !important;
+}
+
+.dark .glass-card {
+  background: #111827 !important;
+  border-color: #1f2937 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+}
+
+.dark .card-hover-lift:hover {
+  box-shadow: 0 6px 16px -2px rgba(0, 0, 0, 0.4);
+  border-color: #3b82f6 !important;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #0b0f19;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #1e293b;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Dark Mode Background Overrides */
+.dark .bg-white {
+  background-color: #111827 !important;
+}
+.dark .bg-slate-50 {
+  background-color: #0b0f19 !important;
+}
+.dark .bg-slate-100 {
+  background-color: #1e293b !important;
+}
+
+/* Dark Mode Borders */
+.dark .border-slate-200,
+.dark .border-slate-100 {
+  border-color: #1f2937 !important;
+}
+
+/* Dark Mode Text */
+.dark .text-slate-900,
+.dark .text-slate-800 {
+  color: #f8fafc !important;
+}
+.dark .text-slate-700 {
+  color: #e2e8f0 !important;
+}
+.dark .text-slate-600 {
+  color: #cbd5e1 !important;
+}
+.dark .text-slate-500 {
+  color: #94a3b8 !important;
+}
+.dark .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+.dark footer {
+  background-color: #0b0f19 !important;
+  border-color: #1e293b !important;
+}
+
+.dark input, 
+.dark select, 
+.dark textarea {
+  background-color: #111827 !important;
+  color: #f8fafc !important;
+  border-color: #374151 !important;
+}
+
+.dark input:focus, 
+.dark select:focus, 
+.dark textarea:focus {
+  border-color: #3b82f6 !important;
+  background-color: #1f2937 !important;
+}
+
+.dark .countdown-box {
+  background: #111827 !important;
+  border-color: #1f2937 !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.dark .math-tex.inline-math,
+.dark .math-tex.display-math,
+.dark .katex {
+  color: #93c5fd !important;
+}
+
+.dark .fraction-bar {
+  background-color: #93c5fd !important;
+}
+
+.dark .flashcard-front {
+  background: #111827 !important;
+  border-color: #1f2937 !important;
+}
+
+/* ============================================================ */
+/* MOBILE ERGONOMICS & BOTTOM NAVIGATION BAR                   */
+/* ============================================================ */
+.safe-area-pb {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+.mobile-nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  flex: 1;
+  padding: 6px 2px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #64748b;
+  transition: all 0.15s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-nav-btn.mobile-nav-active {
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.mobile-nav-btn.mobile-nav-active .mobile-nav-icon-wrap {
+  transform: translateY(-1px);
+}
+
+.dark .mobile-nav-btn {
+  color: #94a3b8;
+}
+
+.dark .mobile-nav-btn.mobile-nav-active {
+  color: #60a5fa;
+}
+
+/* Slide-up Bottom Sheet / Drawer for Mobile CBT Palette */
+@keyframes slideUpDrawer {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-drawer-slide-up {
+  animation: slideUpDrawer 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+

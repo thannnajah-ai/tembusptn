@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TembusPTN — Platform Simulasi CBT & Persiapan Masuk PTN Impian</title>
+  <link rel="icon" type="image/png" href="assets/logo.png" />
+  <link rel="apple-touch-icon" href="assets/logo.png" />
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Instant Theme Restoration (Anti-Flicker) -->
+  <script>
+    (function() {
+      try {
+        const savedTheme = localStorage.getItem('utbk_theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        if (savedTheme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  <!-- KaTeX CSS & JS CDN (Mathematical formulas) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="if(window.renderLatex) window.renderLatex();"></script>
+
+  <!-- Chart.js CDN (Visual Analytics & Radar) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Canvas Confetti CDN (Gamification Celebrations) -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-full flex flex-col">
+
+  <!-- ======================================================== -->
+  <!-- TOP APP BAR (Gamification Header - UI/UX PRO MAX) -->
+  <!-- ======================================================== -->
+  <header class="glass-header sticky top-0 z-30 transition-colors duration-200">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-1.5 sm:gap-3">
+      <!-- Logo & Brand -->
+      <div class="flex items-center gap-2.5 sm:gap-3.5 cursor-pointer group shrink-0" onclick="switchTab('dashboard')">
+        <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl overflow-hidden shadow-md shadow-orange-500/20 group-hover:scale-105 transition shrink-0 border border-slate-700/40 bg-slate-950 flex items-center justify-center ring-1 ring-orange-500/30">
+          <img src="assets/logo.png" alt="TembusPTN Logo" class="w-full h-full object-cover scale-105" />
+        </div>
+        <div class="min-w-0">
+          <div class="font-black text-sm sm:text-lg tracking-tight text-slate-900 dark:text-white leading-none flex items-center gap-1 sm:gap-1.5">
+            <span>Tembus<span class="bg-gradient-to-r from-amber-500 via-orange-500 to-indigo-500 bg-clip-text text-transparent">PTN</span></span>
+            <span class="px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 text-[10px] sm:text-xs font-black tracking-wider uppercase shadow-sm">
+              PRO
+            </span>
+          </div>
+          <div class="text-[11px] sm:text-xs text-slate-400 dark:text-slate-400 font-medium hidden sm:block">Analisis Presisi, Tembus PTN Favorit</div>
+        </div>
+      </div>
+
+      <!-- Live Gamification Stats, Theme Switcher & User Profile -->
+      <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+        <!-- Target PTN Quick Pill -->
+        <div id="header-target-ptn" class="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-slate-800/80 text-indigo-700 dark:text-indigo-300 font-bold text-xs border border-indigo-200/80 dark:border-slate-700 cursor-pointer hover:bg-indigo-100 dark:hover:bg-slate-700 transition" onclick="switchTab('ptn-explorer')" title="Target PTN Pilihan">
+          <span>🎯</span>
+          <span id="header-target-name" class="truncate max-w-[150px]">UI • Ilkom (718)</span>
+        </div>
+
+        <!-- Streak Counter with Flame Animation -->
+        <div id="header-streak" class="flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold text-xs shadow-md shadow-orange-500/20 cursor-pointer" title="Streak Belajar Harian">
+          <span class="text-sm sm:text-base animate-flame">🔥</span>
+          <span id="streak-count" class="font-extrabold">1</span>
+          <span class="hidden md:inline text-xs opacity-90">Hari</span>
+        </div>
+
+        <!-- XP Points with Shimmer -->
+        <div id="header-xp" class="flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 font-black text-xs shadow-md shadow-amber-400/20" title="Total XP Terkumpul">
+          <span class="text-xs sm:text-sm">⚡</span>
+          <span id="xp-count">50</span>
+          <span class="hidden sm:inline text-xs opacity-80">XP</span>
+        </div>
+
+        <!-- Level & Tier Badge -->
+        <div id="header-tier" class="hidden lg:block">
+          <span id="tier-badge" class="px-2.5 py-1 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
+            Lvl 1 • Pemula
+          </span>
+        </div>
+
+        <!-- Theme Toggle Switch (Dark / Light Mode) -->
+        <button id="theme-toggle-btn" onclick="toggleTheme()" class="p-1.5 sm:px-2.5 sm:py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-amber-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition flex items-center justify-center shadow-sm" title="Ubah Tampilan (Terang / Gelap)">
+          <span id="theme-icon" class="text-sm sm:text-base">🌙</span>
+        </button>
+
+        <!-- Profile & Account Dropdown Trigger -->
+        <div class="relative">
+          <button id="header-avatar-btn" onclick="toggleUserDropdown()" class="flex items-center gap-1 sm:gap-2 p-1 sm:px-2.5 sm:py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-left">
+            <span id="header-avatar-icon" class="text-base sm:text-xl">👨‍🎓</span>
+            <span id="header-avatar-name" class="hidden md:inline font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-200">Siswa</span>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400"></i>
+          </button>
+
+          <!-- User Dropdown Menu Popup -->
+          <div id="user-dropdown-menu" class="hidden absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl py-2 z-50 animate-fade-in text-xs sm:text-sm">
+            <div class="px-4 py-2.5 border-b border-slate-100 dark:border-slate-700">
+              <div class="text-xs font-medium text-slate-400">Akun Aktif:</div>
+              <div class="font-bold text-slate-900 dark:text-white truncate" id="dropdown-user-name">Siswa (Pejuang PTN)</div>
+              <div class="text-xs text-indigo-600 dark:text-indigo-400 truncate" id="dropdown-user-email">@siswa</div>
+            </div>
+
+            <div class="py-1">
+              <button onclick="switchTab('profile'); closeUserDropdown();" class="w-full px-4 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2.5 transition font-semibold text-indigo-600 dark:text-indigo-400">
+                <span>👤</span>
+                <div>Profil & Statistik Saya</div>
+              </button>
+
+              <button onclick="openSettingsModal(); closeUserDropdown();" class="w-full px-4 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2.5 transition">
+                <span>🎯</span>
+                <div class="font-medium">Target PTN & Jurusan</div>
+              </button>
+
+              <button onclick="openAuthModal('login'); closeUserDropdown();" class="w-full px-4 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2.5 transition">
+                <span>👥</span>
+                <div class="font-medium">Ganti Akun / Masuk</div>
+              </button>
+
+              <button onclick="openAuthModal('register'); closeUserDropdown();" class="w-full px-4 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2.5 transition">
+                <span>➕</span>
+                <div class="font-medium">Daftar Akun Baru</div>
+              </button>
+            </div>
+
+            <div class="pt-1 border-t border-slate-100 dark:border-slate-700">
+              <button onclick="handleLogout(); closeUserDropdown();" class="w-full px-4 py-2 text-left text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 flex items-center gap-2.5 transition font-semibold">
+                <span>🚪</span>
+                <div>Keluar (Logout)</div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Secondary Tab Navigation Bar -->
+    <nav class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 flex items-center gap-1 sm:gap-2 overflow-x-auto py-2 scrollbar-none border-t border-slate-100 dark:border-slate-800 text-xs sm:text-sm font-bold">
+      <button data-nav-tab="dashboard" class="px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap nav-active flex items-center gap-1.5 shrink-0">
+        <span>🏠</span> <span>Beranda</span>
+      </button>
+      <button data-nav-tab="drill" class="px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5 shrink-0">
+        <span>⚡</span> <span>Latihan Kilat</span>
+      </button>
+      <button data-nav-tab="cbt" class="px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5 shrink-0">
+        <span>📝</span> <span>Try Out CBT</span>
+      </button>
+      <button data-nav-tab="rapor" class="px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5 shrink-0">
+        <span>📊</span> <span>Rapor & Peluang</span>
+      </button>
+      <button data-nav-tab="bank-soal" class="px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5 shrink-0">
+        <span>📖</span> <span>Bank Soal</span>
+      </button>
+      <button data-nav-tab="flashcards" class="px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5 shrink-0">
+        <span>🃏</span> <span>Flashcard</span>
+      </button>
+      <button data-nav-tab="ptn-explorer" class="px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5 shrink-0">
+        <span>🏛️</span> <span>Eksplorasi PTN</span>
+      </button>
+      <button data-nav-tab="leaderboard" class="px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5 shrink-0">
+        <span>🏆</span> <span>Leaderboard</span>
+      </button>
+      <button data-nav-tab="profile" class="px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5 shrink-0">
+        <span>👤</span> <span>Profil</span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- ======================================================== -->
+  <!-- MAIN CONTAINER WITH SPA VIEWS -->
+  <!-- ======================================================== -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-3 sm:pt-6 pb-24 md:pb-8">
+
+    <!-- ------------------------------------------------------ -->
+    <!-- VIEW 1: DASHBOARD (BERANDA) -->
+    <!-- ------------------------------------------------------ -->
+    <div id="view-dashboard" class="space-y-6">
+      <!-- Countdown & Motivation Hero -->
+      <div class="bg-slate-900 dark:bg-slate-950 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-sm relative overflow-hidden border border-slate-800">
+        <div class="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6 items-center">
+          <div class="lg:col-span-2 space-y-3.5 sm:space-y-4">
+            <div class="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-slate-800/80 border border-slate-700 text-xs font-semibold text-amber-400">
+              <span class="animate-flame">🔥</span>
+              <span id="hero-greeting">Semangat Belajar, Pejuang PTN 2027! 🚀</span>
+            </div>
+
+            <h1 class="text-xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight text-white font-heading">
+              Taklukkan UTBK SNBT Bersama <span class="bg-gradient-to-r from-amber-400 via-orange-400 to-indigo-400 bg-clip-text text-transparent">TembusPTN</span>!
+            </h1>
+
+            <p class="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
+              Platform persiapan komprehensif: simulasi CBT resmi SNPMB, pembobotan IRT akurat, bank soal 2021–2026, dan prediksi rasionalisasi PTN impianmu.
+            </p>
+
+            <!-- Digital Countdown Timer Display & Live Online Counter -->
+            <div class="space-y-2 pt-1">
+              <div class="text-xs font-medium text-slate-300 flex items-center justify-between flex-wrap gap-2">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <i data-lucide="clock" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400"></i>
+                  <span class="text-[11px] sm:text-xs">Waktu Tersisa:</span>
+                  <span id="countdown-schedule-text" class="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[11px] sm:text-xs font-semibold">
+                    21 – 30 April 2027
+                  </span>
+                </div>
+                <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[11px] sm:text-xs font-medium">
+                  <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400"></span>
+                  <span id="live-online-count">1.482</span>
+                  <span>Live</span>
+                </div>
+              </div>
+              <div class="grid grid-cols-4 gap-1.5 sm:gap-3 max-w-xs sm:max-w-sm">
+                <div class="countdown-box rounded-xl p-2 sm:p-3 text-center">
+                  <div id="countdown-days" class="countdown-num text-lg sm:text-2xl font-bold text-slate-900 dark:text-white">--</div>
+                  <div class="text-[10px] sm:text-xs uppercase font-semibold text-slate-400 dark:text-slate-500 tracking-wider">Hari</div>
+                </div>
+                <div class="countdown-box rounded-xl p-2 sm:p-3 text-center">
+                  <div id="countdown-hours" class="countdown-num text-lg sm:text-2xl font-bold text-slate-900 dark:text-white">--</div>
+                  <div class="text-[10px] sm:text-xs uppercase font-semibold text-slate-400 dark:text-slate-500 tracking-wider">Jam</div>
+                </div>
+                <div class="countdown-box rounded-xl p-2 sm:p-3 text-center">
+                  <div id="countdown-minutes" class="countdown-num text-lg sm:text-2xl font-bold text-slate-900 dark:text-white">--</div>
+                  <div class="text-[10px] sm:text-xs uppercase font-semibold text-slate-400 dark:text-slate-500 tracking-wider">Menit</div>
+                </div>
+                <div class="countdown-box rounded-xl p-2 sm:p-3 text-center">
+                  <div id="countdown-seconds" class="countdown-num text-lg sm:text-2xl font-bold text-rose-500">--</div>
+                  <div class="text-[10px] sm:text-xs uppercase font-semibold text-slate-400 dark:text-slate-500 tracking-wider">Detik</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-2 flex flex-col sm:flex-row gap-2.5 sm:gap-3">
+              <button onclick="switchTab('cbt')" class="w-full sm:w-auto px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                <span>Simulasi Try Out CBT</span>
+                <span>🚀</span>
+              </button>
+              <button onclick="switchTab('drill')" class="w-full sm:w-auto px-5 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-sm rounded-xl transition flex items-center justify-center gap-2">
+                <span>Latihan Kilat</span>
+                <span>⚡</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Target PTN Widget -->
+          <div id="dash-target-ptn" class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 sm:p-5 space-y-3">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Action Cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+        <div onclick="switchTab('drill')" class="glass-card card-hover-lift p-5 rounded-2xl cursor-pointer group border border-slate-200 dark:border-slate-800">
+          <div class="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl mb-3 border border-amber-200/60 dark:border-amber-900/60">
+            ⚡
+          </div>
+          <div class="font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100 font-heading">Latihan Kilat</div>
+          <div class="text-xs text-slate-600 dark:text-slate-400 mt-1">Pembahasan instan per butir soal & reward XP</div>
+        </div>
+
+        <div onclick="switchTab('cbt')" class="glass-card card-hover-lift p-5 rounded-2xl cursor-pointer group border border-slate-200 dark:border-slate-800">
+          <div class="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl mb-3 border border-blue-200/60 dark:border-blue-900/60">
+            📝
+          </div>
+          <div class="font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100 font-heading">Simulasi Try Out</div>
+          <div class="text-xs text-slate-600 dark:text-slate-400 mt-1">Standar BPPP, waktu ketat & skor IRT 200–850</div>
+        </div>
+
+        <div onclick="switchTab('rapor')" class="glass-card card-hover-lift p-5 rounded-2xl cursor-pointer group border border-slate-200 dark:border-slate-800">
+          <div class="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl mb-3 border border-emerald-200/60 dark:border-emerald-900/60">
+            📊
+          </div>
+          <div class="font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100 font-heading">Rapor & Peluang</div>
+          <div class="text-xs text-slate-600 dark:text-slate-400 mt-1">Analisis radar 15 subtes & rasionalisasi PTN</div>
+        </div>
+
+        <div onclick="switchTab('flashcards')" class="glass-card card-hover-lift p-5 rounded-2xl cursor-pointer group border border-slate-200 dark:border-slate-800">
+          <div class="w-11 h-11 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xl mb-3 border border-purple-200/60 dark:border-purple-900/60">
+            🃏
+          </div>
+          <div class="font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100 font-heading">Flashcard Rumus</div>
+          <div class="text-xs text-slate-600 dark:text-slate-400 mt-1">Hafalan kilat formula PK, PM, & kaidah EYD V</div>
+        </div>
+      </div>
+
+      <!-- Misi Harian (Daily Quests) Pro Max -->
+      <div id="dash-daily-quests" class="glass-card rounded-3xl p-5 sm:p-6 border border-slate-200 dark:border-slate-800">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Level & XP Progress Card -->
+      <div id="dash-level-card" class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Subtes Resmi UTBK SNBT & TKA Grid -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Subtes Resmi UTBK SNBT & TKA</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Pilih subtes SNBT atau TKA Saintek & Soshum untuk langsung memulai latihan drill terfokus</p>
+          </div>
+          <button onclick="switchTab('drill')" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
+            Lihat Semua →
+          </button>
+        </div>
+        <div id="dash-subtest-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Pencapaian & Badges Shelf -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900">Lencana & Pencapaian (Badges)</h2>
+            <p class="text-xs text-slate-500">Koleksi lencana dengan konsisten belajar setiap hari</p>
+          </div>
+        </div>
+        <div id="dash-badges" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ------------------------------------------------------ -->
+    <!-- VIEW 2: DRILL MODE (LATIHAN KILAT PRO) -->
+    <!-- ------------------------------------------------------ -->
+    <div id="view-drill" class="hidden space-y-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
+        <div>
+          <h2 class="text-base sm:text-xl font-bold text-slate-900 dark:text-white flex items-center flex-wrap gap-2">
+            <span>⚡ Latihan Kilat (Drill Mode)</span>
+            <span class="px-2 py-0.5 rounded-full text-[11px] sm:text-xs font-black bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+              +15 XP
+            </span>
+          </h2>
+          <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">Pilih subtes, jawab soal, dan dapatkan pembahasan instan!</p>
+        </div>
+
+        <!-- Text Size Scaler (Accessibility) -->
+        <div class="flex items-center gap-1 self-start sm:self-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-1 shadow-sm text-xs">
+          <span class="text-[11px] font-bold text-slate-400 px-1.5">Teks:</span>
+          <button onclick="setFontScale('sm')" id="font-btn-sm" class="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 font-bold transition">A-</button>
+          <button onclick="setFontScale('md')" id="font-btn-md" class="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg bg-indigo-600 text-white font-bold transition shadow-sm">A</button>
+          <button onclick="setFontScale('lg')" id="font-btn-lg" class="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 font-bold transition">A+</button>
+        </div>
+      </div>
+
+      <!-- Drill Progress Bar Container -->
+      <div class="w-full bg-slate-200/80 dark:bg-slate-800 rounded-full h-2 overflow-hidden shadow-inner">
+        <div id="drill-progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%;"></div>
+      </div>
+
+      <!-- Subtest Filter Pills -->
+      <div id="drill-filter-pills" class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Question Card Container -->
+      <div id="drill-card-container" class="max-w-3xl mx-auto">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- ------------------------------------------------------ -->
+    <!-- VIEW 3: SIMULASI TRY OUT CBT (Sainsin & BisaEdu Style) -->
+    <!-- ------------------------------------------------------ -->
+    <div id="view-cbt" class="hidden space-y-6">
+      <div id="cbt-main-area">
+        <!-- Rendered by JS: either briefing or active CBT exam screen -->
+      </div>
+    </div>
+
+    <!-- ------------------------------------------------------ -->
+    <!-- VIEW 4: RAPOR HASIL BELAJAR & RASIONALISASI (Pahamify Style) -->
+    <!-- ------------------------------------------------------ -->
+    <div id="view-rapor" class="hidden space-y-6">
+      <div id="rapor-main-area">
+        <!-- Rendered by JS: IRT Score, Radar Chart, PTN chance, explanations -->
+      </div>
+    </div>
+
+    <!-- ------------------------------------------------------ -->
+    <!-- VIEW 5: BANK SOAL & PEMBAHASAN LENGKAP -->
+    <!-- ------------------------------------------------------ -->
+    <div id="view-bank-soal" class="hidden space-y-5">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900 dark:text-white">📖 Bank Soal & Pembahasan Komprehensif</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Jelajahi dan pelajari soal-soal asli SNBT & TKA lintas tahun (2020–2026) dengan trik eliminasi taktis.</p>
+        </div>
+        <span id="bank-soal-count" class="px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 self-start md:self-auto">
+          0 Soal
+        </span>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-3.5 sm:p-4 shadow-sm grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-3">
+        <div>
+          <label class="block text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 truncate">Subtes & TKA</label>
+          <select id="bank-filter-subtest" onchange="renderBankSoal()" class="w-full text-xs p-2 sm:p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none focus:border-indigo-500">
+            <option value="all">Semua Subtes & TKA</option>
+            <optgroup label="── TPS & Literasi SNBT ──">
+              <option value="pu">Penalaran Umum (PU)</option>
+              <option value="ppu">Pengetahuan & Pemahaman Umum (PPU)</option>
+              <option value="pbm">Pemahaman Bacaan & Menulis (PBM)</option>
+              <option value="pk">Pengetahuan Kuantitatif (PK)</option>
+              <option value="lit_indo">Literasi Bahasa Indonesia</option>
+              <option value="lit_ing">Literasi Bahasa Inggris</option>
+              <option value="pm">Penalaran Matematika (PM)</option>
+            </optgroup>
+            <optgroup label="── TKA Saintek ──">
+              <option value="tka_mat">📐 TKA Matematika Saintek</option>
+              <option value="tka_fis">⚡ TKA Fisika</option>
+              <option value="tka_kim">🧪 TKA Kimia</option>
+              <option value="tka_bio">🧬 TKA Biologi</option>
+            </optgroup>
+            <optgroup label="── TKA Soshum ──">
+              <option value="tka_eko">📈 TKA Ekonomi</option>
+              <option value="tka_geo">🌋 TKA Geografi</option>
+              <option value="tka_sej">🏛️ TKA Sejarah</option>
+              <option value="tka_sos">👥 TKA Sosiologi</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 truncate">Sumber / Bimbel</label>
+          <select id="bank-filter-source" onchange="renderBankSoal()" class="w-full text-xs p-2 sm:p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none focus:border-indigo-500">
+            <option value="all">Semua Sumber (Resmi & Bimbel)</option>
+            <option value="bimbel_all">📚 Koleksi Bimbel (1.000 Soal)</option>
+            <option value="inten">🔴 Prosus INTEN</option>
+            <option value="go">🟡 Ganesha Operation (GO)</option>
+            <option value="neutron">🔵 Neutron Yogyakarta</option>
+            <option value="ruangguru">🟣 Ruangguru Brain Academy</option>
+            <option value="nf">🟢 Nurul Fikri (NF)</option>
+            <option value="zenius">🟠 Zenius Education</option>
+            <option value="resmi">🏛️ SNBT Resmi BPPP (2020–2026)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 truncate">Tahun Ujian</label>
+          <select id="bank-filter-year" onchange="renderBankSoal()" class="w-full text-xs p-2 sm:p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none focus:border-indigo-500">
+            <option value="all">Semua Tahun (2020–2026)</option>
+            <option value="2026">2026 (Prediksi SNBT & Mandiri)</option>
+            <option value="2025">2025 (SNBT & TKA Mandiri)</option>
+            <option value="2024">2024 (SNBT Resmi BPPP)</option>
+            <option value="2023">2023 (SNBT)</option>
+            <option value="2022">2022 (UTBK-SBMPTN)</option>
+            <option value="2021">2021 (UTBK-SBMPTN)</option>
+            <option value="2020">2020 (UTBK-SBMPTN TPS)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 truncate">Tingkat Kesulitan</label>
+          <select id="bank-filter-diff" onchange="renderBankSoal()" class="w-full text-xs p-2 sm:p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none focus:border-indigo-500">
+            <option value="all">Semua Tingkat</option>
+            <option value="Mudah">Mudah</option>
+            <option value="Sedang">Sedang</option>
+            <option value="HOTS">HOTS (Tinggi)</option>
+          </select>
+        </div>
+
+        <div class="col-span-2 lg:col-span-1">
+          <label class="block text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Cari Kata Kunci</label>
+          <input type="text" id="bank-filter-search" oninput="renderBankSoal()" placeholder="Cari wacana, rumus, materi..." class="w-full text-xs p-2 sm:p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none focus:border-indigo-500" />
+        </div>
+      </div>
+
+      <!-- Bank Soal List -->
+      <div id="bank-soal-list" class="space-y-4">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- ------------------------------------------------------ -->
+    <!-- VIEW 6: FLASHCARDS PINTAR (Pahamify Style) -->
+    <!-- ------------------------------------------------------ -->
+    <div id="view-flashcards" class="hidden space-y-6">
+      <div class="text-center max-w-xl mx-auto space-y-2">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 text-xs font-bold">
+          <span>🃏 Flashcards Rumus & Kaidah Kilat</span>
+          <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
+          <span id="fc-count-badge">67 Rumus UTBK</span>
+        </div>
+        <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">Kuasai Formula & Logika Cepat SNBT</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Pelajari kartu bolak-balik 3D, filter berdasarkan rumpun mapel, dan pantau penguasaan rumus secara berkala!</p>
+      </div>
+
+      <!-- Controls & Filter Bar -->
+      <div class="max-w-xl mx-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-3.5 sm:p-4 shadow-sm space-y-3">
+        <!-- Search & Utility Buttons -->
+        <div class="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between">
+          <div class="relative flex-1">
+            <input type="text" id="fc-search-input" oninput="onFlashcardSearch(this.value)" placeholder="Cari rumus / konsep (cth: kuadrat, bernoulli, elastisitas, ponens)..." class="w-full text-xs p-2.5 pl-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:border-indigo-500 font-medium" />
+            <span class="absolute left-2.5 top-2.5 text-slate-400 text-xs">🔍</span>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0 justify-end">
+            <button type="button" onclick="shuffleFlashcards()" title="Acak urutan kartu" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition flex items-center gap-1">
+              <span>🔀</span> <span class="hidden sm:inline">Acak</span>
+            </button>
+            <button type="button" onclick="resetFlashcardProgress()" title="Reset status penguasaan kartu" class="px-3 py-2 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 dark:bg-slate-700 dark:hover:bg-rose-950/50 dark:hover:text-rose-400 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition flex items-center gap-1">
+              <span>🔄</span> <span class="hidden sm:inline">Reset</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Subject Category Filter Pills -->
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs" id="fc-category-pills">
+          <button type="button" onclick="setFlashcardCategory('all')" id="fc-cat-all" class="px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap bg-indigo-600 text-white shadow-sm">
+            🌟 Semua (<span id="count-cat-all">67</span>)
+          </button>
+          <button type="button" onclick="setFlashcardCategory('Penalaran Matematika & PK')" id="fc-cat-math" class="px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600">
+            📐 Matematika
+          </button>
+          <button type="button" onclick="setFlashcardCategory('Fisika')" id="fc-cat-fisika" class="px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600">
+            ⚡ Fisika
+          </button>
+          <button type="button" onclick="setFlashcardCategory('Kimia')" id="fc-cat-kimia" class="px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600">
+            🧪 Kimia
+          </button>
+          <button type="button" onclick="setFlashcardCategory('Ekonomi & Sosiologi')" id="fc-cat-soshum" class="px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600">
+            📊 Soshum
+          </button>
+          <button type="button" onclick="setFlashcardCategory('TPS')" id="fc-cat-tps" class="px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600">
+            🧠 TPS & Bahasa
+          </button>
+        </div>
+
+        <!-- Mastery Progress Bar -->
+        <div class="pt-2 border-t border-slate-100 dark:border-slate-700/60">
+          <div class="flex items-center justify-between text-xs mb-1">
+            <span class="font-bold text-slate-600 dark:text-slate-300">Penguasaan Rumus</span>
+            <span id="fc-mastery-text" class="font-bold text-indigo-600 dark:text-indigo-400">0 / 67 Dikuasai (0%)</span>
+          </div>
+          <div class="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+            <div id="fc-mastery-bar" class="bg-emerald-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="flashcard-viewer">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- ------------------------------------------------------ -->
+    <!-- ------------------------------------------------------ -->
+    <!-- VIEW 7: EKSPLORASI PTN & JURUSAN (SIMPLE & CLEAN) -->
+    <!-- ------------------------------------------------------ -->
+    <div id="view-ptn-explorer" class="hidden pb-12">
+      <!-- Screen 1: Simple PTN List View (as requested in reference design) -->
+      <div id="ptn-screen-list" class="max-w-md sm:max-w-xl mx-auto">
+        <!-- Rendered by renderPtnSimpleList() -->
+      </div>
+
+      <!-- Screen 2: PTN Detail View (Program Studi & Rasionalisasi) -->
+      <div id="ptn-screen-detail" class="max-w-3xl mx-auto space-y-4 hidden">
+        <!-- Rendered by renderPtnDetail(ptnId) -->
+      </div>
+    </div>
+
+    <!-- ------------------------------------------------------ -->
+    <!-- VIEW 8: LEADERBOARD NASIONAL (Skuling Style) -->
+    <!-- ------------------------------------------------------ -->
+    <div id="view-leaderboard" class="hidden space-y-6">
+      <div class="max-w-2xl mx-auto space-y-4">
+        <!-- Header & Live Badge -->
+        <div class="text-center space-y-2">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-bold">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span>Real-Time Live Update</span>
+          </div>
+          <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">🏆 Papan Peringkat Pejuang UTBK</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Peringkat murni pejuang terdaftar se-Indonesia. Kumpulkan XP dari Drill Kilat & Try Out untuk melesat ke puncak!</p>
+        </div>
+
+        <!-- Category Tabs (Hari Ini, Minggu Ini, Bulan Ini) -->
+        <div class="flex items-center justify-center p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl max-w-md mx-auto gap-1 border border-slate-200 dark:border-slate-700">
+          <button type="button" onclick="setLeaderboardPeriod('hari')" id="lb-tab-hari" class="flex-1 py-2 px-3 rounded-xl text-xs font-bold transition text-center bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm">
+            📅 Hari Ini
+          </button>
+          <button type="button" onclick="setLeaderboardPeriod('minggu')" id="lb-tab-minggu" class="flex-1 py-2 px-3 rounded-xl text-xs font-bold transition text-center text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+            📆 Minggu Ini
+          </button>
+          <button type="button" onclick="setLeaderboardPeriod('bulan')" id="lb-tab-bulan" class="flex-1 py-2 px-3 rounded-xl text-xs font-bold transition text-center text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+            🗓️ Bulan Ini
+          </button>
+        </div>
+
+        <div id="leaderboard-list" class="space-y-3">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ------------------------------------------------------ -->
+    <!-- VIEW 9: PROFIL DIRI PEJUANG & STATISTIK BELAJAR -->
+    <!-- ------------------------------------------------------ -->
+    <div id="view-profile" class="hidden space-y-6">
+      <div id="profile-container" class="max-w-4xl mx-auto space-y-6">
+        <!-- Rendered by renderProfileView() in js/app.js -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- SETTINGS / PROFIL & DUAL TARGET PTN MODAL -->
+  <!-- ======================================================== -->
+  <div id="settings-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 hidden animate-fade-in">
+    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-y-auto p-6 sm:p-7 shadow-2xl border border-slate-100 space-y-5">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div>
+          <div class="font-bold text-lg text-slate-900">Pengaturan Profil & Target SNBT</div>
+          <div class="text-xs text-slate-400">Atur strategi Pilihan 1 & Pilihan 2 (S1 / D4 / D3) sesuai format resmi BPPP SNPMB</div>
+        </div>
+        <button onclick="closeSettingsModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold">✕</button>
+      </div>
+
+      <!-- Section: Profil Pengguna -->
+      <div class="space-y-3 text-xs">
+        <div class="font-bold text-sm text-slate-800 flex items-center gap-1.5">
+          <span>👤 Data Pejuang</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="sm:col-span-2">
+            <label class="block font-bold text-slate-700 mb-1">Nama Lengkap / Panggilan</label>
+            <input type="text" id="set-name-input" class="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-indigo-500 text-sm font-semibold" />
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Avatar Emoji</label>
+            <select id="set-avatar-select" class="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-indigo-500 text-sm">
+              <option value="👨‍🎓">👨‍🎓 Mahasiswa</option>
+              <option value="👩‍🎓">👩‍🎓 Mahasiswi</option>
+              <option value="👨‍💻">👨‍💻 Programmer</option>
+              <option value="👩‍⚕️">👩‍⚕️ Calon Dokter</option>
+              <option value="🧑‍🚀">🧑‍🚀 Saintis</option>
+              <option value="⚖️">⚖️ Calon Jaksa/Hakim</option>
+              <option value="🔥">🔥 Pejuang Ambis</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Pilihan 1 (Utama) -->
+      <div class="p-4 bg-indigo-50/60 border border-indigo-200 rounded-2xl space-y-3 text-xs">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <span class="px-2.5 py-0.5 rounded-md bg-indigo-600 text-white font-bold text-xs uppercase tracking-wider">
+            Pilihan 1 (Prioritas Utama) 🎯
+          </span>
+          <div class="flex items-center gap-2">
+            <select id="set-degree1-filter" onchange="onModalDegreeFilterChange(1)" class="text-xs py-1 px-2 rounded-lg border border-indigo-200 bg-white font-bold text-indigo-700 outline-none">
+              <option value="all">Semua Jenjang (S1/D4/D3)</option>
+              <option value="S1">🎓 S1 (Sarjana)</option>
+              <option value="D4">💼 D4 (Sarjana Terapan)</option>
+              <option value="D3">🛠️ D3 (Diploma Tiga)</option>
+            </select>
+            <span id="p1-score-badge" class="font-bold text-indigo-700 text-xs">Passing Grade: -</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Universitas / Politeknik</label>
+            <select id="set-ptn-select" class="w-full p-2.5 rounded-xl border border-slate-200 bg-white outline-none focus:border-indigo-500 font-medium text-xs">
+              <!-- Injected by JS -->
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Program Studi / Jurusan</label>
+            <select id="set-major-select" class="w-full p-2.5 rounded-xl border border-slate-200 bg-white outline-none focus:border-indigo-500 font-medium text-xs">
+              <!-- Injected by JS -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Info Card Pilihan 1 -->
+        <div id="p1-detail-info" class="p-2.5 bg-white rounded-xl border border-indigo-100 flex items-center justify-between text-xs text-slate-600">
+          <span>Memuat info kuota...</span>
+        </div>
+      </div>
+
+      <!-- Section: Pilihan 2 (Cadangan / Alternatif) -->
+      <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3 text-xs">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <span class="px-2.5 py-0.5 rounded-md bg-slate-700 text-white font-bold text-xs uppercase tracking-wider">
+            Pilihan 2 (Pengaman / Alternatif) 🛡️
+          </span>
+          <div class="flex items-center gap-2">
+            <select id="set-degree2-filter" onchange="onModalDegreeFilterChange(2)" class="text-xs py-1 px-2 rounded-lg border border-slate-300 bg-white font-bold text-slate-700 outline-none">
+              <option value="all">Semua Jenjang (S1/D4/D3)</option>
+              <option value="S1">🎓 S1 (Sarjana)</option>
+              <option value="D4">💼 D4 (Sarjana Terapan)</option>
+              <option value="D3">🛠️ D3 (Diploma Tiga)</option>
+            </select>
+            <span id="p2-score-badge" class="font-bold text-slate-700 text-xs">Passing Grade: -</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Universitas / Politeknik</label>
+            <select id="set-ptn2-select" class="w-full p-2.5 rounded-xl border border-slate-200 bg-white outline-none focus:border-indigo-500 font-medium text-xs">
+              <!-- Injected by JS -->
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Program Studi / Jurusan</label>
+            <select id="set-major2-select" class="w-full p-2.5 rounded-xl border border-slate-200 bg-white outline-none focus:border-indigo-500 font-medium text-xs">
+              <!-- Injected by JS -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Info Card Pilihan 2 -->
+        <div id="p2-detail-info" class="p-2.5 bg-white rounded-xl border border-slate-200 flex items-center justify-between text-xs text-slate-600">
+          <span>Memuat info kuota...</span>
+        </div>
+      </div>
+
+      <!-- Strategi Pemilihan Real-time Box -->
+      <div id="strategy-eval-box" class="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-900 leading-relaxed">
+        <!-- Injected by JS -->
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="pt-2 border-t border-slate-100 flex gap-2">
+        <button onclick="closeSettingsModal()" class="flex-1 py-2.5 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-50">
+          Batal
+        </button>
+        <button onclick="saveSettingsForm()" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition">
+          Simpan Target PTN ✅
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL AUTHENTICATION (Login & Register Multi-User) -->
+  <!-- ======================================================== -->
+  <div id="auth-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 hidden animate-fade-in">
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto transform animate-slide-up">
+      <!-- Header Modal -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-700">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl overflow-hidden border border-slate-700/30 bg-slate-950 shadow-sm shrink-0 flex items-center justify-center ring-1 ring-orange-500/20">
+            <img src="assets/logo.png" alt="TembusPTN Logo" class="w-full h-full object-cover scale-105" />
+          </div>
+          <div>
+            <h3 class="font-extrabold text-base text-slate-900 dark:text-white" id="auth-modal-title">Masuk ke TembusPTN</h3>
+            <p class="text-xs text-slate-400" id="auth-modal-subtitle">Progress belajar dan Try Out tersimpan otomatis</p>
+          </div>
+        </div>
+        <button id="auth-modal-close-btn" onclick="closeAuthModal()" class="w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
+          ✕
+        </button>
+      </div>
+
+      <!-- Tab Buttons (Login vs Register) -->
+      <div class="flex p-1 bg-slate-100 dark:bg-slate-700/60 rounded-xl gap-1 text-xs font-bold">
+        <button id="tab-btn-login" onclick="switchAuthTab('login')" class="flex-1 py-2 rounded-lg transition bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm">
+          Masuk (Login)
+        </button>
+        <button id="tab-btn-register" onclick="switchAuthTab('register')" class="flex-1 py-2 rounded-lg transition text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+          Daftar Baru (Register)
+        </button>
+      </div>
+
+      <!-- Error / Alert Message Box -->
+      <div id="auth-alert-box" class="hidden p-3 rounded-xl text-xs font-semibold leading-snug"></div>
+
+      <!-- Form: LOGIN -->
+      <form id="auth-login-form" onsubmit="handleLoginSubmit(event)" class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Username atau Email</label>
+          <input type="text" id="login-identifier" placeholder="contoh: nathan atau budi" required
+            class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:border-indigo-500 text-xs font-medium transition" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Kata Sandi (Password)</label>
+          <input type="password" id="login-password" placeholder="Masukkan password" required
+            class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:border-indigo-500 text-xs font-medium transition" />
+        </div>
+        <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 hover:from-indigo-700 hover:to-purple-700 text-white font-bold text-xs rounded-xl shadow-md transition">
+          Masuk Sekarang 🚀
+        </button>
+
+        <div class="text-center text-xs text-slate-500 pt-1">
+          Belum punya akun? 
+          <button type="button" onclick="switchAuthTab('register')" class="text-indigo-600 dark:text-indigo-400 font-bold hover:underline">
+            Daftar Sekarang
+          </button>
+        </div>
+      </form>
+
+      <!-- Form: REGISTER -->
+      <form id="auth-register-form" onsubmit="handleRegisterSubmit(event)" class="space-y-3 hidden">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Nama Lengkap</label>
+          <input type="text" id="reg-name" placeholder="contoh: Siti Rahma" required
+            class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:border-indigo-500 text-xs font-medium transition" />
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Username</label>
+            <input type="text" id="reg-username" placeholder="sitirahma" required minlength="3"
+              class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:border-indigo-500 text-xs font-medium transition" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Email</label>
+            <input type="email" id="reg-email" placeholder="siti@gmail.com" required
+              class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:border-indigo-500 text-xs font-medium transition" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Kata Sandi (Password)</label>
+          <input type="password" id="reg-password" placeholder="Minimal 3 karakter" required minlength="3"
+            class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:border-indigo-500 text-xs font-medium transition" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Pilih Avatar Karakter</label>
+          <div class="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none" id="reg-avatar-selector">
+            <label class="cursor-pointer shrink-0">
+              <input type="radio" name="reg-avatar" value="👨‍🎓" checked class="peer hidden" />
+              <span class="w-10 h-10 rounded-xl border-2 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 dark:peer-checked:bg-indigo-950/60 flex items-center justify-center text-lg transition">👨‍🎓</span>
+            </label>
+            <label class="cursor-pointer shrink-0">
+              <input type="radio" name="reg-avatar" value="👩‍🎓" class="peer hidden" />
+              <span class="w-10 h-10 rounded-xl border-2 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 dark:peer-checked:bg-indigo-950/60 flex items-center justify-center text-lg transition">👩‍🎓</span>
+            </label>
+            <label class="cursor-pointer shrink-0">
+              <input type="radio" name="reg-avatar" value="🚀" class="peer hidden" />
+              <span class="w-10 h-10 rounded-xl border-2 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 dark:peer-checked:bg-indigo-950/60 flex items-center justify-center text-lg transition">🚀</span>
+            </label>
+            <label class="cursor-pointer shrink-0">
+              <input type="radio" name="reg-avatar" value="💡" class="peer hidden" />
+              <span class="w-10 h-10 rounded-xl border-2 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 dark:peer-checked:bg-indigo-950/60 flex items-center justify-center text-lg transition">💡</span>
+            </label>
+            <label class="cursor-pointer shrink-0">
+              <input type="radio" name="reg-avatar" value="🦁" class="peer hidden" />
+              <span class="w-10 h-10 rounded-xl border-2 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 dark:peer-checked:bg-indigo-950/60 flex items-center justify-center text-lg transition">🦁</span>
+            </label>
+            <label class="cursor-pointer shrink-0">
+              <input type="radio" name="reg-avatar" value="🎯" class="peer hidden" />
+              <span class="w-10 h-10 rounded-xl border-2 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 dark:peer-checked:bg-indigo-950/60 flex items-center justify-center text-lg transition">🎯</span>
+            </label>
+          </div>
+        </div>
+        <div class="p-2.5 bg-indigo-50 dark:bg-indigo-950/50 rounded-xl text-xs text-indigo-700 dark:text-indigo-300 font-medium border border-indigo-100 dark:border-indigo-900/50">
+          🎁 Sambutan Hangat: Dapatkan bonus <strong>+50 XP</strong> untuk membuka peringkat awal Pejuang PTN!
+        </div>
+        <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs rounded-xl shadow-md transition">
+          Daftar Akun Baru & Klaim 50 XP 🎉
+        </button>
+
+        <div class="text-center text-xs text-slate-500 pt-1">
+          Sudah punya akun? 
+          <button type="button" onclick="switchAuthTab('login')" class="text-indigo-600 dark:text-indigo-400 font-bold hover:underline">
+            Masuk ke Akun
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Floating Toast Notifications (XP & Quests) -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 pointer-events-none flex flex-col gap-2.5 items-end"></div>
+
+  <!-- ======================================================== -->
+  <!-- MOBILE BOTTOM NAVIGATION BAR (Duolingo & Skuling Style) -->
+  <!-- ======================================================== -->
+  <nav id="mobile-bottom-nav" class="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/95 dark:bg-slate-900/95 border-t border-slate-200 dark:border-slate-800 backdrop-blur-md safe-area-pb shadow-lg">
+    <div class="grid grid-cols-6 h-14 items-center px-1">
+      <button onclick="switchTab('dashboard')" data-mobile-nav="dashboard" class="mobile-nav-btn mobile-nav-active">
+        <span class="mobile-nav-icon-wrap text-lg">🏠</span>
+        <span>Beranda</span>
+      </button>
+      <button onclick="switchTab('drill')" data-mobile-nav="drill" class="mobile-nav-btn">
+        <span class="mobile-nav-icon-wrap text-lg">⚡</span>
+        <span>Latihan</span>
+      </button>
+      <button onclick="switchTab('cbt')" data-mobile-nav="cbt" class="mobile-nav-btn">
+        <span class="mobile-nav-icon-wrap text-lg">📝</span>
+        <span>Try Out</span>
+      </button>
+      <button onclick="switchTab('bank-soal')" data-mobile-nav="bank-soal" class="mobile-nav-btn">
+        <span class="mobile-nav-icon-wrap text-lg">📖</span>
+        <span>Bank Soal</span>
+      </button>
+      <button onclick="switchTab('rapor')" data-mobile-nav="rapor" class="mobile-nav-btn">
+        <span class="mobile-nav-icon-wrap text-lg">📊</span>
+        <span>Rapor</span>
+      </button>
+      <button onclick="switchTab('profile')" data-mobile-nav="profile" class="mobile-nav-btn">
+        <span class="mobile-nav-icon-wrap text-lg">👤</span>
+        <span>Profil</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ======================================================== -->
+  <!-- FOOTER -->
+  <!-- ======================================================== -->
+  <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-6 text-center text-xs text-slate-500 mt-auto pb-20 md:pb-6">
+    <div class="max-w-7xl mx-auto px-4 space-y-1.5">
+      <div class="flex items-center justify-center gap-2 mb-1">
+        <div class="w-6 h-6 rounded-lg overflow-hidden border border-slate-700/30 bg-slate-950 flex items-center justify-center">
+          <img src="assets/logo.png" alt="TembusPTN Logo" class="w-full h-full object-cover" />
+        </div>
+        <span class="font-bold text-sm text-slate-800 dark:text-slate-200">Tembus<span class="text-orange-500">PTN</span> <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 font-bold ml-0.5">PRO</span></span>
+      </div>
+      <p class="font-semibold text-slate-700 dark:text-slate-300">TembusPTN &copy; 2026 — Platform Edukasi & Simulasi CBT UTBK Terpadu</p>
+      <p class="text-slate-400">Analisis Presisi, Tembus PTN Favorit.</p>
+    </div>
+  </footer>
+
+  <!-- ======================================================== -->
+  <!-- SCRIPTS ORDER -->
+  <!-- ======================================================== -->
+  <script src="js/data/questions.js"></script>
+  <script src="js/data/bimbel_questions.js"></script>
+  <script src="js/data/flashcards.js"></script>
+  <script src="js/data/ptn_data.js"></script>
+  <script src="js/gamification.js"></script>
+  <script src="js/cbt_engine.js"></script>
+  <script src="js/analytics.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

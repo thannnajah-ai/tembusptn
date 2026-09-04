@@ -1,0 +1,15 @@
+﻿# OS Metadata
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.BIN/
+.DS_Store
+
+# Temporary verification screenshots in root
+verify_*.png
+
+# Node & Editor
+node_modules/
+.vscode/
+.idea/
+*.log
