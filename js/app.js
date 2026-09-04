@@ -1825,20 +1825,37 @@ function confirmFinishCbt() {
       <div class="text-xl font-bold text-slate-800 mb-2">Konfirmasi Pengumpulan Ujian</div>
       <p class="text-sm text-slate-500 mb-4">Pastikan kamu sudah memeriksa semua jawaban sebelum mengakhiri sesi.</p>
 
-      <div class="grid grid-cols-3 gap-2.5 mb-6 text-center text-xs">
-        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
-          <div class="text-base font-bold text-emerald-700">${stats.answered}</div>
-          <div class="text-emerald-900 mt-0.5">Dijawab</div>
+      <div class="grid grid-cols-3 gap-2.5 mb-4 text-center text-xs">
+        <div class="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl">
+          <div class="text-base font-bold text-emerald-700 dark:text-emerald-300">${stats.answered}</div>
+          <div class="text-emerald-900 dark:text-emerald-400 mt-0.5 font-medium">Dijawab</div>
         </div>
-        <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
-          <div class="text-base font-bold text-yellow-700">${stats.doubtful}</div>
-          <div class="text-yellow-900 mt-0.5">Ragu-ragu</div>
+        <div class="p-3 bg-yellow-50 dark:bg-yellow-950/40 border border-yellow-200 dark:border-yellow-800 rounded-xl">
+          <div class="text-base font-bold text-yellow-700 dark:text-yellow-300">${stats.doubtful}</div>
+          <div class="text-yellow-900 dark:text-yellow-400 mt-0.5 font-medium">Ragu-ragu</div>
         </div>
-        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl">
-          <div class="text-base font-bold text-slate-600">${stats.empty}</div>
-          <div class="text-slate-800 mt-0.5">Kosong</div>
+        <div class="p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl">
+          <div class="text-base font-bold text-slate-600 dark:text-slate-300">${stats.empty}</div>
+          <div class="text-slate-800 dark:text-slate-400 mt-0.5 font-medium">Kosong</div>
         </div>
       </div>
+
+      <!-- XP Rule Notice -->
+      ${stats.empty > 0 ? `
+        <div class="mb-5 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/80 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2.5 text-left leading-relaxed">
+          <span class="text-base flex-shrink-0">⚠️</span>
+          <div>
+            <strong>Perhatian Reward XP:</strong> Masih ada <strong>${stats.empty} butir soal belum dijawab</strong>. Kamu <strong>tidak akan mendapatkan reward XP (+200 XP)</strong> jika mengumpulkan dengan soal kosong.
+          </div>
+        </div>
+      ` : `
+        <div class="mb-5 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/80 text-xs text-emerald-800 dark:text-emerald-300 flex items-start gap-2.5 text-left leading-relaxed">
+          <span class="text-base flex-shrink-0">🎉</span>
+          <div>
+            <strong>Semua Soal Terjawab!</strong> Luar biasa, seluruh butir soal telah kamu isi. Kamu berhak memperoleh <strong>+200 XP</strong> setelah mengumpulkan ujian ini.
+          </div>
+        </div>
+      `}
 
       <div class="flex gap-3">
         <button id="btn-cancel-submit" class="flex-1 py-2.5 border border-slate-200 text-slate-700 text-sm font-bold rounded-xl hover:bg-slate-50">
@@ -2008,6 +2025,17 @@ function renderRaporView() {
           <p class="text-xs sm:text-sm text-indigo-200 mt-1 max-w-md">
             Dihitung menggunakan pembobotan tingkat kesulitan soal resmi SNPMB (Mudah, Sedang, HOTS).
           </p>
+          <div class="mt-2.5 flex items-center gap-2 flex-wrap">
+            ${latestResult.emptyCount === 0 ? `
+              <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5">
+                <span>🎉 Semua Soal Dijawab (+200 XP Diterima)</span>
+              </span>
+            ` : `
+              <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/25 text-amber-300 border border-amber-500/30 flex items-center gap-1.5">
+                <span>⚠️ ${latestResult.emptyCount} Soal Tidak Dijawab (0 XP)</span>
+              </span>
+            `}
+          </div>
           ${dualStrategy && dualStrategy.advice ? `
             <div class="mt-3 p-2.5 bg-white/10 backdrop-blur-md rounded-xl text-xs text-amber-200 border border-amber-300/30 max-w-md">
               ${dualStrategy.advice}

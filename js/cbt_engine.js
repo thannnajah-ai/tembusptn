@@ -205,9 +205,19 @@ class CBTEngine {
     // Simpan ke riwayat Try Out
     saveTryOutHistory(result);
 
-    // Update profil pengguna (XP + 200 untuk penyelesaian TO)
-    if (typeof addXp === "function") {
-      addXp(200, `Selesai ${result.sessionTitle}`);
+    // Update profil pengguna (XP + 200 HANYA JIKA menjawab seluruh butir soal tanpa ada yang kosong)
+    const isAllAnswered = result.emptyCount === 0;
+    result.isAllAnswered = isAllAnswered;
+    result.earnedXp = isAllAnswered ? 200 : 0;
+
+    if (isAllAnswered) {
+      if (typeof addXp === "function") {
+        addXp(200, `Selesai Menjawab Semua Soal ${result.sessionTitle}`);
+      }
+    } else {
+      if (typeof showXpNotification === "function") {
+        showXpNotification(0, `⚠️ Tidak mendapat XP: Masih ada ${result.emptyCount} soal belum dijawab!`);
+      }
     }
 
     const profile = typeof getUserProfile === "function" ? getUserProfile() : null;
