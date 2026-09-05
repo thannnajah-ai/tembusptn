@@ -51,8 +51,87 @@
     return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
   }
 
+  // Helper: Multi-line text wrapping with line limit
+  function drawWrappedText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 2) {
+    const words = (text || '').split(' ');
+    let line = '';
+    let lines = [];
+    for (let n = 0; n < words.length; n++) {
+      const testLine = line + (line ? ' ' : '') + words[n];
+      const metrics = ctx.measureText(testLine);
+      if (metrics.width > maxWidth && n > 0) {
+        lines.push(line);
+        line = words[n];
+        if (lines.length === maxLines - 1) {
+          const remaining = words.slice(n).join(' ');
+          let lastLine = remaining;
+          while (ctx.measureText(lastLine + '...').width > maxWidth && lastLine.length > 0) {
+            const spaceIdx = lastLine.lastIndexOf(' ');
+            if (spaceIdx === -1) {
+              lastLine = lastLine.substring(0, lastLine.length - 1);
+            } else {
+              lastLine = lastLine.substring(0, spaceIdx);
+            }
+          }
+          lines.push(lastLine ? lastLine + '...' : remaining.substring(0, 15) + '...');
+          line = '';
+          break;
+        }
+      } else {
+        line = testLine;
+      }
+    }
+    if (line && lines.length < maxLines) {
+      lines.push(line);
+    }
+    for (let i = 0; i < lines.length; i++) {
+      ctx.fillText(lines[i], x, y + (i * lineHeight));
+    }
+    return lines.length;
+  }
+
+  // Helper: Stylized High-Tech QR Code Vector Graphic
+  function drawStylizedQr(ctx, x, y, size) {
+    const modules = 25;
+    const cellSize = size / modules;
+    ctx.fillStyle = '#ffffff';
+    drawRoundRect(ctx, x - 10, y - 10, size + 20, size + 20, 16, true, false);
+
+    function drawFinder(fx, fy) {
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(x + fx * cellSize, y + fy * cellSize, 7 * cellSize, 7 * cellSize);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(x + (fx + 1) * cellSize, y + (fy + 1) * cellSize, 5 * cellSize, 5 * cellSize);
+      ctx.fillStyle = '#4338ca';
+      ctx.fillRect(x + (fx + 2) * cellSize, y + (fy + 2) * cellSize, 3 * cellSize, 3 * cellSize);
+    }
+    drawFinder(0, 0);
+    drawFinder(modules - 7, 0);
+    drawFinder(0, modules - 7);
+
+    let seed = 42;
+    function random() {
+      seed = (seed * 9301 + 49297) % 233280;
+      return seed / 233280;
+    }
+
+    ctx.fillStyle = '#0f172a';
+    for (let r = 0; r < modules; r++) {
+      for (let c = 0; c < modules; c++) {
+        if ((r < 8 && c < 8) || (r < 8 && c > modules - 9) || (r > modules - 9 && c < 8)) continue;
+        if (r === 6 || c === 6) {
+          if ((r + c) % 2 === 0) ctx.fillRect(x + c * cellSize, y + r * cellSize, cellSize, cellSize);
+          continue;
+        }
+        if (random() > 0.58) {
+          ctx.fillRect(x + c * cellSize, y + r * cellSize, cellSize, cellSize);
+        }
+      }
+    }
+  }
+
   /**
-   * Generates a 1080x1920 (9:16 Portrait) Aesthetic Score Story Card Canvas
+   * Generates a 1080x1920 (9:16 Portrait) Ultra-Modern Aesthetic Score Story Card Canvas
    */
   async function generateScoreCardCanvas(data) {
     const canvas = document.createElement('canvas');
@@ -68,383 +147,458 @@
     const target2Name = data.target2Name || 'Pilihan 2 Belum Dipilih';
     const target2Ptn = data.target2Ptn || '-';
     const target2Chance = data.target2Chance || '-';
-    const strongestSub = data.strongestSubtest || 'Penalaran Umum';
+    const strongestSub = data.strongestSubtest || 'Penalaran Umum (PU)';
     const strongestScore = data.strongestScore || '-';
     const dateStr = formatIndoDate(data.date ? new Date(data.date) : new Date());
 
-    // 1. Background Deep Space Gradient
+    // 1. Deep Space Cybernetic Mesh Gradient Background
     const bgGrad = ctx.createLinearGradient(0, 0, 1080, 1920);
-    bgGrad.addColorStop(0, '#040714');
-    bgGrad.addColorStop(0.35, '#0b1329');
-    bgGrad.addColorStop(0.7, '#080d1e');
-    bgGrad.addColorStop(1, '#020617');
+    bgGrad.addColorStop(0, '#030712');
+    bgGrad.addColorStop(0.3, '#090d1e');
+    bgGrad.addColorStop(0.7, '#070b18');
+    bgGrad.addColorStop(1, '#02040a');
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, 1080, 1920);
 
-    // 2. Glow Orbs
-    // Top-Right Indigo Glow
-    const glow1 = ctx.createRadialGradient(900, 200, 50, 900, 200, 600);
-    glow1.addColorStop(0, 'rgba(99, 102, 241, 0.35)');
-    glow1.addColorStop(0.5, 'rgba(79, 70, 229, 0.12)');
-    glow1.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = glow1;
+    // Ambient Mesh Glows
+    const glowTopRight = ctx.createRadialGradient(920, 160, 40, 920, 160, 650);
+    glowTopRight.addColorStop(0, 'rgba(99, 102, 241, 0.35)');
+    glowTopRight.addColorStop(0.5, 'rgba(124, 58, 237, 0.12)');
+    glowTopRight.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = glowTopRight;
     ctx.fillRect(400, 0, 680, 800);
 
-    // Center-Left Amber/Violet Glow
-    const glow2 = ctx.createRadialGradient(150, 950, 50, 150, 950, 550);
-    glow2.addColorStop(0, 'rgba(245, 158, 11, 0.18)');
-    glow2.addColorStop(0.6, 'rgba(168, 85, 247, 0.08)');
-    glow2.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = glow2;
-    ctx.fillRect(0, 500, 600, 900);
+    const glowMidLeft = ctx.createRadialGradient(100, 850, 40, 100, 850, 600);
+    glowMidLeft.addColorStop(0, 'rgba(245, 158, 11, 0.2)');
+    glowMidLeft.addColorStop(0.6, 'rgba(234, 88, 12, 0.08)');
+    glowMidLeft.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = glowMidLeft;
+    ctx.fillRect(0, 450, 700, 850);
 
-    // Bottom Glow
-    const glow3 = ctx.createRadialGradient(540, 1850, 50, 540, 1850, 500);
-    glow3.addColorStop(0, 'rgba(59, 130, 246, 0.22)');
-    glow3.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = glow3;
+    const glowBottomCyan = ctx.createRadialGradient(540, 1850, 50, 540, 1850, 650);
+    glowBottomCyan.addColorStop(0, 'rgba(6, 182, 212, 0.22)');
+    glowBottomCyan.addColorStop(0.6, 'rgba(59, 130, 246, 0.08)');
+    glowBottomCyan.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = glowBottomCyan;
     ctx.fillRect(100, 1400, 880, 520);
 
-    // 3. Subtle Futuristic Grid Lines (Low opacity)
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+    // Subtle tech grid lines
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.025)';
+    ctx.lineWidth = 1;
+    for (let x = 60; x < 1080; x += 80) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 1920); ctx.stroke();
+    }
+    for (let y = 60; y < 1920; y += 80) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1080, y); ctx.stroke();
+    }
+
+    // Outer Card Container Frame (Modern Floating Glass Card)
+    const frameX = 45;
+    const frameY = 45;
+    const frameW = 990;
+    const frameH = 1830;
+    const frameRadius = 40;
+
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.4)';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
     ctx.lineWidth = 1.5;
-    for (let x = 80; x < 1080; x += 100) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, 1920);
-      ctx.stroke();
-    }
-    for (let y = 80; y < 1920; y += 100) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(1080, y);
-      ctx.stroke();
-    }
+    drawRoundRect(ctx, frameX, frameY, frameW, frameH, frameRadius, true, true);
 
-    // Outer Card Border
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
-    ctx.lineWidth = 2;
-    drawRoundRect(ctx, 40, 40, 1000, 1840, 40, false, true);
-
-    // 4. Header: Logo & Branding
+    // 2. Header: Logo, Brand & Verification
     const logoImg = await loadImage('assets/logo.png');
     if (logoImg) {
-      // Draw circular clip logo
       ctx.save();
       ctx.beginPath();
-      ctx.arc(115, 135, 42, 0, Math.PI * 2);
+      ctx.arc(125, 125, 42, 0, Math.PI * 2);
       ctx.clip();
-      ctx.drawImage(logoImg, 73, 93, 84, 84);
+      ctx.drawImage(logoImg, 83, 83, 84, 84);
       ctx.restore();
 
-      ctx.strokeStyle = 'rgba(251, 191, 36, 0.8)';
-      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'rgba(245, 158, 11, 0.7)';
+      ctx.lineWidth = 2.5;
       ctx.beginPath();
-      ctx.arc(115, 135, 43, 0, Math.PI * 2);
+      ctx.arc(125, 125, 43, 0, Math.PI * 2);
       ctx.stroke();
     } else {
-      // Fallback Logo Badge
       ctx.fillStyle = '#4f46e5';
-      drawRoundRect(ctx, 75, 95, 80, 80, 24, true, false);
+      drawRoundRect(ctx, 85, 85, 80, 80, 24, true, false);
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 36px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('TP', 115, 148);
+      ctx.fillText('TP', 125, 138);
     }
 
-    // Header Text
     ctx.textAlign = 'left';
     ctx.fillStyle = '#ffffff';
     ctx.font = '900 38px sans-serif';
-    ctx.fillText('TEMBUSPTN', 180, 130);
+    ctx.fillText('TEMBUS', 188, 122);
 
-    ctx.fillStyle = '#fbbf24';
-    ctx.font = 'bold 20px sans-serif';
-    ctx.fillText('SIMULASI CBT UTBK SNBT 2026', 180, 160);
+    const tembusMetrics = ctx.measureText('TEMBUS');
+    ctx.fillStyle = '#f59e0b';
+    ctx.fillText('PTN', 188 + tembusMetrics.width, 122);
 
-    // Official Badge Pill (Top Right)
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = 'bold 18px sans-serif';
+    ctx.fillText('OFFICIAL CBT UTBK SNBT REPORT', 188, 152);
+
+    // Verified Pill Top Right
+    ctx.fillStyle = 'rgba(6, 182, 212, 0.12)';
+    ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)';
     ctx.lineWidth = 1.5;
-    drawRoundRect(ctx, 770, 100, 230, 60, 30, true, true);
+    drawRoundRect(ctx, 755, 96, 240, 56, 28, true, true);
 
     ctx.fillStyle = '#38bdf8';
-    ctx.font = 'bold 20px sans-serif';
+    ctx.font = 'bold 18px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('✓ OFFICIAL REPORT', 885, 138);
+    ctx.fillText('✓ HASIL RESMI CBT', 875, 131);
 
-    // Divider
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    // Top Divider
+    const divGrad = ctx.createLinearGradient(frameX + 40, 185, frameX + frameW - 40, 185);
+    divGrad.addColorStop(0, 'rgba(255, 255, 255, 0.02)');
+    divGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.18)');
+    divGrad.addColorStop(1, 'rgba(255, 255, 255, 0.02)');
+    ctx.strokeStyle = divGrad;
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(80, 215);
-    ctx.lineTo(1000, 215);
+    ctx.moveTo(frameX + 30, 185);
+    ctx.lineTo(frameX + frameW - 30, 185);
     ctx.stroke();
 
-    // 5. Student Profile Header
-    // Profile Box
+    // 3. Student Profile Glass Card
+    const profY = 215;
+    const profH = 145;
     ctx.fillStyle = 'rgba(15, 23, 42, 0.7)';
-    ctx.strokeStyle = 'rgba(99, 102, 241, 0.35)';
-    ctx.lineWidth = 2;
-    drawRoundRect(ctx, 80, 245, 920, 130, 28, true, true);
+    ctx.strokeStyle = 'rgba(99, 102, 241, 0.28)';
+    ctx.lineWidth = 1.5;
+    drawRoundRect(ctx, 80, profY, 920, profH, 28, true, true);
 
-    // Avatar Circle
-    ctx.fillStyle = '#312e81';
-    drawRoundRect(ctx, 110, 265, 90, 90, 45, true, false);
+    // Avatar
+    const avGrad = ctx.createLinearGradient(110, profY + 25, 205, profY + 120);
+    avGrad.addColorStop(0, '#4338ca');
+    avGrad.addColorStop(1, '#6366f1');
+    ctx.fillStyle = avGrad;
+    drawRoundRect(ctx, 110, profY + 25, 95, 95, 48, true, false);
+
     ctx.fillStyle = '#ffffff';
-    ctx.font = '42px sans-serif';
+    ctx.font = '46px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(data.avatar || '🎓', 155, 325);
+    ctx.fillText(data.avatar || '🎓', 157, profY + 88);
 
-    // Student Info Text
+    // Student Info
     ctx.textAlign = 'left';
     ctx.fillStyle = '#94a3b8';
-    ctx.font = 'bold 20px sans-serif';
-    ctx.fillText('PESERTA TRY OUT NASIONAL', 225, 295);
+    ctx.font = 'bold 17px sans-serif';
+    ctx.fillText('PESERTA TRY OUT NASIONAL', 230, profY + 55);
 
+    // Name with Smart Auto-fit (preventing ugly truncation!)
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 36px sans-serif';
-    let displayName = studentName;
-    if (displayName.length > 24) displayName = displayName.substring(0, 22) + '...';
-    ctx.fillText(displayName, 225, 340);
+    let nameFont = 34;
+    ctx.font = '900 ' + nameFont + 'px sans-serif';
+    while (ctx.measureText(studentName).width > 480 && nameFont > 24) {
+      nameFont -= 2;
+      ctx.font = '900 ' + nameFont + 'px sans-serif';
+    }
+    ctx.fillText(studentName, 230, profY + 98);
 
-    // Date (Right aligned in Profile Box)
+    // Right side date pill
     ctx.textAlign = 'right';
     ctx.fillStyle = '#64748b';
-    ctx.font = 'bold 18px sans-serif';
-    ctx.fillText('Tanggal Ujian', 960, 295);
+    ctx.font = 'bold 16px sans-serif';
+    ctx.fillText('Tanggal Ujian', 960, profY + 55);
     ctx.fillStyle = '#cbd5e1';
     ctx.font = 'bold 20px sans-serif';
-    ctx.fillText(dateStr, 960, 335);
+    ctx.fillText(dateStr, 960, profY + 95);
 
-    // 6. Huge IRT Score Showcase Card
-    const scoreBoxY = 405;
-    const scoreBoxH = 430;
+    // 4. Hero IRT Score Card Showcase
+    const scoreY = 385;
+    const scoreH = 475;
 
-    // Outer glow for score box
-    const scoreBoxGrad = ctx.createLinearGradient(80, scoreBoxY, 1000, scoreBoxY + scoreBoxH);
-    scoreBoxGrad.addColorStop(0, 'rgba(30, 27, 75, 0.85)');
-    scoreBoxGrad.addColorStop(0.5, 'rgba(15, 23, 42, 0.95)');
-    scoreBoxGrad.addColorStop(1, 'rgba(24, 24, 48, 0.85)');
-    ctx.fillStyle = scoreBoxGrad;
-    ctx.strokeStyle = 'rgba(251, 191, 36, 0.5)';
-    ctx.lineWidth = 3;
-    drawRoundRect(ctx, 80, scoreBoxY, 920, scoreBoxH, 36, true, true);
+    // Gradient & Glass
+    const scoreGrad = ctx.createLinearGradient(80, scoreY, 1000, scoreY + scoreH);
+    scoreGrad.addColorStop(0, 'rgba(30, 27, 75, 0.7)');
+    scoreGrad.addColorStop(0.5, 'rgba(15, 23, 42, 0.9)');
+    scoreGrad.addColorStop(1, 'rgba(19, 24, 45, 0.7)');
+    ctx.fillStyle = scoreGrad;
+    ctx.strokeStyle = 'rgba(245, 158, 11, 0.45)';
+    ctx.lineWidth = 2.5;
+    drawRoundRect(ctx, 80, scoreY, 920, scoreH, 36, true, true);
 
-    // Section Tag
+    // Section Top Pill
+    ctx.fillStyle = 'rgba(245, 158, 11, 0.15)';
+    ctx.strokeStyle = 'rgba(245, 158, 11, 0.5)';
+    ctx.lineWidth = 1.5;
+    drawRoundRect(ctx, 240, scoreY + 28, 600, 48, 24, true, true);
+
     ctx.textAlign = 'center';
     ctx.fillStyle = '#fbbf24';
-    ctx.font = '900 22px sans-serif';
-    ctx.fillText('SKOR EVALUASI IRT (ITEM RESPONSE THEORY)', 540, scoreBoxY + 55);
+    ctx.font = '900 19px sans-serif';
+    ctx.fillText('⚡ SKOR EVALUASI IRT (ITEM RESPONSE THEORY)', 540, scoreY + 59);
 
-    // Big Score Number
-    const scoreTextGrad = ctx.createLinearGradient(350, scoreBoxY + 70, 730, scoreBoxY + 230);
-    scoreTextGrad.addColorStop(0, '#ffffff');
-    scoreTextGrad.addColorStop(0.5, '#fef08a');
-    scoreTextGrad.addColorStop(1, '#f59e0b');
-    ctx.fillStyle = scoreTextGrad;
-    ctx.font = '900 135px sans-serif';
-    ctx.fillText(`${score}`, 500, scoreBoxY + 195);
+    // Score Big Number
+    const scoreNumGrad = ctx.createLinearGradient(350, scoreY + 80, 700, scoreY + 220);
+    scoreNumGrad.addColorStop(0, '#ffffff');
+    scoreNumGrad.addColorStop(0.4, '#fef08a');
+    scoreNumGrad.addColorStop(1, '#f59e0b');
+    ctx.fillStyle = scoreNumGrad;
+    ctx.font = '900 142px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${score}`, 480, scoreY + 205);
 
     ctx.fillStyle = '#64748b';
-    ctx.font = 'bold 46px sans-serif';
+    ctx.font = 'bold 44px sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText('/ 850', 655, scoreBoxY + 195);
+    ctx.fillText('/ 850', 620, scoreY + 205);
 
-    // Score Status Pill
+    // IRT National Gauge Track (Visual Score Scale!)
+    const gaugeX = 140;
+    const gaugeY = scoreY + 235;
+    const gaugeW = 800;
+    const gaugeH = 12;
+
+    // Background track
+    const trackGrad = ctx.createLinearGradient(gaugeX, gaugeY, gaugeX + gaugeW, gaugeY);
+    trackGrad.addColorStop(0, '#f43f5e');
+    trackGrad.addColorStop(0.35, '#f59e0b');
+    trackGrad.addColorStop(0.7, '#3b82f6');
+    trackGrad.addColorStop(1, '#10b981');
+    ctx.fillStyle = trackGrad;
+    drawRoundRect(ctx, gaugeX, gaugeY, gaugeW, gaugeH, 6, true, false);
+
+    // Pin location along 200..850
+    const ratio = Math.max(0, Math.min(1, (score - 200) / 650));
+    const pinX = gaugeX + ratio * gaugeW;
+
+    // Pin Glow & Circle
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(pinX, gaugeY + 6, 12, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(pinX, gaugeY + 6, 12, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Scale Labels under gauge
+    ctx.font = 'bold 15px sans-serif';
+    ctx.fillStyle = '#64748b';
+    ctx.textAlign = 'left';
+    ctx.fillText('200 (Min)', gaugeX, gaugeY + 34);
+    ctx.textAlign = 'center';
+    ctx.fillText('525 (Rata-rata Nasional)', gaugeX + gaugeW / 2, gaugeY + 34);
+    ctx.textAlign = 'right';
+    ctx.fillText('850 (Maks)', gaugeX + gaugeW, gaugeY + 34);
+
+    // Status Badge Pill
+    const statusY = scoreY + 295;
     let statusLabel = 'POTENSIAL LOLOS PTN FAVORIT';
-    let statusBg = 'rgba(16, 185, 129, 0.2)';
+    let statusBg = 'rgba(16, 185, 129, 0.15)';
     let statusBorder = 'rgba(52, 211, 153, 0.6)';
     let statusColor = '#34d399';
 
     if (score >= 700) {
-      statusLabel = '🌟 TINGKAT KOMPETITIF SANGAT TINGGI (TOP 5% NASIONAL)';
-      statusBg = 'rgba(245, 158, 11, 0.25)';
+      statusLabel = '🌟 TINGKAT KOMPETITIF TINGGI (TOP 5% NASIONAL)';
+      statusBg = 'rgba(245, 158, 11, 0.2)';
       statusBorder = 'rgba(251, 191, 36, 0.8)';
       statusColor = '#fbbf24';
     } else if (score >= 600) {
       statusLabel = '🔥 AMAN UNTUK JURUSAN & PTN KELAS 1';
-      statusBg = 'rgba(14, 165, 233, 0.25)';
+      statusBg = 'rgba(14, 165, 233, 0.2)';
       statusBorder = 'rgba(56, 189, 248, 0.7)';
       statusColor = '#38bdf8';
     } else if (score >= 500) {
-      statusLabel = '📈 BERPELUANG TINGGI — SIAP DIGENJOT LAGI!';
-      statusBg = 'rgba(129, 140, 248, 0.2)';
-      statusBorder = 'rgba(165, 180, 252, 0.6)';
+      statusLabel = '📈 POTENSIAL & SIAP BERSAING NASIONAL';
+      statusBg = 'rgba(99, 102, 241, 0.2)';
+      statusBorder = 'rgba(129, 140, 248, 0.6)';
       statusColor = '#a5b4fc';
     } else {
-      statusLabel = '💪 LANGKAH AWAL BAGUS — TERUS BERLATIH!';
-      statusBg = 'rgba(244, 63, 94, 0.2)';
+      statusLabel = '💪 LANGKAH AWAL BAGUS — TERUS TINGKATKAN!';
+      statusBg = 'rgba(244, 63, 94, 0.15)';
       statusBorder = 'rgba(251, 113, 133, 0.6)';
       statusColor = '#fb7185';
     }
 
     ctx.fillStyle = statusBg;
     ctx.strokeStyle = statusBorder;
-    ctx.lineWidth = 2;
-    drawRoundRect(ctx, 160, scoreBoxY + 235, 760, 60, 30, true, true);
+    ctx.lineWidth = 1.5;
+    drawRoundRect(ctx, 160, statusY, 760, 60, 30, true, true);
 
     ctx.fillStyle = statusColor;
     ctx.font = '900 21px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(statusLabel, 540, scoreBoxY + 273);
+    ctx.fillText(statusLabel, 540, statusY + 38);
 
-    // Mini Stats Row inside Score Box (Subtes Terkuat & Bobot HOTS)
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    // Sub-box inside Score Card (Subtes Terkuat & Standar Penilaian)
+    const subBoxY = scoreY + 375;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
     ctx.lineWidth = 1;
-    drawRoundRect(ctx, 110, scoreBoxY + 315, 860, 85, 20, true, true);
+    drawRoundRect(ctx, 110, subBoxY, 860, 76, 20, true, true);
 
-    // Col 1: Subtes Terkuat
     ctx.textAlign = 'left';
     ctx.fillStyle = '#94a3b8';
-    ctx.font = 'bold 17px sans-serif';
-    ctx.fillText('SUBTES TERKUAT', 140, scoreBoxY + 348);
+    ctx.font = 'bold 16px sans-serif';
+    ctx.fillText('SUBTES TERKUAT', 140, subBoxY + 32);
     ctx.fillStyle = '#34d399';
-    ctx.font = '900 22px sans-serif';
-    let strongDisplay = `${strongestSub} (${strongestScore})`;
-    if (strongDisplay.length > 30) strongDisplay = strongDisplay.substring(0, 28) + '...';
-    ctx.fillText(`⚡ ${strongDisplay}`, 140, scoreBoxY + 382);
+    ctx.font = '900 21px sans-serif';
+    let strongDisplay = strongestScore !== '-' ? `${strongestSub} (${strongestScore})` : strongestSub;
+    ctx.fillText('⚡ ' + strongDisplay, 140, subBoxY + 60);
 
-    // Col 2: Sistem Penilaian
     ctx.textAlign = 'right';
     ctx.fillStyle = '#94a3b8';
-    ctx.font = 'bold 17px sans-serif';
-    ctx.fillText('STANDAR PENILAIAN', 940, scoreBoxY + 348);
+    ctx.font = 'bold 16px sans-serif';
+    ctx.fillText('STANDAR EVALUASI', 940, subBoxY + 32);
     ctx.fillStyle = '#f8fafc';
-    ctx.font = '900 22px sans-serif';
-    ctx.fillText('Standar BPPP SNPMB 2026', 940, scoreBoxY + 382);
+    ctx.font = '900 21px sans-serif';
+    ctx.fillText('Standar BPPP SNPMB 2026', 940, subBoxY + 60);
 
-    // 7. Target PTN Rationalization Cards (Dual Cards)
-    const ptnSectionY = 865;
-
+    // 5. Dual PTN Choices Cards (Evenly Spaced, No Ugly Text Clippings!)
+    const ptnSecY = 890;
     ctx.textAlign = 'left';
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 28px sans-serif';
-    ctx.fillText('🎯 Rasionalisasi Peluang Kelulusan PTN', 80, ptnSectionY);
+    ctx.font = '900 26px sans-serif';
+    ctx.fillText('🎯 Rasionalisasi Peluang Kelulusan PTN', 80, ptnSecY);
 
     // Card 1: Pilihan 1 Utama
-    const card1Y = ptnSectionY + 25;
+    const c1Y = ptnSecY + 22;
+    const cH = 175;
     ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
     ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
     ctx.lineWidth = 2;
-    drawRoundRect(ctx, 80, card1Y, 920, 195, 28, true, true);
+    drawRoundRect(ctx, 80, c1Y, 920, cH, 26, true, true);
 
-    // Choice Tag
+    // Tag Pilihan 1
     ctx.fillStyle = '#f59e0b';
-    drawRoundRect(ctx, 110, card1Y + 25, 165, 40, 12, true, false);
+    drawRoundRect(ctx, 110, c1Y + 20, 155, 34, 10, true, false);
     ctx.fillStyle = '#0f172a';
-    ctx.font = '900 18px sans-serif';
+    ctx.font = '900 16px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('PILIHAN 1 🎯', 192, card1Y + 52);
+    ctx.fillText('PILIHAN 1 🎯', 187, c1Y + 43);
 
-    // Major & Univ
+    // Major with Auto Wrap!
     ctx.textAlign = 'left';
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 32px sans-serif';
-    let maj1Str = target1Name;
-    if (maj1Str.length > 28) maj1Str = maj1Str.substring(0, 26) + '...';
-    ctx.fillText(maj1Str, 110, card1Y + 115);
+    ctx.font = '900 26px sans-serif';
+    drawWrappedText(ctx, target1Name, 110, c1Y + 86, 620, 32, 2);
 
+    // Univ
     ctx.fillStyle = '#94a3b8';
-    ctx.font = 'bold 22px sans-serif';
-    ctx.fillText(target1Ptn, 110, card1Y + 155);
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillText('🏛️ ' + target1Ptn, 110, c1Y + 152);
 
     // Chance Badge Right Side
-    ctx.fillStyle = 'rgba(245, 158, 11, 0.15)';
+    ctx.fillStyle = 'rgba(245, 158, 11, 0.12)';
     ctx.strokeStyle = '#f59e0b';
     ctx.lineWidth = 2;
-    drawRoundRect(ctx, 770, card1Y + 35, 200, 125, 24, true, true);
+    drawRoundRect(ctx, 770, c1Y + 22, 200, 130, 22, true, true);
 
     ctx.textAlign = 'center';
     ctx.fillStyle = '#fef08a';
-    ctx.font = 'bold 17px sans-serif';
-    ctx.fillText('PELUANG LOLOS', 870, card1Y + 72);
+    ctx.font = 'bold 16px sans-serif';
+    ctx.fillText('PELUANG LOLOS', 870, c1Y + 58);
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 46px sans-serif';
-    ctx.fillText(target1Chance !== '-' ? `${target1Chance}%` : 'Tinggi', 870, card1Y + 130);
+    ctx.font = '900 48px sans-serif';
+    ctx.fillText(target1Chance !== '-' ? `${target1Chance}%` : 'Tinggi', 870, c1Y + 118);
 
     // Card 2: Pilihan 2 Cadangan
-    const card2Y = card1Y + 220;
+    const c2Y = c1Y + 195;
     ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
     ctx.strokeStyle = 'rgba(99, 102, 241, 0.4)';
     ctx.lineWidth = 2;
-    drawRoundRect(ctx, 80, card2Y, 920, 195, 28, true, true);
+    drawRoundRect(ctx, 80, c2Y, 920, cH, 26, true, true);
 
-    // Choice Tag
+    // Tag Pilihan 2
     ctx.fillStyle = '#6366f1';
-    drawRoundRect(ctx, 110, card2Y + 25, 165, 40, 12, true, false);
+    drawRoundRect(ctx, 110, c2Y + 20, 155, 34, 10, true, false);
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 18px sans-serif';
+    ctx.font = '900 16px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('PILIHAN 2 🛡️', 192, card2Y + 52);
+    ctx.fillText('PILIHAN 2 🛡️', 187, c2Y + 43);
 
-    // Major & Univ
+    // Major with Auto Wrap!
     ctx.textAlign = 'left';
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 32px sans-serif';
-    let maj2Str = target2Name;
-    if (maj2Str.length > 28) maj2Str = maj2Str.substring(0, 26) + '...';
-    ctx.fillText(maj2Str, 110, card2Y + 115);
+    ctx.font = '900 26px sans-serif';
+    drawWrappedText(ctx, target2Name, 110, c2Y + 86, 620, 32, 2);
 
+    // Univ
     ctx.fillStyle = '#94a3b8';
-    ctx.font = 'bold 22px sans-serif';
-    ctx.fillText(target2Ptn, 110, card2Y + 155);
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillText('🏛️ ' + target2Ptn, 110, c2Y + 152);
 
     // Chance Badge Right Side
-    ctx.fillStyle = 'rgba(99, 102, 241, 0.15)';
+    ctx.fillStyle = 'rgba(99, 102, 241, 0.12)';
     ctx.strokeStyle = '#818cf8';
     ctx.lineWidth = 2;
-    drawRoundRect(ctx, 770, card2Y + 35, 200, 125, 24, true, true);
+    drawRoundRect(ctx, 770, c2Y + 22, 200, 130, 22, true, true);
 
     ctx.textAlign = 'center';
     ctx.fillStyle = '#c7d2fe';
-    ctx.font = 'bold 17px sans-serif';
-    ctx.fillText('PELUANG LOLOS', 870, card2Y + 72);
+    ctx.font = 'bold 16px sans-serif';
+    ctx.fillText('PELUANG LOLOS', 870, c2Y + 58);
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 46px sans-serif';
-    ctx.fillText(target2Chance !== '-' ? `${target2Chance}%` : 'Aman', 870, card2Y + 130);
+    ctx.font = '900 48px sans-serif';
+    ctx.fillText(target2Chance !== '-' ? `${target2Chance}%` : 'Aman', 870, c2Y + 118);
 
-    // 8. Why TembusPTN Feature Pill Highlights
-    const featY = card2Y + 225;
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-    ctx.lineWidth = 1.5;
-    drawRoundRect(ctx, 80, featY, 920, 115, 24, true, true);
-
+    // 6. Value Feature Chips (Harmoniously spaced)
+    const chipY = c2Y + 215;
+    const chipW = 295;
+    const chipH = 65;
     const perks = [
-      '📚 1.800+ Bank Soal Bimbel',
-      '⚡ Timer Mirip Asli',
-      '📊 Analisis 7 Subtes UTBK'
+      { icon: '📚', text: '1.800+ Bank Soal' },
+      { icon: '⏱️', text: 'Timer Mirip Asli' },
+      { icon: '📊', text: 'Analisis 7 Subtes' }
     ];
+
     perks.forEach((p, idx) => {
+      const cx = 80 + idx * 312;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.lineWidth = 1;
+      drawRoundRect(ctx, cx, chipY, chipW, chipH, 18, true, true);
+
       ctx.textAlign = 'center';
       ctx.fillStyle = '#e2e8f0';
-      ctx.font = 'bold 20px sans-serif';
-      ctx.fillText(p, 230 + idx * 310, featY + 68);
+      ctx.font = 'bold 19px sans-serif';
+      ctx.fillText(p.icon + ' ' + p.text, cx + chipW / 2, chipY + 41);
     });
 
-    // 9. Viral CTA Footer
-    const footerY = 1660;
-    const footerGrad = ctx.createLinearGradient(80, footerY, 1000, footerY + 190);
-    footerGrad.addColorStop(0, '#1e1b4b');
-    footerGrad.addColorStop(1, '#0f172a');
-    ctx.fillStyle = footerGrad;
-    ctx.strokeStyle = 'rgba(129, 140, 248, 0.5)';
+    // 7. Ultra-Sleek Modern Footer (Filling the bottom space cleanly with QR code + URL!)
+    const footY = chipY + 95;
+    const footH = 220;
+
+    const footGrad = ctx.createLinearGradient(80, footY, 1000, footY + footH);
+    footGrad.addColorStop(0, '#111827');
+    footGrad.addColorStop(1, '#0f172a');
+    ctx.fillStyle = footGrad;
+    ctx.strokeStyle = 'rgba(99, 102, 241, 0.4)';
     ctx.lineWidth = 2;
-    drawRoundRect(ctx, 80, footerY, 920, 190, 32, true, true);
+    drawRoundRect(ctx, 80, footY, 920, footH, 32, true, true);
 
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#f8fafc';
-    ctx.font = '900 24px sans-serif';
-    ctx.fillText('Cek Kemampuan & Simulasi UTBK Kamu Sekarang!', 540, footerY + 58);
+    // Draw Stylized QR Code Left Side
+    drawStylizedQr(ctx, 120, footY + 30, 155);
 
-    // Domain highlight button box
-    ctx.fillStyle = '#4f46e5';
-    drawRoundRect(ctx, 220, footerY + 85, 640, 70, 35, true, false);
+    // Right side footer text
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#fbbf24';
+    ctx.font = '900 17px sans-serif';
+    ctx.fillText('🔥 COBA SIMULASI CBT UTBK SEKARANG', 320, footY + 68);
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 32px sans-serif';
-    ctx.fillText('🚀 https://tembusptn.my.id', 540, footerY + 132);
+    ctx.font = '900 38px sans-serif';
+    ctx.fillText('tembusptn.my.id', 320, footY + 115);
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = 'bold 19px sans-serif';
+    ctx.fillText('Bank Soal INTEN & Rasionalisasi IRT 100% Gratis!', 320, footY + 152);
+
+    // Small tag
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+    drawRoundRect(ctx, 320, footY + 168, 280, 32, 16, true, false);
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillText('⚡ Scan QR / Buka di Browser HP', 335, footY + 190);
 
     return canvas;
   }
@@ -466,125 +620,201 @@
 
     // Background
     const bgGrad = ctx.createLinearGradient(0, 0, 1080, 1920);
-    bgGrad.addColorStop(0, '#020617');
-    bgGrad.addColorStop(0.5, '#0f172a');
-    bgGrad.addColorStop(1, '#090d16');
+    bgGrad.addColorStop(0, '#030712');
+    bgGrad.addColorStop(0.35, '#090d1e');
+    bgGrad.addColorStop(0.7, '#070b18');
+    bgGrad.addColorStop(1, '#02040a');
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, 1080, 1920);
 
     // Gold / Purple Ambient Glow
-    const glow1 = ctx.createRadialGradient(540, 450, 50, 540, 450, 600);
-    glow1.addColorStop(0, 'rgba(245, 158, 11, 0.25)');
-    glow1.addColorStop(0.6, 'rgba(168, 85, 247, 0.12)');
+    const glow1 = ctx.createRadialGradient(540, 420, 50, 540, 420, 650);
+    glow1.addColorStop(0, 'rgba(245, 158, 11, 0.28)');
+    glow1.addColorStop(0.6, 'rgba(168, 85, 247, 0.14)');
     glow1.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = glow1;
     ctx.fillRect(0, 0, 1080, 900);
 
-    // Grid lines
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
-    ctx.lineWidth = 1.5;
-    for (let x = 80; x < 1080; x += 100) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, 1920);
-      ctx.stroke();
+    // Subtle tech grid lines
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.025)';
+    ctx.lineWidth = 1;
+    for (let x = 60; x < 1080; x += 80) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 1920); ctx.stroke();
+    }
+    for (let y = 60; y < 1920; y += 80) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1080, y); ctx.stroke();
     }
 
     // Outer Border
-    ctx.strokeStyle = 'rgba(251, 191, 36, 0.3)';
-    ctx.lineWidth = 2;
-    drawRoundRect(ctx, 40, 40, 1000, 1840, 40, false, true);
+    const frameX = 45;
+    const frameY = 45;
+    const frameW = 990;
+    const frameH = 1830;
+    const frameRadius = 40;
+
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.4)';
+    ctx.strokeStyle = 'rgba(251, 191, 36, 0.35)';
+    ctx.lineWidth = 1.5;
+    drawRoundRect(ctx, frameX, frameY, frameW, frameH, frameRadius, true, true);
 
     // Header Branding
     const logoImg = await loadImage('assets/logo.png');
     if (logoImg) {
-      ctx.drawImage(logoImg, 80, 100, 75, 75);
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(125, 125, 42, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.drawImage(logoImg, 83, 83, 84, 84);
+      ctx.restore();
+
+      ctx.strokeStyle = 'rgba(245, 158, 11, 0.7)';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(125, 125, 43, 0, Math.PI * 2);
+      ctx.stroke();
     }
+
     ctx.textAlign = 'left';
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 36px sans-serif';
-    ctx.fillText('TEMBUSPTN', 175, 138);
+    ctx.font = '900 38px sans-serif';
+    ctx.fillText('TEMBUS', 188, 122);
+    const tembusMetrics = ctx.measureText('TEMBUS');
+    ctx.fillStyle = '#f59e0b';
+    ctx.fillText('PTN', 188 + tembusMetrics.width, 122);
+
     ctx.fillStyle = '#fbbf24';
-    ctx.font = 'bold 20px sans-serif';
-    ctx.fillText('LEADERBOARD UTBK NASIONAL', 175, 168);
+    ctx.font = 'bold 18px sans-serif';
+    ctx.fillText('LEADERBOARD UTBK NASIONAL', 188, 152);
+
+    // Verified Pill Top Right
+    ctx.fillStyle = 'rgba(245, 158, 11, 0.12)';
+    ctx.strokeStyle = 'rgba(245, 158, 11, 0.5)';
+    ctx.lineWidth = 1.5;
+    drawRoundRect(ctx, 745, 96, 250, 56, 28, true, true);
+
+    ctx.fillStyle = '#fbbf24';
+    ctx.font = 'bold 18px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🏆 PERINGKAT RESMI', 870, 131);
+
+    // Divider
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    ctx.beginPath();
+    ctx.moveTo(80, 185);
+    ctx.lineTo(1000, 185);
+    ctx.stroke();
 
     // Huge Crown / Trophy Graphic
     ctx.textAlign = 'center';
-    ctx.font = '140px sans-serif';
-    ctx.fillText(rank === 1 ? '👑' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '🏆', 540, 430);
+    ctx.font = '130px sans-serif';
+    ctx.fillText(rank === 1 ? '👑' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '🏆', 540, 340);
 
     // Rank Badge Pill
     ctx.fillStyle = rank === 1 ? '#f59e0b' : '#4f46e5';
-    drawRoundRect(ctx, 300, 480, 480, 80, 40, true, false);
+    drawRoundRect(ctx, 280, 370, 520, 75, 38, true, false);
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 36px sans-serif';
-    ctx.fillText(`PERINGKAT #${rank} NASIONAL`, 540, 535);
+    ctx.font = '900 34px sans-serif';
+    ctx.fillText(`PERINGKAT #${rank} NASIONAL`, 540, 420);
 
     // Student Card Box
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+    const profY = 480;
+    const profH = 260;
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
     ctx.lineWidth = 2;
-    drawRoundRect(ctx, 80, 610, 920, 320, 36, true, true);
+    drawRoundRect(ctx, 80, profY, 920, profH, 32, true, true);
 
     ctx.fillStyle = '#94a3b8';
-    ctx.font = 'bold 22px sans-serif';
-    ctx.fillText('PEJUANG PTN TERBAIK', 540, 675);
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillText('PEJUANG PTN TERBAIK', 540, profY + 50);
 
+    // Name Auto Fit
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 52px sans-serif';
-    ctx.fillText(studentName, 540, 750);
+    let nameFont = 44;
+    ctx.font = '900 ' + nameFont + 'px sans-serif';
+    while (ctx.measureText(studentName).width > 840 && nameFont > 28) {
+      nameFont -= 2;
+      ctx.font = '900 ' + nameFont + 'px sans-serif';
+    }
+    ctx.fillText(studentName, 540, profY + 115);
 
     ctx.fillStyle = '#38bdf8';
-    ctx.font = 'bold 28px sans-serif';
-    ctx.fillText(`🎯 Target: ${ptn}`, 540, 810);
+    ctx.font = 'bold 24px sans-serif';
+    ctx.fillText(`🎯 Target: ${ptn}`, 540, profY + 165);
 
     ctx.fillStyle = '#64748b';
-    ctx.font = 'bold 20px sans-serif';
-    ctx.fillText(`Tercatat pada: ${dateStr}`, 540, 875);
+    ctx.font = 'bold 18px sans-serif';
+    ctx.fillText(`Tercatat pada: ${dateStr}`, 540, profY + 215);
 
     // Big XP Showcase Box
-    ctx.fillStyle = 'rgba(30, 27, 75, 0.8)';
+    const xpY = 770;
+    const xpH = 380;
+    ctx.fillStyle = 'rgba(30, 27, 75, 0.85)';
     ctx.strokeStyle = '#fbbf24';
     ctx.lineWidth = 3;
-    drawRoundRect(ctx, 80, 970, 920, 360, 36, true, true);
+    drawRoundRect(ctx, 80, xpY, 920, xpH, 36, true, true);
 
     ctx.fillStyle = '#fbbf24';
-    ctx.font = 'bold 26px sans-serif';
-    ctx.fillText('TOTAL PEROLEHAN PENGALAMAN (XP)', 540, 1050);
+    ctx.font = 'bold 24px sans-serif';
+    ctx.fillText('TOTAL PEROLEHAN PENGALAMAN (XP)', 540, xpY + 60);
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 130px sans-serif';
-    ctx.fillText(`${xp}`, 540, 1200);
+    ctx.font = '900 140px sans-serif';
+    ctx.fillText(`${xp}`, 540, xpY + 215);
 
     ctx.fillStyle = '#e2e8f0';
-    ctx.font = 'bold 24px sans-serif';
-    ctx.fillText('⚡ XP dikumpulkan dari Try Out Resmi & Drill Bank Soal INTEN', 540, 1275);
+    ctx.font = 'bold 22px sans-serif';
+    ctx.fillText('⚡ XP dikumpulkan dari Try Out Resmi & Drill Bank Soal INTEN', 540, xpY + 295);
 
     // Challenge Callout Box
+    const chalY = 1180;
+    const chalH = 260;
     ctx.fillStyle = 'rgba(245, 158, 11, 0.15)';
     ctx.strokeStyle = '#f59e0b';
     ctx.lineWidth = 2;
-    drawRoundRect(ctx, 80, 1370, 920, 240, 32, true, true);
+    drawRoundRect(ctx, 80, chalY, 920, chalH, 32, true, true);
 
     ctx.fillStyle = '#fbbf24';
-    ctx.font = '900 32px sans-serif';
-    ctx.fillText('⚔️ TANTANGAN UNTUK TEMAN SEKELAS:', 540, 1440);
+    ctx.font = '900 30px sans-serif';
+    ctx.fillText('⚔️ TANTANGAN ADU SKOR TEMAN SEKELAS', 540, chalY + 65);
 
     ctx.fillStyle = '#f8fafc';
-    ctx.font = 'bold 26px sans-serif';
-    ctx.fillText('Apakah kamu berani tandingi peringkat & skor ini?', 540, 1500);
-    ctx.fillText('Uji kemampuanmu di simulasi UTBK SNBT terlengkap!', 540, 1545);
+    ctx.font = 'bold 24px sans-serif';
+    ctx.fillText('Apakah kamu berani tandingi peringkat & skor ini?', 540, chalY + 120);
+    ctx.fillText('Buktikan kemampuanmu di simulasi UTBK SNBT nasional!', 540, chalY + 165);
 
-    // Footer
-    const footerY = 1660;
-    ctx.fillStyle = '#4f46e5';
-    drawRoundRect(ctx, 80, footerY, 920, 180, 36, true, false);
+    // Footer with QR Code
+    const footY = 1475;
+    const footH = 290;
+    const footGrad = ctx.createLinearGradient(80, footY, 1000, footY + footH);
+    footGrad.addColorStop(0, '#111827');
+    footGrad.addColorStop(1, '#0f172a');
+    ctx.fillStyle = footGrad;
+    ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
+    ctx.lineWidth = 2;
+    drawRoundRect(ctx, 80, footY, 920, footH, 32, true, true);
+
+    // Stylized QR
+    drawStylizedQr(ctx, 130, footY + 45, 190);
+
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#fbbf24';
+    ctx.font = '900 20px sans-serif';
+    ctx.fillText('🏆 GABUNG LEADERBOARD NASIONAL', 370, footY + 85);
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 24px sans-serif';
-    ctx.fillText('GABUNG KOMPETISI PERINGKAT NASIONAL GRATIS DI:', 540, footerY + 65);
-    ctx.font = '900 36px sans-serif';
-    ctx.fillText('👉 https://tembusptn.my.id', 540, footerY + 125);
+    ctx.font = '900 42px sans-serif';
+    ctx.fillText('tembusptn.my.id', 370, footY + 140);
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillText('Simulasi CBT & Bank Soal 100% Gratis!', 370, footY + 185);
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+    drawRoundRect(ctx, 370, footY + 205, 300, 36, 18, true, false);
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 15px sans-serif';
+    ctx.fillText('⚡ Scan QR / Buka di Browser HP', 388, footY + 230);
 
     return canvas;
   }

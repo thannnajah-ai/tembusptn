@@ -1,5 +1,5 @@
 // Service Worker for TembusPTN PWA
-const CACHE_NAME = 'tembusptn-shell-v1';
+const CACHE_NAME = 'tembusptn-shell-v2';
 const CORE_ASSETS = [
   '/',
   '/index.html',
