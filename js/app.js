@@ -1152,7 +1152,10 @@ function renderDrillSubtestPills(activeFilter) {
     else if (f.id === "lit_indo") shortTitle = "Lit. Indo";
     else if (f.id === "lit_ing") shortTitle = "Lit. Inggris";
     else if (f.id === "pm") shortTitle = "Pen. Mat";
-    else if (f.id === "tka_mat") shortTitle = "TKA Mat";
+    else if (f.id === "tka_mat_wajib") shortTitle = "TKA Mat Wajib";
+    else if (f.id === "tka_bind_wajib") shortTitle = "TKA Indo Wajib";
+    else if (f.id === "tka_bing_wajib") shortTitle = "TKA Ing Wajib";
+    else if (f.id === "tka_mat") shortTitle = "TKA Mat Saintek";
     else if (f.id === "tka_fis") shortTitle = "TKA Fisika";
     else if (f.id === "tka_kim") shortTitle = "TKA Kimia";
     else if (f.id === "tka_bio") shortTitle = "TKA Biologi";
@@ -1160,6 +1163,12 @@ function renderDrillSubtestPills(activeFilter) {
     else if (f.id === "tka_geo") shortTitle = "TKA Geo";
     else if (f.id === "tka_sej") shortTitle = "TKA Sejarah";
     else if (f.id === "tka_sos") shortTitle = "TKA Sosiologi";
+    else if (f.id === "tka_ppkn") shortTitle = "TKA PPKn";
+    else if (f.id === "tka_ant") shortTitle = "TKA Antropologi";
+    else if (f.id === "tka_bind_lanjut") shortTitle = "TKA Indo Lanjut";
+    else if (f.id === "tka_bing_lanjut") shortTitle = "TKA Ing Lanjut";
+    else if (f.id === "tka_bahasa_asing") shortTitle = "TKA B. Asing";
+    else if (f.id === "tka_smk") shortTitle = "TKA SMK";
     else shortTitle = f.name;
 
     return `
@@ -2387,8 +2396,10 @@ function renderBankSoal(resetLimit = true) {
       matchSource = sLower.includes("nurul fikri") || sLower.includes("(nf)");
     } else if (sourceVal === "zenius") {
       matchSource = sLower.includes("zenius");
+    } else if (sourceVal === "tka_resmi") {
+      matchSource = sLower.includes("tka") || sLower.includes("kemendikdasmen") || sLower.includes("pusmendik");
     } else if (sourceVal === "resmi") {
-      matchSource = !isBimbelId && (sLower.includes("snbt") || sLower.includes("bppp") || sLower.includes("sbmptn") || !q.source);
+      matchSource = !isBimbelId && (sLower.includes("snbt") || sLower.includes("bppp") || sLower.includes("sbmptn") || sLower.includes("tka") || sLower.includes("kemendikdasmen") || !q.source);
     }
 
     const matchSearch = !searchVal || 

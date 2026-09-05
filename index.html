@@ -448,17 +448,32 @@
               <option value="lit_ing">Literasi Bahasa Inggris</option>
               <option value="pm">Penalaran Matematika (PM)</option>
             </optgroup>
-            <optgroup label="── TKA Saintek ──">
-              <option value="tka_mat">📐 TKA Matematika Saintek</option>
+            <optgroup label="── TKA Wajib (Kemendikdasmen) ──">
+              <option value="tka_mat_wajib">🔢 TKA Matematika Wajib</option>
+              <option value="tka_bind_wajib">📚 TKA Bahasa Indonesia Wajib</option>
+              <option value="tka_bing_wajib">🌐 TKA Bahasa Inggris Wajib</option>
+            </optgroup>
+            <optgroup label="── TKA Saintek (Kemendikdasmen) ──">
+              <option value="tka_mat">📐 TKA Matematika Saintek / Lanjut</option>
               <option value="tka_fis">⚡ TKA Fisika</option>
               <option value="tka_kim">🧪 TKA Kimia</option>
               <option value="tka_bio">🧬 TKA Biologi</option>
             </optgroup>
-            <optgroup label="── TKA Soshum ──">
+            <optgroup label="── TKA Soshum (Kemendikdasmen) ──">
               <option value="tka_eko">📈 TKA Ekonomi</option>
               <option value="tka_geo">🌋 TKA Geografi</option>
               <option value="tka_sej">🏛️ TKA Sejarah</option>
               <option value="tka_sos">👥 TKA Sosiologi</option>
+              <option value="tka_ppkn">⚖️ TKA PPKn</option>
+              <option value="tka_ant">🏺 TKA Antropologi</option>
+            </optgroup>
+            <optgroup label="── TKA Bahasa (Kemendikdasmen) ──">
+              <option value="tka_bind_lanjut">📖 TKA B. Indo Tingkat Lanjut</option>
+              <option value="tka_bing_lanjut">🗣️ TKA B. Inggris Tingkat Lanjut</option>
+              <option value="tka_bahasa_asing">🌍 TKA Bahasa Asing (6 Bahasa)</option>
+            </optgroup>
+            <optgroup label="── TKA Kejuruan SMK (Kemendikdasmen) ──">
+              <option value="tka_smk">🛠️ TKA Kejuruan (SMK)</option>
             </optgroup>
           </select>
         </div>
@@ -467,6 +482,7 @@
           <label class="block text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 truncate">Sumber / Bimbel</label>
           <select id="bank-filter-source" onchange="renderBankSoal()" class="w-full text-xs p-2 sm:p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none focus:border-indigo-500">
             <option value="all">Semua Sumber (Resmi & Bimbel)</option>
+            <option value="tka_resmi">🏛️ TKA Kemendikdasmen 2026 (Resmi)</option>
             <option value="bimbel_all">📚 Koleksi Bimbel (1.000 Soal)</option>
             <option value="inten">🔴 Prosus INTEN</option>
             <option value="go">🟡 Ganesha Operation (GO)</option>
