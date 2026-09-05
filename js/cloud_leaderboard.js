@@ -17,6 +17,94 @@
   /**
    * Mengirim update profil & progres XP pengguna saat ini ke Cloud Database
    * @param {Object} user - Objek akun pengguna (id, name, username)
+  /**
+   * Menerapkan data profil otoritatif dari server ke local storage & UI browser
+   */
+  function applyServerUserData(userId, serverUser) {
+    if (!serverUser) return;
+
+    // 1. Update ke multi-user registry (utbk_users_registry)
+    if (typeof window.getAllUsers === "function" && typeof window.saveAllUsers === "function") {
+      const users = window.getAllUsers();
+      if (users && users[userId]) {
+        if (!users[userId].profile) users[userId].profile = {};
+        if (typeof serverUser.xp === "number") {
+          users[userId].profile.xp = serverUser.xp;
+          if (serverUser.xp === 0) {
+            users[userId].profile.xpHistory = [];
+          } else if (Array.isArray(serverUser.xpHistory)) {
+            users[userId].profile.xpHistory = serverUser.xpHistory;
+          }
+        }
+        if (serverUser.streak !== undefined) users[userId].profile.streak = serverUser.streak;
+        if (serverUser.highestScore !== undefined) users[userId].profile.highestScore = serverUser.highestScore;
+        window.saveAllUsers(users);
+      }
+    }
+
+    // 2. Update ke single-user legacy storage (utbk_user_profile) jika akun ini sedang aktif
+    const activeId = typeof window.getActiveUserId === "function" ? window.getActiveUserId() : null;
+    if (!activeId || activeId === userId) {
+      try {
+        const raw = localStorage.getItem("utbk_user_profile");
+        if (raw) {
+          const p = JSON.parse(raw);
+          if (typeof serverUser.xp === "number") {
+            p.xp = serverUser.xp;
+            if (serverUser.xp === 0) {
+              p.xpHistory = [];
+            } else if (Array.isArray(serverUser.xpHistory)) {
+              p.xpHistory = serverUser.xpHistory;
+            }
+          }
+          if (serverUser.streak !== undefined) p.streak = serverUser.streak;
+          if (serverUser.highestScore !== undefined) p.highestScore = serverUser.highestScore;
+          localStorage.setItem("utbk_user_profile", JSON.stringify(p));
+        }
+      } catch (e) {}
+
+      // 3. Render ulang komponen antarmuka yang relevan seketika
+      if (typeof window.renderHeaderStats === "function") {
+        try { window.renderHeaderStats(); } catch(e) {}
+      }
+      if (typeof window.renderProfileView === "function") {
+        try { window.renderProfileView(); } catch(e) {}
+      }
+      if (typeof window.renderUserProfile === "function") {
+        try { window.renderUserProfile(); } catch(e) {}
+      }
+      if (typeof window.renderDashboard === "function") {
+        try { window.renderDashboard(); } catch(e) {}
+      }
+    }
+  }
+
+  /**
+   * Menangani pembersihan sesi lokal jika akun telah dihapus permanen oleh Admin
+   */
+  function handleUserDeletedByAdmin(userId) {
+    if (typeof window.getAllUsers === "function" && typeof window.saveAllUsers === "function") {
+      const users = window.getAllUsers();
+      if (users && users[userId]) {
+        delete users[userId];
+        window.saveAllUsers(users);
+      }
+    }
+    const activeId = typeof window.getActiveUserId === "function" ? window.getActiveUserId() : null;
+    if (!activeId || activeId === userId) {
+      localStorage.removeItem("utbk_active_user_id");
+      localStorage.removeItem("utbk_user_profile");
+      if (typeof window.onUserSessionChanged === "function") {
+        window.onUserSessionChanged();
+      } else {
+        location.reload();
+      }
+    }
+  }
+
+  /**
+   * Mengirim update profil & progres XP pengguna saat ini ke Cloud Database
+   * @param {Object} user - Objek akun pengguna (id, name, username)
    * @param {Object} profile - Objek profil pengguna (xp, streak, targetMajorName, avatar, xpHistory, dll.)
    * @param {boolean} immediate - Jika true, kirim seketika tanpa debounce
    */
@@ -31,6 +119,12 @@
     const doSync = async () => {
       try {
         isSyncing = true;
+        const lastEarnedAt = profile.lastEarnedAt || (
+          Array.isArray(profile.xpHistory) && profile.xpHistory.length > 0
+            ? (profile.xpHistory[profile.xpHistory.length - 1].timestamp || 0)
+            : 0
+        );
+
         const payload = {
           id: user.id,
           name: user.name || profile.name || "Pejuang PTN",
@@ -42,6 +136,7 @@
           streak: profile.streak || 0,
           highestScore: profile.highestScore || 0,
           xpHistory: Array.isArray(profile.xpHistory) ? profile.xpHistory.slice(-50) : [],
+          lastEarnedAt: lastEarnedAt,
           timestamp: Date.now()
         };
 
@@ -54,11 +149,30 @@
         });
 
         if (response.ok) {
+          const json = await response.json();
+          const serverUser = json && (json.user || json.authoritativeUser);
+
+          // Rekonsiliasi dua arah: Jika cloud memiliki nilai XP otoritatif (misal diubah oleh admin atau reset)
+          if (serverUser && typeof serverUser.xp === "number" && serverUser.xp !== profile.xp) {
+            console.log(`[CloudLeaderboard] Rekonsiliasi XP dari Cloud: lokal=${profile.xp}, cloud=${serverUser.xp}`);
+            applyServerUserData(user.id, serverUser);
+          }
+
           localStorage.setItem(LAST_SYNC_KEY, Date.now().toString());
           // Update cache lokal pengguna juga
           const cachedUsers = getLocalCachedUsers();
-          cachedUsers[user.id] = payload;
+          cachedUsers[user.id] = serverUser || payload;
           setLocalCachedUsers(cachedUsers);
+          return { success: true, user: serverUser || payload };
+        } else if (response.status === 403 || response.status === 404) {
+          try {
+            const errJson = await response.json();
+            if (errJson && (errJson.deleted || errJson.code === "USER_DELETED_BY_ADMIN")) {
+              console.warn("[CloudLeaderboard] Pengguna telah dihapus oleh Admin. Menghapus sesi lokal...");
+              handleUserDeletedByAdmin(user.id);
+              return { success: false, deleted: true };
+            }
+          } catch(e) {}
         }
       } catch (err) {
         // Mode offline atau server belum siap: simpan ke antrian cache lokal
@@ -84,9 +198,10 @@
    */
   async function fetchGlobalLeaderboard(period = 'hari', forceRefresh = false) {
     const activeUser = typeof window.getCurrentUser === "function" ? window.getCurrentUser() : null;
+    const activeId = activeUser ? activeUser.id : "";
 
     try {
-      const url = `${API_ENDPOINT}?period=${encodeURIComponent(period)}&_t=${Date.now()}`;
+      const url = `${API_ENDPOINT}?period=${encodeURIComponent(period)}&userId=${encodeURIComponent(activeId)}&_t=${Date.now()}`;
       const response = await fetch(url, {
         method: "GET",
         headers: {
@@ -96,11 +211,33 @@
 
       if (response.ok) {
         const json = await response.json();
+
+        // Rekonsiliasi instan akun aktif dari currentUserState yang dikembalikan server
+        if (json && json.currentUserState && activeUser) {
+          const cloudMe = json.currentUserState;
+          const currentLocalProf = typeof window.getUserProfile === "function" ? window.getUserProfile() : (activeUser.profile || {});
+          if (typeof cloudMe.xp === "number" && cloudMe.xp !== currentLocalProf.xp) {
+            console.log(`[CloudLeaderboard] Rekonsiliasi status pengguna aktif via currentUserState: lokal=${currentLocalProf.xp}, cloud=${cloudMe.xp}`);
+            applyServerUserData(activeUser.id, cloudMe);
+          }
+        }
+
         if (json && Array.isArray(json.data)) {
           // Syarat leaderboard: Hanya masukkan pengguna dengan XP > 0
           let list = json.data.filter(item => (item.xp || 0) > 0);
           list.sort((a, b) => b.xp - a.xp);
           list.forEach((item, idx) => { item.rank = idx + 1; });
+
+          // Cek jika akun aktif ada di daftar leaderboard dan XP berbeda
+          if (activeUser) {
+            const foundMe = list.find(item => item.id === activeUser.id);
+            if (foundMe) {
+              const currentLocalProf = typeof window.getUserProfile === "function" ? window.getUserProfile() : (activeUser.profile || {});
+              if (typeof foundMe.xp === "number" && foundMe.xp !== currentLocalProf.xp) {
+                applyServerUserData(activeUser.id, foundMe);
+              }
+            }
+          }
 
           // Simpan ke cache browser untuk offline-first resilience
           try {
@@ -271,6 +408,8 @@
   // Export ke Window Global
   window.CloudLeaderboard = {
     syncUserToCloud,
+    applyServerUserData,
+    handleUserDeletedByAdmin,
     fetchGlobalLeaderboard,
     checkAvailability,
     resetCloudLeaderboard,

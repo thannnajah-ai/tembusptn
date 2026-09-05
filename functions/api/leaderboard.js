@@ -179,11 +179,16 @@ export async function onRequestGet(context) {
       item.rank = idx + 1;
     });
 
+    // Parameter opsional userId untuk mengembalikan status terkini pengguna aktif
+    const requestUserId = url.searchParams.get("userId");
+    const currentUserState = requestUserId && users[requestUserId] ? users[requestUserId] : null;
+
     return new Response(JSON.stringify({
       status: "success",
       period,
       totalUsers: eligibleList.length,
       data: eligibleList,
+      currentUserState,
       timestamp: now
     }), {
       status: 200,
@@ -244,7 +249,6 @@ export async function onRequestPost(context) {
 
     // Ambil registry user saat ini untuk cek validasi duplikasi
     let currentUsers = {};
-    const kv = context.env && (context.env.LEADERBOARD_KV || context.env.KV_LEADERBOARD || context.env.TEMBUSPTN_KV);
     if (kv) {
       currentUsers = (await kv.get("global_users_registry", { type: "json" })) || {};
     } else if (context.env && context.env.DB) {
@@ -263,20 +267,84 @@ export async function onRequestPost(context) {
       currentUsers = memoryRegistry;
     }
 
+    // Cek apakah akun ada di daftar terhapus oleh Admin
+    let deletedUsers = {};
+    if (kv) {
+      try {
+        deletedUsers = (await kv.get("global_deleted_users_registry", { type: "json" })) || {};
+      } catch(e) {}
+    }
+    if (deletedUsers[userId]) {
+      return new Response(JSON.stringify({
+        status: "error",
+        code: "USER_DELETED_BY_ADMIN",
+        message: "Akun ini telah dihapus oleh Admin.",
+        deleted: true
+      }), {
+        status: 403,
+        headers: CORS_HEADERS
+      });
+    }
+
+    // Cek apakah ada reset global dari admin
+    let resetMeta = null;
+    if (kv) {
+      try {
+        resetMeta = await kv.get("global_reset_meta", { type: "json" });
+      } catch(e) {}
+    }
+
+    const existingUser = currentUsers[userId];
+    let finalXp = Math.max(0, parseInt(body.xp, 10) || 0);
+    let finalXpHistory = Array.isArray(body.xpHistory) ? body.xpHistory.slice(-50) : [];
+    let adminOverridden = false;
+
+    const clientEarnedAt = parseInt(body.lastEarnedAt, 10) || 0;
+
+    if (resetMeta && resetMeta.resetAt && clientEarnedAt <= resetMeta.resetAt) {
+      // Pengguna terkena dampak Reset All oleh Admin
+      finalXp = 0;
+      finalXpHistory = [];
+      adminOverridden = true;
+    } else if (existingUser) {
+      if (existingUser.adminModified && existingUser.adminModifiedAt) {
+        // Jika client belum menghasilkan XP baru secara riil setelah Admin mengubah XP:
+        if (clientEarnedAt <= existingUser.adminModifiedAt) {
+          finalXp = Math.max(0, parseInt(existingUser.xp, 10) || 0);
+          if (finalXp === 0) {
+            finalXpHistory = [];
+          } else {
+            finalXpHistory = existingUser.xpHistory || [];
+          }
+          adminOverridden = true;
+        } else {
+          // Client sah memperoleh XP baru setelah diubah oleh Admin
+          delete existingUser.adminModified;
+        }
+      } else if ((existingUser.xp || 0) > finalXp && !body.forceReset) {
+        // Cloud memiliki XP lebih tinggi (perlindungan progres antar-perangkat)
+        finalXp = existingUser.xp;
+        finalXpHistory = existingUser.xpHistory || finalXpHistory;
+        adminOverridden = true;
+      }
+    }
+
     const cleanName = String(body.name || "Pejuang PTN").trim().slice(0, 50);
 
     const userData = {
       id: userId,
-      name: String(body.name || "Pejuang PTN").slice(0, 50),
+      name: cleanName,
       username: cleanUsername,
       email: cleanEmail,
-      avatar: body.avatar || "👨‍🎓",
-      targetMajorName: String(body.targetMajorName || "Target PTN Belum Dipilih").slice(0, 80),
-      xp: Math.max(0, parseInt(body.xp, 10) || 0),
-      streak: Math.max(0, parseInt(body.streak, 10) || 0),
-      highestScore: Math.max(0, parseInt(body.highestScore, 10) || 0),
-      xpHistory: Array.isArray(body.xpHistory) ? body.xpHistory.slice(-50) : [],
-      lastUpdated: now
+      avatar: body.avatar || (existingUser && existingUser.avatar) || "👨‍🎓",
+      targetMajorName: String(body.targetMajorName || (existingUser && existingUser.targetMajorName) || "Target PTN Belum Dipilih").slice(0, 80),
+      xp: finalXp,
+      streak: Math.max(0, parseInt(body.streak, 10) || (existingUser && existingUser.streak) || 0),
+      highestScore: Math.max(0, parseInt(body.highestScore, 10) || (existingUser && existingUser.highestScore) || 0),
+      xpHistory: finalXpHistory,
+      lastUpdated: now,
+      adminModified: existingUser && existingUser.adminModified ? true : false,
+      adminModifiedAt: existingUser ? existingUser.adminModifiedAt : undefined
     };
 
     // 1. Simpan ke Cloudflare KV jika tersedia
@@ -304,8 +372,10 @@ export async function onRequestPost(context) {
 
     return new Response(JSON.stringify({
       status: "success",
-      message: "Data pengguna berhasil disinkronisasi ke cloud",
-      user: userData
+      message: adminOverridden ? "Data pengguna disinkronkan dengan otoritas cloud" : "Data pengguna berhasil disinkronisasi ke cloud",
+      user: userData,
+      authoritativeUser: userData,
+      adminOverridden
     }), {
       status: 200,
       headers: CORS_HEADERS

@@ -3139,6 +3139,7 @@ async function renderLeaderboard(forceRefresh = false) {
     if (activeUser && prof && typeof window.CloudLeaderboard !== "undefined" && typeof window.CloudLeaderboard.syncUserToCloud === "function") {
       try {
         await window.CloudLeaderboard.syncUserToCloud(activeUser, prof, true);
+        renderHeaderStats();
       } catch (err) {
         console.warn("Auto-sync prior to leaderboard render warning:", err);
       }

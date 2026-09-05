@@ -92,6 +92,14 @@ export async function onRequestPost(context) {
       delete users[targetId];
       if (kv) await kv.put("global_users_registry", JSON.stringify(users));
     }
+    // Catat ke deleted registry agar browser client yang refresh tidak meregenerasi akun
+    if (kv) {
+      try {
+        let deletedRegistry = (await kv.get("global_deleted_users_registry", { type: "json" })) || {};
+        deletedRegistry[targetId] = { deletedAt: Date.now(), reason: "admin_delete" };
+        await kv.put("global_deleted_users_registry", JSON.stringify(deletedRegistry));
+      } catch(e) {}
+    }
     return new Response(JSON.stringify({
       status: "success",
       message: deletedUser ? `Pengguna "${deletedUser.name}" (${targetId}) berhasil dihapus.` : `Pengguna ID ${targetId} telah dihapus.`,
@@ -105,7 +113,11 @@ export async function onRequestPost(context) {
 
   if (action === "reset_all") {
     if (kv) {
-      try { await kv.put("global_users_registry", JSON.stringify({})); } catch(e) {}
+      try {
+        await kv.put("global_users_registry", JSON.stringify({}));
+        await kv.put("global_deleted_users_registry", JSON.stringify({}));
+        await kv.put("global_reset_meta", JSON.stringify({ resetAt: Date.now() }));
+      } catch(e) {}
     }
     return new Response(JSON.stringify({
       status: "success",
@@ -123,6 +135,12 @@ export async function onRequestPost(context) {
     const newXp = Math.max(0, parseInt(url.searchParams.get("xp"), 10) || 0);
     if (users[targetId]) {
       users[targetId].xp = newXp;
+      users[targetId].adminModified = true;
+      users[targetId].adminModifiedAt = Date.now();
+      users[targetId].adminXp = newXp;
+      if (newXp === 0) {
+        users[targetId].xpHistory = [];
+      }
       users[targetId].lastUpdated = Date.now();
       if (kv) await kv.put("global_users_registry", JSON.stringify(users));
       return new Response(JSON.stringify({

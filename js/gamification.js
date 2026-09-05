@@ -576,6 +576,7 @@ function addXp(amount, reason = "Latihan Soal") {
   const profile = getUserProfile();
   const oldLevel = Math.floor((profile.xp || 0) / 150) + 1;
   profile.xp = (profile.xp || 0) + amount;
+  profile.lastEarnedAt = Date.now();
   const newLevel = Math.floor(profile.xp / 150) + 1;
 
   // Catat riwayat perolehan XP berdasarkan timestamp
