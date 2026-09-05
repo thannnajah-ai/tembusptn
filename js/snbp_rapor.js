@@ -7,26 +7,29 @@
 // 1. DAFTAR MATA PELAJARAN TUNGGAL SMA/MA KURIKULUM MERDEKA
 // Satu daftar lengkap untuk seluruh SMA (tidak dipisah-pisah kelompok)
 const UNIFIED_SMA_SUBJECTS = [
-  "Pendidikan Agama dan Budi Pekerti",
   "Pendidikan Pancasila",
   "Bahasa Indonesia",
-  "Matematika",
   "Bahasa Inggris",
-  "Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)",
-  "Sejarah",
-  "Seni Budaya",
+  "Matematika",
   "Biologi",
   "Kimia",
   "Fisika",
-  "Informatika",
   "Sosiologi",
   "Ekonomi",
   "Geografi",
   "Antropologi",
-  "Bahasa Indonesia Tingkat Lanjut",
-  "Bahasa Inggris Tingkat Lanjut",
-  "Matematika Tingkat Lanjut",
-  "Prakarya dan Kewirausahaan (PKWU)",
+  "PJOK (Pendidikan Jasmani, Olahraga, dan Kesehatan)",
+  "Informatika",
+  "Sejarah",
+  "Prakarya dan Kewirausahaan",
+  "B. Inggris Tk. Lanjut",
+  "MTK Tk. Lanjut",
+  "B. Indonesia Tk. Lanjut",
+  "Seni Budaya",
+  "PA. Islam (Pendidikan Agama Islam)",
+  "PA. Kristen (Pendidikan Agama Kristen)",
+  "PA. Katolik (Pendidikan Agama Katolik)",
+  "Pendidikan Agama & Budi Pekerti",
   "Muatan Lokal / Bahasa Daerah"
 ];
 
@@ -247,7 +250,18 @@ function calculateSupportingSubjectsAvg(grades, supportingSubjs) {
   let sum = 0;
   let count = 0;
   supportingSubjs.forEach(sName => {
-    const row = grades.find(g => (g.subject || "").toLowerCase().includes(sName.toLowerCase()) || sName.toLowerCase().includes((g.subject || "").toLowerCase()));
+    const sLower = sName.toLowerCase();
+    const row = grades.find(g => {
+      const gLower = (g.subject || "").toLowerCase();
+      if (gLower.includes(sLower) || sLower.includes(gLower)) return true;
+      if (sLower.includes("matematika") && (gLower.includes("mtk") || gLower.includes("matematika"))) return true;
+      if (sLower.includes("inggris") && (gLower.includes("inggris") || gLower.includes("b. ing"))) return true;
+      if (sLower.includes("indonesia") && (gLower.includes("indonesia") || gLower.includes("b. indo"))) return true;
+      if ((sLower.includes("pkwu") || sLower.includes("prakarya")) && (gLower.includes("pkwu") || gLower.includes("prakarya"))) return true;
+      if (sLower.includes("pjok") && (gLower.includes("jasmani") || gLower.includes("pjok") || gLower.includes("olahraga"))) return true;
+      if (sLower.includes("agama") && (gLower.includes("agama") || gLower.includes("pa."))) return true;
+      return false;
+    });
     if (row) {
       const avg = calculateSubjectRowAvg(row);
       if (avg > 0) {
