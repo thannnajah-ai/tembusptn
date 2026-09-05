@@ -79,20 +79,6 @@ async function resetAllUsers() {
   return { success: true, message: "Seluruh data user dan leaderboard berhasil di-reset menjadi kosong (0 user)!" };
 }
 
-// Auto-purge global reset epoch: Memastikan SEMUA perangkat & tab otomatis reset ke kondisi bersih
-(function autoPurgeAllUsersOnResetRequest() {
-  try {
-    if (typeof localStorage === 'undefined') return;
-    const RESET_VERSION = "tembusptn_reset_epoch_2026_09_05_clean";
-    if (!localStorage.getItem(RESET_VERSION)) {
-      resetAllUsersData();
-      localStorage.setItem(RESET_VERSION, "true");
-      if (typeof fetch === 'function') {
-        fetch("/api/leaderboard?action=reset", { method: "POST" }).catch(() => {});
-      }
-    }
-  } catch(e) {}
-})();
 
 // Bersihkan demo bot lama satu kali saja jika masih ada, TANPA menghapus akun user riil
 (function purgeLegacyDemoUsers() {
@@ -211,22 +197,6 @@ function checkCredentialsAvailableLocal(username, email, name = null, excludeUse
   const users = getAllUsers();
   const userList = Object.values(users);
 
-  // 1. Cek duplikasi Nama Lengkap di registry lokal
-  if (cleanName) {
-    const existingName = userList.find(u => 
-      u.id !== excludeUserId && (
-        (u.name && u.name.trim().toLowerCase() === cleanName) ||
-        (u.profile && u.profile.name && u.profile.name.trim().toLowerCase() === cleanName)
-      )
-    );
-    if (existingName) {
-      return {
-        success: false,
-        field: "name",
-        message: `Nama lengkap "${(name || '').trim()}" sudah terdaftar! Silakan gunakan nama lengkap lain.`
-      };
-    }
-  }
 
   // 2. Cek duplikasi email di registry lokal
   if (cleanEmail) {

@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const activeUser = getCurrentUser();
     const prof = getUserProfile();
     if (activeUser && typeof window.CloudLeaderboard !== "undefined" && typeof window.CloudLeaderboard.syncUserToCloud === "function") {
-      window.CloudLeaderboard.syncUserToCloud(activeUser, prof, false);
+      window.CloudLeaderboard.syncUserToCloud(activeUser, prof, true);
     }
   }
 
@@ -3111,6 +3111,19 @@ async function renderLeaderboard(forceRefresh = false) {
         <div class="h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl"></div>
       </div>
     `;
+  }
+
+  // Sinkronisasi data user aktif ke Cloud sebelum fetch agar score terupdate instan
+  if (typeof isUserLoggedIn === "function" && isUserLoggedIn() && typeof getCurrentUser === "function" && typeof getUserProfile === "function") {
+    const activeUser = getCurrentUser();
+    const prof = getUserProfile();
+    if (activeUser && prof && typeof window.CloudLeaderboard !== "undefined" && typeof window.CloudLeaderboard.syncUserToCloud === "function") {
+      try {
+        await window.CloudLeaderboard.syncUserToCloud(activeUser, prof, true);
+      } catch (err) {
+        console.warn("Auto-sync prior to leaderboard render warning:", err);
+      }
+    }
   }
 
   // Ambil data dari CloudLeaderboard

@@ -77,20 +77,15 @@ export default {
           // Cek ketersediaan kredensial (Realtime duplicate check: Nama, Username, Email)
           const checkMode = url.searchParams.get("check");
           if (checkMode === "availability" || checkMode === "1") {
-            const checkName = (url.searchParams.get("name") || "").trim().toLowerCase();
             const checkUsername = (url.searchParams.get("username") || "").trim().toLowerCase();
             const checkEmail = (url.searchParams.get("email") || "").trim().toLowerCase();
             const excludeId = url.searchParams.get("exclude") || "";
 
-            let nameAvailable = true;
             let usernameAvailable = true;
             let emailAvailable = true;
 
             for (const u of Object.values(users)) {
               if (excludeId && u.id === excludeId) continue;
-              if (checkName && u.name && u.name.trim().toLowerCase() === checkName) {
-                nameAvailable = false;
-              }
               if (checkEmail && u.email && u.email.toLowerCase() === checkEmail) {
                 emailAvailable = false;
               }
@@ -101,10 +96,7 @@ export default {
 
             let message = "Kredensial tersedia";
             let conflictField = null;
-            if (!nameAvailable) {
-              conflictField = "name";
-              message = `Nama lengkap "${url.searchParams.get("name")}" sudah terdaftar! Silakan gunakan nama lain.`;
-            } else if (!emailAvailable) {
+            if (!emailAvailable) {
               conflictField = "email";
               message = `Email "${checkEmail}" sudah terdaftar! Silakan gunakan email lain atau langsung Masuk.`;
             } else if (!usernameAvailable) {
@@ -112,11 +104,11 @@ export default {
               message = `Username "@${checkUsername}" sudah digunakan! Silakan pilih username yang lain.`;
             }
 
-            const isAvailable = nameAvailable && usernameAvailable && emailAvailable;
+            const isAvailable = usernameAvailable && emailAvailable;
             return new Response(JSON.stringify({
               status: isAvailable ? "success" : "conflict",
               available: isAvailable,
-              nameAvailable,
+              nameAvailable: true,
               usernameAvailable,
               emailAvailable,
               field: conflictField,
@@ -147,7 +139,9 @@ export default {
                   return t >= cutoff;
                 })
                 .reduce((acc, cur) => acc + (cur.amount || 0), 0);
-              periodXp = Math.min(u.xp || 0, sum);
+              if (sum > 0) {
+                periodXp = Math.min(u.xp || 0, sum);
+              }
             }
 
             return {
@@ -219,45 +213,6 @@ export default {
             } catch(e) {}
           } else {
             currentUsers = memoryRegistry;
-          }
-
-          // Validasi Anti-Duplikasi Nama Lengkap, Email & Username
-          for (const [existingId, existingUser] of Object.entries(currentUsers)) {
-            if (existingId !== userId) {
-              if (cleanName && existingUser.name && existingUser.name.trim().toLowerCase() === cleanName.toLowerCase()) {
-                return new Response(JSON.stringify({
-                  status: "error",
-                  code: "DUPLICATE_NAME",
-                  field: "name",
-                  message: `Nama lengkap "${cleanName}" sudah terdaftar! Silakan gunakan nama lengkap lain.`
-                }), {
-                  status: 409,
-                  headers: CORS_HEADERS
-                });
-              }
-              if (cleanEmail && existingUser.email && existingUser.email.toLowerCase() === cleanEmail) {
-                return new Response(JSON.stringify({
-                  status: "error",
-                  code: "DUPLICATE_EMAIL",
-                  field: "email",
-                  message: `Email "${cleanEmail}" sudah terdaftar! Silakan gunakan email lain atau langsung Masuk.`
-                }), {
-                  status: 409,
-                  headers: CORS_HEADERS
-                });
-              }
-              if (cleanUsername && existingUser.username && existingUser.username.toLowerCase() === cleanUsername) {
-                return new Response(JSON.stringify({
-                  status: "error",
-                  code: "DUPLICATE_USERNAME",
-                  field: "username",
-                  message: `Username "@${cleanUsername}" sudah digunakan! Silakan pilih username yang lain.`
-                }), {
-                  status: 409,
-                  headers: CORS_HEADERS
-                });
-              }
-            }
           }
 
           const userData = {
