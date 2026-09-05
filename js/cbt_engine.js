@@ -463,53 +463,45 @@ function generateStageToQuestions(track, stageNumber) {
 }
 
 /**
+ * Standar Komposisi Resmi Simulasi UTBK SNPMB BPPP:
+ * Total: 160 Butir Soal • 195 Menit (3 Jam 15 Menit)
+ * 1. Penalaran Umum (PU): 30 Soal (30 Menit)
+ * 2. Pengetahuan & Pemahaman Umum (PPU): 20 Soal (15 Menit)
+ * 3. Pemahaman Bacaan & Menulis (PBM): 20 Soal (25 Menit)
+ * 4. Pengetahuan Kuantitatif (PK): 20 Soal (20 Menit)
+ * 5. Literasi Bahasa Indonesia: 30 Soal (42.5 Menit / 2.550 detik)
+ * 6. Literasi Bahasa Inggris: 20 Soal (20 Menit / 1.200 detik)
+ * 7. Penalaran Matematika (PM): 20 Soal (42.5 Menit / 2.550 detik)
+ */
+const OFFICIAL_UTBK_PLAN = [
+  { id: 'pu', name: 'Penalaran Umum (PU)', count: 30, durationMinutes: 30, durationSeconds: 1800 },
+  { id: 'ppu', name: 'Pengetahuan & Pemahaman Umum (PPU)', count: 20, durationMinutes: 15, durationSeconds: 900 },
+  { id: 'pbm', name: 'Pemahaman Bacaan & Menulis (PBM)', count: 20, durationMinutes: 25, durationSeconds: 1500 },
+  { id: 'pk', name: 'Pengetahuan Kuantitatif (PK)', count: 20, durationMinutes: 20, durationSeconds: 1200 },
+  { id: 'lit_indo', name: 'Literasi Bahasa Indonesia', count: 30, durationMinutes: 42.5, durationSeconds: 2550 },
+  { id: 'lit_ing', name: 'Literasi Bahasa Inggris', count: 20, durationMinutes: 20, durationSeconds: 1200 },
+  { id: 'pm', name: 'Penalaran Matematika (PM)', count: 20, durationMinutes: 42.5, durationSeconds: 2550 }
+];
+
+/**
  * 2. Generator Simulasi UTBK Penuh (Full UTBK Official Standard)
- * Teknis sama seperti UTBK SNBT umum BPPP:
- * - 70 Soal TPS & Literasi penuh (10 butir per subtes)
- * - Atau 90 Soal jika digabung dengan TKA peminatan Saintek/Soshum
+ * Menghasilkan tepat 160 Butir Soal dengan urutan subtes resmi:
+ * - PU (30 Soal)
+ * - PPU (20 Soal)
+ * - PBM (20 Soal)
+ * - PK (20 Soal)
+ * - Literasi B. Indonesia (30 Soal)
+ * - Literasi B. Inggris (20 Soal)
+ * - Penalaran Matematika (20 Soal)
  */
 function generateFullUtbkQuestions(track = 'all', sessionSeed = null) {
-  const normTrack = (track || 'all').toLowerCase();
   const seed = sessionSeed !== null ? sessionSeed : (Math.floor(Date.now() / (1000 * 60 * 15)) % 50 + 1);
-  const utbkPlan = [
-    { id: 'pu', count: 10 },
-    { id: 'ppu', count: 10 },
-    { id: 'pbm', count: 10 },
-    { id: 'pk', count: 10 },
-    { id: 'lit_indo', count: 10 },
-    { id: 'lit_ing', count: 10 },
-    { id: 'pm', count: 10 }
-  ];
-
   const questions = [];
-  utbkPlan.forEach(item => {
+
+  OFFICIAL_UTBK_PLAN.forEach(item => {
     const pool = getSubtestPool(item.id);
     questions.push(...sliceQuestions(pool, item.count, seed));
   });
-
-  if (normTrack === 'saintek') {
-    const tkaPlan = [
-      { id: 'tka_mat', count: 5 },
-      { id: 'tka_fis', count: 5 },
-      { id: 'tka_kim', count: 5 },
-      { id: 'tka_bio', count: 5 }
-    ];
-    tkaPlan.forEach(item => {
-      const pool = getSubtestPool(item.id);
-      questions.push(...sliceQuestions(pool, item.count, seed));
-    });
-  } else if (normTrack === 'soshum') {
-    const tkaPlan = [
-      { id: 'tka_eko', count: 5 },
-      { id: 'tka_geo', count: 5 },
-      { id: 'tka_sej', count: 5 },
-      { id: 'tka_sos', count: 5 }
-    ];
-    tkaPlan.forEach(item => {
-      const pool = getSubtestPool(item.id);
-      questions.push(...sliceQuestions(pool, item.count, seed));
-    });
-  }
 
   return questions;
 }
@@ -544,6 +536,7 @@ if (typeof window !== "undefined") {
   window.generateStageToQuestions = generateStageToQuestions;
   window.generateFullUtbkQuestions = generateFullUtbkQuestions;
   window.getCompletedStageInfo = getCompletedStageInfo;
+  window.OFFICIAL_UTBK_PLAN = OFFICIAL_UTBK_PLAN;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
@@ -553,6 +546,7 @@ if (typeof module !== 'undefined' && module.exports) {
     getTryOutHistory,
     generateStageToQuestions,
     generateFullUtbkQuestions,
-    getCompletedStageInfo
+    getCompletedStageInfo,
+    OFFICIAL_UTBK_PLAN
   };
 }

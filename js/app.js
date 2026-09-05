@@ -432,11 +432,10 @@ function initNavigation() {
 }
 
 function switchTab(tabName) {
-  // Jika sedang ujian CBT dan mau keluar, beri konfirmasi
-  if (activeTab === "cbt" && currentCbtSession && !currentCbtSession.isFinished) {
-    if (!confirm("Ujian Try Out sedang berlangsung. Apakah kamu yakin ingin meninggalkan halaman ujian? Jawabanmu saat ini belum terkumpul.")) {
-      return;
-    }
+  // Jika sedang ujian CBT aktif dan pengguna ingin meninggalkan ujian, gunakan pop up custom modern (tanpa pop up native browser/google)
+  if (activeTab === "cbt" && currentCbtSession && !currentCbtSession.isFinished && tabName !== "cbt") {
+    openCbtLeaveModal(tabName);
+    return;
   }
 
   // Cek proteksi autentikasi: Latihan Soal, TO CBT, Rapor, Flashcard, Bank Soal, dan Profil wajib Login/Register
@@ -1548,36 +1547,79 @@ function renderCbtMode() {
         <!-- Full UTBK General Simulation Banner -->
         <div class="bg-gradient-to-br from-indigo-900 via-slate-900 to-slate-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-indigo-900/40 relative overflow-hidden">
           <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <div class="space-y-2.5 max-w-xl">
+            <div class="space-y-2.5 max-w-2xl">
               <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-xs font-bold text-yellow-300">
-                <span>🏛️ SIMULASI UTBK PENUH</span>
+                <span>🏛️ SIMULASI UTBK SNPMB LENGKAP</span>
                 <span>•</span>
-                <span>FORMAT RESMI BPPP</span>
+                <span>STANDAR RESMI BPPP</span>
               </div>
               <h2 class="text-2xl sm:text-3xl font-black tracking-tight">
-                Simulasi Ujian UTBK Penuh (${currentCbtTrack === 'saintek' ? 'Saintek' : 'Soshum'})
+                Simulasi Ujian UTBK SNBT Resmi (160 Soal • 195 Menit)
               </h2>
               <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                Teknis ujian seperti UTBK SNBT umum di pusat UTBK: 70 Soal TPS & Literasi (+ 20 Soal TKA peminatan), durasi 90 menit dengan kalkulasi skor IRT resmi (skala 200–850) dan integrasi rasionalisasi kelulusan PTN impian.
+                Format simulasi ujian resmi SNPMB BPPP: 160 Butir Soal komprehensif mencakup 7 Subtes (TPS & Literasi), alokasi waktu ketat 195 menit (3 jam 15 menit), sistem pembobotan IRT (skala 200–850), dan rasionalisasi peluang lolos PTN impian.
               </p>
               <div class="flex flex-wrap items-center gap-2 pt-1 text-xs">
-                <span class="px-3 py-1 rounded-lg bg-white/10 font-bold">⏱️ 90 Menit</span>
-                <span class="px-3 py-1 rounded-lg bg-white/10 font-bold">📝 90 Butir Soal</span>
+                <span class="px-3 py-1 rounded-lg bg-white/10 font-bold">⏱️ 195 Menit</span>
+                <span class="px-3 py-1 rounded-lg bg-white/10 font-bold">📝 160 Butir Soal</span>
+                <span class="px-3 py-1 rounded-lg bg-white/10 font-bold">📚 7 Subtes Resmi</span>
                 <span class="px-3 py-1 rounded-lg bg-white/10 font-bold">📊 Penilaian IRT Murni</span>
-                <span class="px-3 py-1 rounded-lg bg-amber-400/20 text-amber-300 font-bold">+300 XP</span>
+                <span class="px-3 py-1 rounded-lg bg-amber-400/20 text-amber-300 font-bold">+500 XP</span>
               </div>
             </div>
 
-            <div class="shrink-0 flex flex-col sm:flex-row lg:flex-col gap-2.5">
-              <button onclick="startCbtExam('full_utbk', '${currentCbtTrack}')" class="px-6 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-xl transition text-xs sm:text-sm flex items-center justify-center gap-2">
-                <span>Mulai Simulasi UTBK Lengkap</span>
+            <div class="shrink-0 flex flex-col sm:flex-row lg:flex-col gap-2.5 justify-center">
+              <button onclick="startCbtExam('full_utbk', '${currentCbtTrack}')" class="px-7 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black rounded-2xl shadow-xl transition text-xs sm:text-sm flex items-center justify-center gap-2 transform active:scale-95">
+                <span>Mulai Simulasi UTBK Lengkap (160 Soal)</span>
                 <span>🚀</span>
-              </button>
-              <button onclick="startCbtExam('full_utbk', 'all')" class="px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-2xl border border-white/20 transition text-xs flex items-center justify-center gap-2">
-                <span>Simulasi TPS Standar (70 Soal / 70 Mnt)</span>
               </button>
             </div>
           </div>
+
+          <!-- Distribusi 7 Subtes Resmi UTBK SNPMB -->
+          <div class="relative z-10 mt-6 pt-5 border-t border-white/10">
+            <div class="text-xs font-bold text-slate-300 mb-2.5 flex items-center gap-2">
+              <span>📋 Komposisi 7 Subtes Resmi UTBK SNBT:</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 text-center text-xs">
+              <div class="p-2.5 rounded-xl bg-white/5 border border-white/10">
+                <div class="text-[10px] text-slate-400 font-medium">Penalaran Umum (PU)</div>
+                <div class="font-extrabold text-white mt-0.5 text-sm">30 Soal</div>
+                <div class="text-[10px] text-amber-300 font-semibold">30 Menit</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-white/5 border border-white/10">
+                <div class="text-[10px] text-slate-400 font-medium">Pemahaman Umum (PPU)</div>
+                <div class="font-extrabold text-white mt-0.5 text-sm">20 Soal</div>
+                <div class="text-[10px] text-amber-300 font-semibold">15 Menit</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-white/5 border border-white/10">
+                <div class="text-[10px] text-slate-400 font-medium">Bacaan & Menulis (PBM)</div>
+                <div class="font-extrabold text-white mt-0.5 text-sm">20 Soal</div>
+                <div class="text-[10px] text-amber-300 font-semibold">25 Menit</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-white/5 border border-white/10">
+                <div class="text-[10px] text-slate-400 font-medium">Kuantitatif (PK)</div>
+                <div class="font-extrabold text-white mt-0.5 text-sm">20 Soal</div>
+                <div class="text-[10px] text-amber-300 font-semibold">20 Menit</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-white/5 border border-white/10">
+                <div class="text-[10px] text-slate-400 font-medium">Lit. B. Indonesia</div>
+                <div class="font-extrabold text-white mt-0.5 text-sm">30 Soal</div>
+                <div class="text-[10px] text-amber-300 font-semibold">42,5 Menit</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-white/5 border border-white/10">
+                <div class="text-[10px] text-slate-400 font-medium">Lit. B. Inggris</div>
+                <div class="font-extrabold text-white mt-0.5 text-sm">20 Soal</div>
+                <div class="text-[10px] text-amber-300 font-semibold">20 Menit</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-white/5 border border-white/10">
+                <div class="text-[10px] text-slate-400 font-medium">Penalaran Mat. (PM)</div>
+                <div class="font-extrabold text-white mt-0.5 text-sm">20 Soal</div>
+                <div class="text-[10px] text-amber-300 font-semibold">42,5 Menit</div>
+              </div>
+            </div>
+          </div>
+
           <!-- Decorative ambient glow -->
           <div class="absolute -bottom-16 -right-16 w-64 h-64 rounded-full bg-blue-500/20 blur-3xl pointer-events-none"></div>
         </div>
@@ -1637,10 +1679,10 @@ function startCbtExam(mode = "stage", track = null, stage = 1) {
     if (typeof generateFullUtbkQuestions === "function") {
       questions = generateFullUtbkQuestions(selectedTrack);
     } else {
-      questions = QUESTIONS_DATA.slice(0, 70);
+      questions = QUESTIONS_DATA.slice(0, 160);
     }
-    duration = selectedTrack === 'all' ? 70 : 90;
-    sessionTitle = `Simulasi UTBK Resmi (${selectedTrack === 'all' ? 'TPS' : selectedTrack.toUpperCase()})`;
+    duration = 195; // 195 Menit (3 Jam 15 Menit) Standar Resmi SNPMB
+    sessionTitle = `Simulasi UTBK SNPMB Resmi (160 Soal • 195 Menit)`;
   } else {
     questions = QUESTIONS_DATA.slice(0, 25);
     duration = 25;
@@ -1669,6 +1711,7 @@ function startCbtExam(mode = "stage", track = null, stage = 1) {
   if (mobileNav) mobileNav.classList.add("hidden");
 
   currentCbtSession.start(duration);
+  try { history.pushState({ cbtExam: true }, ""); } catch (e) {}
   renderActiveCbtScreen();
 }
 
@@ -1679,25 +1722,57 @@ function renderActiveCbtScreen() {
   const q = currentCbtSession.getCurrentQuestion();
   const userAns = currentCbtSession.answers[q.id] || {};
 
-  // Pre-generate number palette buttons
-  const numberButtonsHtml = currentCbtSession.questions.map((item, idx) => {
-    const status = currentCbtSession.getQuestionStatus(idx);
-    const isCurrent = currentCbtSession.currentIndex === idx;
-    let statusClass = "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700";
-    if (status === "doubtful") {
-      statusClass = "bg-yellow-400 text-yellow-950 border-yellow-500 font-bold";
-    } else if (status === "answered") {
-      statusClass = "bg-emerald-500 text-white border-emerald-600 font-bold";
-    }
-    if (isCurrent) {
-      statusClass += " ring-2 ring-indigo-600 ring-offset-1 dark:ring-offset-slate-900 font-extrabold";
-    }
-    return `
-      <button onclick="cbtJumpTo(${idx})" data-cbt-idx="${idx}" class="cbt-palette-btn-${idx} h-8 sm:h-9 rounded-xl font-bold text-xs border flex items-center justify-center transition ${statusClass}">
-        ${idx + 1}
-      </button>
-    `;
-  }).join("");
+  // Pre-generate number palette buttons (dengan pemisah subtes jika simulasi UTBK penuh > 30 butir)
+  let numberButtonsHtml = "";
+  if (currentCbtSession.questions.length > 30) {
+    let lastSubtest = "";
+    currentCbtSession.questions.forEach((item, idx) => {
+      const subName = item.subtestName || "Subtes";
+      if (subName !== lastSubtest) {
+        lastSubtest = subName;
+        numberButtonsHtml += `
+          <div class="col-span-5 sm:col-span-8 pt-2.5 pb-1 border-b border-slate-200/60 dark:border-slate-800 text-[11px] font-black text-indigo-600 dark:text-indigo-400 flex items-center justify-between">
+            <span class="truncate">${lastSubtest}</span>
+          </div>
+        `;
+      }
+      const status = currentCbtSession.getQuestionStatus(idx);
+      const isCurrent = currentCbtSession.currentIndex === idx;
+      let statusClass = "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700";
+      if (status === "doubtful") {
+        statusClass = "bg-yellow-400 text-yellow-950 border-yellow-500 font-bold";
+      } else if (status === "answered") {
+        statusClass = "bg-emerald-500 text-white border-emerald-600 font-bold";
+      }
+      if (isCurrent) {
+        statusClass += " ring-2 ring-indigo-600 ring-offset-1 dark:ring-offset-slate-900 font-extrabold";
+      }
+      numberButtonsHtml += `
+        <button onclick="cbtJumpTo(${idx})" data-cbt-idx="${idx}" class="cbt-palette-btn-${idx} h-8 sm:h-9 rounded-xl font-bold text-xs border flex items-center justify-center transition ${statusClass}">
+          ${idx + 1}
+        </button>
+      `;
+    });
+  } else {
+    numberButtonsHtml = currentCbtSession.questions.map((item, idx) => {
+      const status = currentCbtSession.getQuestionStatus(idx);
+      const isCurrent = currentCbtSession.currentIndex === idx;
+      let statusClass = "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700";
+      if (status === "doubtful") {
+        statusClass = "bg-yellow-400 text-yellow-950 border-yellow-500 font-bold";
+      } else if (status === "answered") {
+        statusClass = "bg-emerald-500 text-white border-emerald-600 font-bold";
+      }
+      if (isCurrent) {
+        statusClass += " ring-2 ring-indigo-600 ring-offset-1 dark:ring-offset-slate-900 font-extrabold";
+      }
+      return `
+        <button onclick="cbtJumpTo(${idx})" data-cbt-idx="${idx}" class="cbt-palette-btn-${idx} h-8 sm:h-9 rounded-xl font-bold text-xs border flex items-center justify-center transition ${statusClass}">
+          ${idx + 1}
+        </button>
+      `;
+    }).join("");
+  }
 
   container.innerHTML = `
     <!-- Top Bar CBT -->
@@ -1722,7 +1797,7 @@ function renderActiveCbtScreen() {
         </div>
       </div>
 
-      <!-- Controls: Timer & Submit (Mobile Row 2) -->
+      <!-- Controls: Timer, Leave & Submit (Mobile Row 2) -->
       <div class="flex items-center justify-between sm:justify-end gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
         <!-- Button to open Mobile Drawer for questions list -->
         <button onclick="toggleCbtPaletteDrawer(true)" class="lg:hidden px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 flex items-center gap-1.5 transition">
@@ -1734,6 +1809,11 @@ function renderActiveCbtScreen() {
           <i data-lucide="clock" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400"></i>
           <span id="cbt-timer-text">--:--</span>
         </div>
+
+        <button onclick="openCbtLeaveModal()" class="px-2.5 sm:px-3 py-1.5 sm:py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 transition flex items-center gap-1 shrink-0" title="Tinggalkan Sesi Ujian">
+          <span>🚪</span>
+          <span class="hidden sm:inline">Keluar</span>
+        </button>
 
         <button onclick="confirmFinishCbt()" class="px-3 sm:px-4 py-1.5 sm:py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-black rounded-xl shadow-md hover:shadow-rose-600/25 transition shrink-0">
           Selesai 🏁
@@ -1874,9 +1954,14 @@ function renderActiveCbtScreen() {
 window.renderCbtTimer = function(seconds) {
   const el = document.getElementById("cbt-timer-text");
   if (!el) return;
-  const m = Math.floor(seconds / 60);
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
   const s = seconds % 60;
-  el.innerText = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+  if (h > 0) {
+    el.innerText = `${h < 10 ? '0' : ''}${h}:${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+  } else {
+    el.innerText = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+  }
 
   const container = document.getElementById("cbt-timer-display");
   if (container) {
@@ -2036,6 +2121,122 @@ function confirmFinishCbt() {
     currentCbtSession.submitExam(false);
   };
 }
+
+let pendingCbtLeaveTab = null;
+
+function openCbtLeaveModal(targetTab = null) {
+  pendingCbtLeaveTab = targetTab;
+  const existingModal = document.getElementById("cbt-leave-custom-modal");
+  if (existingModal) existingModal.remove();
+
+  if (!currentCbtSession) {
+    if (targetTab && targetTab !== "cbt") switchTab(targetTab);
+    else renderCbtMode();
+    return;
+  }
+
+  const stats = currentCbtSession.getSummaryStats();
+  const seconds = Math.max(0, currentCbtSession.remainingSeconds || 0);
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  const timeStr = h > 0 
+    ? `${h}j ${m < 10 ? '0' : ''}${m}m ${s < 10 ? '0' : ''}${s}d` 
+    : `${m}m ${s < 10 ? '0' : ''}${s}d`;
+
+  const modal = document.createElement("div");
+  modal.id = "cbt-leave-custom-modal";
+  modal.className = "fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in";
+  modal.innerHTML = `
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-950/70 border border-rose-200 dark:border-rose-900 flex items-center justify-center text-2xl shrink-0">
+          ⚠️
+        </div>
+        <div>
+          <h3 class="text-base sm:text-lg font-black text-slate-900 dark:text-white">Tinggalkan Sesi Ujian?</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Sesi Try Out CBT kamu masih aktif berjalan.</p>
+        </div>
+      </div>
+
+      <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+        Jika kamu meninggalkan halaman sekarang, seluruh progres pengerjaan dan lembar jawabanmu saat ini tidak akan disimpan ke riwayat nilai ujian.
+      </p>
+
+      <!-- Status Progress Ringkas -->
+      <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 space-y-2.5">
+        <div class="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-200 border-b border-slate-200/60 dark:border-slate-700 pb-2">
+          <span>Status Lembar Ujian:</span>
+          <span class="text-indigo-600 dark:text-indigo-400 font-extrabold">${stats.answered} / ${stats.total} Terisi</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2 text-center text-xs">
+          <div class="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800">
+            <div class="text-base font-extrabold text-emerald-700 dark:text-emerald-300">${stats.answered}</div>
+            <div class="text-[10px] text-emerald-800 dark:text-emerald-400 font-semibold mt-0.5">Dijawab</div>
+          </div>
+          <div class="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800">
+            <div class="text-base font-extrabold text-amber-700 dark:text-amber-300">${stats.doubtful}</div>
+            <div class="text-[10px] text-amber-800 dark:text-amber-400 font-semibold mt-0.5">Ragu-ragu</div>
+          </div>
+          <div class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700/70 border border-slate-200 dark:border-slate-600">
+            <div class="text-base font-extrabold text-slate-600 dark:text-slate-300">${stats.empty}</div>
+            <div class="text-[10px] text-slate-700 dark:text-slate-400 font-semibold mt-0.5">Kosong</div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 pt-1">
+          <span>⏱️ Sisa Waktu Ujian:</span>
+          <span class="font-mono font-bold text-slate-800 dark:text-slate-200">${timeStr}</span>
+        </div>
+      </div>
+
+      <div class="flex flex-col-reverse sm:flex-row gap-2.5 pt-1">
+        <button id="btn-leave-confirm" class="flex-1 py-3 px-4 rounded-xl border border-rose-200 dark:border-rose-800/80 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 font-bold text-xs sm:text-sm transition flex items-center justify-center gap-1.5">
+          <span>🚪</span>
+          <span>Tinggalkan Ujian</span>
+        </button>
+        <button id="btn-leave-cancel" class="flex-1 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs sm:text-sm shadow-md transition flex items-center justify-center gap-1.5">
+          <span>✍️</span>
+          <span>Lanjutkan Ujian</span>
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  document.getElementById("btn-leave-cancel").onclick = () => {
+    modal.remove();
+    pendingCbtLeaveTab = null;
+  };
+
+  document.getElementById("btn-leave-confirm").onclick = () => {
+    modal.remove();
+    const destTab = pendingCbtLeaveTab;
+    pendingCbtLeaveTab = null;
+
+    // Hentikan timer dan batalkan sesi CBT aktif
+    if (currentCbtSession && currentCbtSession.timerInterval) {
+      clearInterval(currentCbtSession.timerInterval);
+    }
+    currentCbtSession = null;
+
+    const mobileNav = document.getElementById("mobile-bottom-nav");
+    if (mobileNav) mobileNav.classList.remove("hidden");
+
+    if (destTab && destTab !== "cbt") {
+      switchTab(destTab);
+    } else {
+      renderCbtMode();
+    }
+  };
+}
+
+// Tangani tombol Back browser / perangkat agar tidak memicu pop-up google atau keluar mendadak
+window.addEventListener("popstate", (e) => {
+  if (activeTab === "cbt" && currentCbtSession && !currentCbtSession.isFinished) {
+    try { history.pushState({ cbtExam: true }, ""); } catch (err) {}
+    openCbtLeaveModal();
+  }
+});
 
 // ============================================================
 // 4. RAPOR BELAJAR & RASIONALISASI (Pahamify & Sainsin style)
@@ -2511,10 +2712,10 @@ function renderBankSoal(resetLimit = true) {
 // ============================================================
 let currentFcCategory = "all";
 let fcSearchQuery = "";
-let fcFilteredCards = Array.isArray(FLASHCARDS_DATA) ? [...FLASHCARDS_DATA] : [];
+let fcFilteredCards = (typeof FLASHCARDS_DATA !== "undefined" && Array.isArray(FLASHCARDS_DATA)) ? [...FLASHCARDS_DATA] : [];
 
 function getFilteredFlashcards() {
-  let list = Array.isArray(FLASHCARDS_DATA) ? FLASHCARDS_DATA : [];
+  let list = (typeof FLASHCARDS_DATA !== "undefined" && Array.isArray(FLASHCARDS_DATA)) ? FLASHCARDS_DATA : [];
 
   // Filter Kategori
   if (currentFcCategory !== "all") {
@@ -5515,6 +5716,9 @@ window.cbtPrev = cbtPrev;
 window.cbtNext = cbtNext;
 window.cbtJumpTo = cbtJumpTo;
 window.confirmFinishCbt = confirmFinishCbt;
+window.openCbtLeaveModal = openCbtLeaveModal;
+window.startCbtExam = startCbtExam;
+window.getCurrentCbtSession = () => currentCbtSession;
 window.updateCbtPaletteButton = updateCbtPaletteButton;
 window.renderPtnSimpleList = renderPtnSimpleList;
 window.renderPtnItemsOnly = renderPtnItemsOnly;

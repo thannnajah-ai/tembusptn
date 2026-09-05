@@ -540,6 +540,10 @@ const FLASHCARDS_DATA = [
   }
 ];
 
+if (typeof window !== "undefined") {
+  window.FLASHCARDS_DATA = FLASHCARDS_DATA;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { FLASHCARDS_DATA };
 }
