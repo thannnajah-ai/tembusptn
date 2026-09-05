@@ -2630,20 +2630,8 @@ function renderBankSoal(resetLimit = true) {
     let matchSource = true;
     const sLower = (q.source || "").toLowerCase();
     const isBimbelId = q.id && q.id.startsWith("bimbel_");
-    if (sourceVal === "bimbel_all") {
-      matchSource = isBimbelId || sLower.includes("inten") || sLower.includes("ganesha") || sLower.includes("neutron") || sLower.includes("ruangguru") || sLower.includes("nurul fikri") || sLower.includes("zenius");
-    } else if (sourceVal === "inten") {
-      matchSource = sLower.includes("inten");
-    } else if (sourceVal === "go") {
-      matchSource = sLower.includes("ganesha") || sLower.includes("the king");
-    } else if (sourceVal === "neutron") {
-      matchSource = sLower.includes("neutron");
-    } else if (sourceVal === "ruangguru") {
-      matchSource = sLower.includes("ruangguru") || sLower.includes("brain academy");
-    } else if (sourceVal === "nf") {
-      matchSource = sLower.includes("nurul fikri") || sLower.includes("(nf)");
-    } else if (sourceVal === "zenius") {
-      matchSource = sLower.includes("zenius");
+    if (sourceVal === "bimbel_all" || sourceVal === "inten") {
+      matchSource = isBimbelId || sLower.includes("inten");
     } else if (sourceVal === "tka_resmi") {
       matchSource = sLower.includes("tka") || sLower.includes("kemendikdasmen") || sLower.includes("pusmendik");
     } else if (sourceVal === "resmi") {
