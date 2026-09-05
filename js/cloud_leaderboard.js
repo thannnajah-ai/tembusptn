@@ -97,13 +97,16 @@
       if (response.ok) {
         const json = await response.json();
         if (json && Array.isArray(json.data)) {
-          let list = json.data;
+          // Syarat leaderboard: Hanya masukkan pengguna dengan XP > 0
+          let list = json.data.filter(item => (item.xp || 0) > 0);
+          list.sort((a, b) => b.xp - a.xp);
+          list.forEach((item, idx) => { item.rank = idx + 1; });
 
           // Simpan ke cache browser untuk offline-first resilience
           try {
             localStorage.setItem(CACHE_KEY_PREFIX + period, JSON.stringify({
               data: list,
-              totalUsers: json.totalUsers || list.length,
+              totalUsers: list.length,
               timestamp: Date.now()
             }));
           } catch(e) {}
@@ -119,7 +122,7 @@
           return {
             source: "cloud",
             status: "online",
-            totalUsers: json.totalUsers || formatted.length,
+            totalUsers: formatted.length,
             data: formatted
           };
         }
@@ -133,18 +136,23 @@
       const cached = localStorage.getItem(CACHE_KEY_PREFIX + period);
       if (cached) {
         const parsed = JSON.parse(cached);
-        if (parsed && Array.isArray(parsed.data) && parsed.data.length > 0) {
-          const formatted = parsed.data.map(item => ({
-            ...item,
-            isUser: activeUser && item.id === activeUser.id,
-            name: (activeUser && item.id === activeUser.id) ? (item.rawName || item.name) + " (Kamu)" : (item.rawName || item.name)
-          }));
-          return {
-            source: "cache",
-            status: "cached",
-            totalUsers: parsed.totalUsers || formatted.length,
-            data: formatted
-          };
+        if (parsed && Array.isArray(parsed.data)) {
+          const validList = parsed.data.filter(item => (item.xp || 0) > 0);
+          if (validList.length > 0) {
+            validList.sort((a, b) => b.xp - a.xp);
+            validList.forEach((item, idx) => { item.rank = idx + 1; });
+            const formatted = validList.map(item => ({
+              ...item,
+              isUser: activeUser && item.id === activeUser.id,
+              name: (activeUser && item.id === activeUser.id) ? (item.rawName || item.name) + " (Kamu)" : (item.rawName || item.name)
+            }));
+            return {
+              source: "cache",
+              status: "cached",
+              totalUsers: formatted.length,
+              data: formatted
+            };
+          }
         }
       }
     } catch(e) {}

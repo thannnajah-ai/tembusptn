@@ -743,25 +743,27 @@ function getLeaderboardDataLocal(period = 'hari') {
   const activeUser = getCurrentUser();
   const allUsers = getAllUsers();
 
-  // HANYA ambil pengguna yang terdaftar di registry akun
-  const registeredEntries = Object.values(allUsers).map(u => {
-    const isCurrent = activeUser && u.id === activeUser.id;
-    const prof = u.profile || {};
-    const periodXp = getUserXpForPeriod(prof, period);
+  // HANYA ambil pengguna yang memiliki XP > 0 (XP 0 tidak dimasukkan ke leaderboard)
+  const registeredEntries = Object.values(allUsers)
+    .map(u => {
+      const isCurrent = activeUser && u.id === activeUser.id;
+      const prof = u.profile || {};
+      const periodXp = getUserXpForPeriod(prof, period);
 
-    return {
-      id: u.id,
-      rank: 0,
-      name: isCurrent ? (prof.name || u.name) + " (Kamu)" : (prof.name || u.name),
-      rawName: prof.name || u.name,
-      avatar: prof.avatar || u.avatar || "👨‍🎓",
-      ptn: prof.targetMajorName || "Target PTN Belum Dipilih",
-      xp: periodXp,
-      totalXp: prof.xp || 0,
-      streak: prof.streak || 0,
-      isUser: !!isCurrent
-    };
-  });
+      return {
+        id: u.id,
+        rank: 0,
+        name: isCurrent ? (prof.name || u.name) + " (Kamu)" : (prof.name || u.name),
+        rawName: prof.name || u.name,
+        avatar: prof.avatar || u.avatar || "👨‍🎓",
+        ptn: prof.targetMajorName || "Target PTN Belum Dipilih",
+        xp: periodXp,
+        totalXp: prof.xp || 0,
+        streak: prof.streak || 0,
+        isUser: !!isCurrent
+      };
+    })
+    .filter(item => (item.xp || 0) > 0);
 
   // Urutkan berdasarkan XP pada kategori periode yang dipilih (tertinggi ke terendah)
   registeredEntries.sort((a, b) => b.xp - a.xp);
@@ -778,13 +780,18 @@ function getLeaderboardData(period = 'hari') {
     const cached = localStorage.getItem("utbk_cloud_lb_cache_" + period);
     if (cached) {
       const parsed = JSON.parse(cached);
-      if (parsed && Array.isArray(parsed.data) && parsed.data.length > 0) {
-        const activeUser = getCurrentUser();
-        return parsed.data.map(item => ({
-          ...item,
-          isUser: Boolean(activeUser && item.id === activeUser.id),
-          name: (activeUser && item.id === activeUser.id) ? (item.rawName || item.name) + " (Kamu)" : (item.rawName || item.name)
-        }));
+      if (parsed && Array.isArray(parsed.data)) {
+        const validData = parsed.data.filter(item => (item.xp || 0) > 0);
+        if (validData.length > 0) {
+          const activeUser = getCurrentUser();
+          validData.sort((a, b) => b.xp - a.xp);
+          validData.forEach((item, idx) => { item.rank = idx + 1; });
+          return validData.map(item => ({
+            ...item,
+            isUser: Boolean(activeUser && item.id === activeUser.id),
+            name: (activeUser && item.id === activeUser.id) ? (item.rawName || item.name) + " (Kamu)" : (item.rawName || item.name)
+          }));
+        }
       }
     }
   } catch(e) {}

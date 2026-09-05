@@ -171,17 +171,19 @@ export async function onRequestGet(context) {
       };
     });
 
-    // Urutkan berdasarkan XP tertinggi
-    userList.sort((a, b) => b.xp - a.xp);
-    userList.forEach((item, idx) => {
+    // Syarat leaderboard: Minimal memiliki XP > 0 (XP 0 tidak dimasukkan ke leaderboard)
+    const eligibleList = userList.filter(item => (item.xp || 0) > 0);
+
+    eligibleList.sort((a, b) => b.xp - a.xp);
+    eligibleList.forEach((item, idx) => {
       item.rank = idx + 1;
     });
 
     return new Response(JSON.stringify({
       status: "success",
       period,
-      totalUsers: userList.length,
-      data: userList,
+      totalUsers: eligibleList.length,
+      data: eligibleList,
       timestamp: now
     }), {
       status: 200,

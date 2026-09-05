@@ -3132,9 +3132,16 @@ async function renderLeaderboard(forceRefresh = false) {
     cloudResult = await window.CloudLeaderboard.fetchGlobalLeaderboard(currentLeaderboardPeriod, forceRefresh);
   }
 
-  const data = (cloudResult && Array.isArray(cloudResult.data) && cloudResult.data.length > 0)
+  const rawData = (cloudResult && Array.isArray(cloudResult.data) && cloudResult.data.length > 0)
     ? cloudResult.data
     : (typeof getLeaderboardData === "function" ? getLeaderboardData(currentLeaderboardPeriod) : []);
+
+  // Syarat masuk leaderboard: Minimal memiliki XP > 0 (XP 0 tidak dimasukkan ke leaderboard)
+  const data = (Array.isArray(rawData) ? rawData : []).filter(item => (item.xp || 0) > 0);
+  data.sort((a, b) => b.xp - a.xp);
+  data.forEach((item, idx) => {
+    item.rank = idx + 1;
+  });
 
   // Perbarui status badge cloud
   const statusBadge = document.getElementById("lb-status-badge");
