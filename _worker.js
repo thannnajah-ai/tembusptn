@@ -301,6 +301,8 @@ export default {
           });
         }
       }
+    }
+
     // 2. RUTE API TRAFFIC ANALYTICS
     if (url.pathname === "/api/traffic" || url.pathname.startsWith("/api/traffic")) {
       if (request.method === "OPTIONS") {
