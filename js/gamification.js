@@ -157,15 +157,39 @@ function getCurrentUser() {
   return null;
 }
 
-// Validasi ketersediaan Username & Email (Pencegahan Duplikasi Akun)
-function checkCredentialsAvailableLocal(username, email, excludeUserId = null) {
+// Validasi ketersediaan Nama Lengkap, Username & Email (Pencegahan Duplikasi Akun)
+function checkCredentialsAvailableLocal(username, email, name = null, excludeUserId = null) {
+  // Kompatibilitas jika argumen ke-3 adalah ID user: checkCredentialsAvailableLocal(username, email, excludeUserId)
+  if (typeof name === "string" && name.startsWith("usr_") && !excludeUserId) {
+    excludeUserId = name;
+    name = null;
+  }
+
+  const cleanName = (name || "").trim().toLowerCase();
   const cleanUsername = (username || "").trim().toLowerCase();
   const cleanEmail = (email || "").trim().toLowerCase();
 
   const users = getAllUsers();
   const userList = Object.values(users);
 
-  // 1. Cek duplikasi email di registry lokal
+  // 1. Cek duplikasi Nama Lengkap di registry lokal
+  if (cleanName) {
+    const existingName = userList.find(u => 
+      u.id !== excludeUserId && (
+        (u.name && u.name.trim().toLowerCase() === cleanName) ||
+        (u.profile && u.profile.name && u.profile.name.trim().toLowerCase() === cleanName)
+      )
+    );
+    if (existingName) {
+      return {
+        success: false,
+        field: "name",
+        message: `Nama lengkap "${(name || '').trim()}" sudah terdaftar! Silakan gunakan nama lengkap lain.`
+      };
+    }
+  }
+
+  // 2. Cek duplikasi email di registry lokal
   if (cleanEmail) {
     const existingEmail = userList.find(u => 
       u.id !== excludeUserId && (
@@ -182,7 +206,7 @@ function checkCredentialsAvailableLocal(username, email, excludeUserId = null) {
     }
   }
 
-  // 2. Cek duplikasi username di registry lokal
+  // 3. Cek duplikasi username di registry lokal
   if (cleanUsername) {
     const existingUsername = userList.find(u => 
       u.id !== excludeUserId && (
@@ -199,11 +223,21 @@ function checkCredentialsAvailableLocal(username, email, excludeUserId = null) {
     }
   }
 
-  // 3. Cek juga di cache pengguna cloud yang tersimpan lokal (utbk_cloud_users_sync_cache)
+  // 4. Cek juga di cache pengguna cloud yang tersimpan lokal (utbk_cloud_users_sync_cache)
   try {
     const cloudRaw = localStorage.getItem("utbk_cloud_users_sync_cache");
     if (cloudRaw) {
       const cloudUsers = Object.values(JSON.parse(cloudRaw));
+      if (cleanName) {
+        const foundCloudName = cloudUsers.find(u => u.id !== excludeUserId && u.name && u.name.trim().toLowerCase() === cleanName);
+        if (foundCloudName) {
+          return {
+            success: false,
+            field: "name",
+            message: `Nama lengkap "${(name || '').trim()}" sudah terdaftar! Silakan gunakan nama lengkap lain.`
+          };
+        }
+      }
       if (cleanEmail) {
         const foundCloudEmail = cloudUsers.find(u => u.id !== excludeUserId && u.email && u.email.toLowerCase() === cleanEmail);
         if (foundCloudEmail) {
@@ -250,8 +284,8 @@ function registerUser({ name, username, email, password, avatar, targetPtn, targ
     return { success: false, field: "password", message: "Password minimal 3 karakter!" };
   }
 
-  // Validasi Kredensial Anti-Duplikasi
-  const credCheck = checkCredentialsAvailableLocal(trimmedUsername, trimmedEmail);
+  // Validasi Kredensial Anti-Duplikasi (Nama Lengkap, Username, Email)
+  const credCheck = checkCredentialsAvailableLocal(trimmedUsername, trimmedEmail, trimmedName);
   if (!credCheck.success) {
     return credCheck;
   }
@@ -356,10 +390,16 @@ function loginOrRegisterWithGoogle({ name, email, avatar = "👨‍🎓", google
   }
 
   const cleanName = (name || "").trim() || (emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1));
+  let finalName = cleanName;
+  let nameCounter = 1;
+  while (userList.some(u => (u.name && u.name.trim().toLowerCase() === finalName.toLowerCase()) || (u.profile && u.profile.name && u.profile.name.trim().toLowerCase() === finalName.toLowerCase()))) {
+    finalName = `${cleanName} ${nameCounter}`;
+    nameCounter++;
+  }
   const autoPassword = "gauth_" + Math.random().toString(36).slice(2, 10);
 
   const res = registerUser({
-    name: cleanName,
+    name: finalName,
     username: finalUsername,
     email: cleanEmail,
     password: autoPassword,
@@ -368,7 +408,7 @@ function loginOrRegisterWithGoogle({ name, email, avatar = "👨‍🎓", google
 
   if (res.success) {
     res.isNew = true;
-    res.message = `Pendaftaran via Google berhasil! Selamat bergabung, ${cleanName} (+50 XP). 🎉`;
+    res.message = `Pendaftaran via Google berhasil! Selamat bergabung, ${finalName} (+50 XP). 🎉`;
   }
 
   return res;

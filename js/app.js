@@ -4453,10 +4453,60 @@ function handleQuickLogin(userId) {
 
 // Validasi live ketersediaan username dan email saat pengguna mengetik / pindah input
 async function validateRegisterFieldLive(fieldName) {
+  const nameInput = document.getElementById("reg-name");
   const usernameInput = document.getElementById("reg-username");
   const emailInput = document.getElementById("reg-email");
+  const nameFeedback = document.getElementById("reg-name-feedback");
   const usernameFeedback = document.getElementById("reg-username-feedback");
   const emailFeedback = document.getElementById("reg-email-feedback");
+
+  if (fieldName === "name" && nameInput && nameFeedback) {
+    const nameVal = nameInput.value.trim();
+    if (!nameVal) {
+      nameFeedback.className = "text-[11px] font-semibold mt-1 hidden";
+      nameInput.classList.remove("border-rose-500", "border-emerald-500");
+      return;
+    }
+    if (nameVal.length < 2) {
+      nameFeedback.className = "text-[11px] font-semibold mt-1 text-rose-500 block";
+      nameFeedback.textContent = "Nama lengkap minimal 2 karakter";
+      nameInput.classList.add("border-rose-500");
+      nameInput.classList.remove("border-emerald-500");
+      return;
+    }
+
+    // 1. Cek lokal
+    if (typeof checkCredentialsAvailableLocal === "function") {
+      const localRes = checkCredentialsAvailableLocal(null, null, nameVal);
+      if (!localRes.success && localRes.field === "name") {
+        nameFeedback.className = "text-[11px] font-semibold mt-1 text-rose-500 block";
+        nameFeedback.textContent = "⚠️ " + localRes.message;
+        nameInput.classList.add("border-rose-500");
+        nameInput.classList.remove("border-emerald-500");
+        return;
+      }
+    }
+
+    // 2. Cek Cloud
+    if (window.CloudLeaderboard && typeof window.CloudLeaderboard.checkAvailability === "function") {
+      try {
+        const cloudRes = await window.CloudLeaderboard.checkAvailability(null, null, nameVal);
+        if (!cloudRes.nameAvailable) {
+          nameFeedback.className = "text-[11px] font-semibold mt-1 text-rose-500 block";
+          nameFeedback.textContent = "⚠️ " + cloudRes.message;
+          nameInput.classList.add("border-rose-500");
+          nameInput.classList.remove("border-emerald-500");
+          return;
+        }
+      } catch(e) {}
+    }
+
+    // Jika lolos
+    nameFeedback.className = "text-[11px] font-semibold mt-1 text-emerald-600 dark:text-emerald-400 block";
+    nameFeedback.textContent = "✅ Nama lengkap tersedia";
+    nameInput.classList.remove("border-rose-500");
+    nameInput.classList.add("border-emerald-500");
+  }
 
   if (fieldName === "email" && emailInput && emailFeedback) {
     const emailVal = emailInput.value.trim().toLowerCase();
@@ -4556,8 +4606,22 @@ async function validateRegisterFieldLive(fieldName) {
 }
 
 function initAuthModalListeners() {
+  const nameInp = document.getElementById("reg-name");
   const userInp = document.getElementById("reg-username");
   const emailInp = document.getElementById("reg-email");
+
+  if (nameInp && !nameInp.dataset.hasLiveValidation) {
+    nameInp.dataset.hasLiveValidation = "true";
+    nameInp.addEventListener("blur", () => validateRegisterFieldLive("name"));
+    nameInp.addEventListener("input", () => {
+      const fb = document.getElementById("reg-name-feedback");
+      if (fb && fb.textContent.includes("⚠️")) {
+        fb.classList.add("hidden");
+        nameInp.classList.remove("border-rose-500");
+      }
+    });
+  }
+
   if (userInp && !userInp.dataset.hasLiveValidation) {
     userInp.dataset.hasLiveValidation = "true";
     userInp.addEventListener("blur", () => validateRegisterFieldLive("username"));
@@ -4569,6 +4633,7 @@ function initAuthModalListeners() {
       }
     });
   }
+
   if (emailInp && !emailInp.dataset.hasLiveValidation) {
     emailInp.dataset.hasLiveValidation = "true";
     emailInp.addEventListener("blur", () => validateRegisterFieldLive("email"));
@@ -4598,14 +4663,17 @@ async function handleRegisterSubmit(event) {
 
   // 1. Validasi lokal terlebih dahulu (cepat)
   if (typeof checkCredentialsAvailableLocal === "function") {
-    const localCheck = checkCredentialsAvailableLocal(username, email);
+    const localCheck = checkCredentialsAvailableLocal(username, email, name);
     if (!localCheck.success) {
       if (submitBtn) {
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalBtnHtml;
       }
       showAuthAlert(localCheck.message, false);
-      if (localCheck.field === "email") {
+      if (localCheck.field === "name") {
+        const el = document.getElementById("reg-name");
+        if (el) { el.focus(); el.classList.add("border-rose-500"); }
+      } else if (localCheck.field === "email") {
         const el = document.getElementById("reg-email");
         if (el) { el.focus(); el.classList.add("border-rose-500"); }
       } else if (localCheck.field === "username") {
@@ -4619,14 +4687,17 @@ async function handleRegisterSubmit(event) {
   // 2. Validasi Cloud Leaderboard (Multi-Device & Multi-Tab Serverless KV)
   if (window.CloudLeaderboard && typeof window.CloudLeaderboard.checkAvailability === "function") {
     try {
-      const cloudCheck = await window.CloudLeaderboard.checkAvailability(username, email);
+      const cloudCheck = await window.CloudLeaderboard.checkAvailability(username, email, name);
       if (!cloudCheck.available) {
         if (submitBtn) {
           submitBtn.disabled = false;
           submitBtn.innerHTML = originalBtnHtml;
         }
         showAuthAlert(cloudCheck.message, false);
-        if (!cloudCheck.emailAvailable) {
+        if (!cloudCheck.nameAvailable) {
+          const el = document.getElementById("reg-name");
+          if (el) { el.focus(); el.classList.add("border-rose-500"); }
+        } else if (!cloudCheck.emailAvailable) {
           const el = document.getElementById("reg-email");
           if (el) { el.focus(); el.classList.add("border-rose-500"); }
         } else if (!cloudCheck.usernameAvailable) {
