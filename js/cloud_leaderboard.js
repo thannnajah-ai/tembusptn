@@ -34,7 +34,8 @@
         const payload = {
           id: user.id,
           name: user.name || profile.name || "Pejuang PTN",
-          username: user.username || "pejuang",
+          username: (user.username || profile.username || "pejuang").toLowerCase().trim(),
+          email: (user.email || (profile && profile.email) || "").toLowerCase().trim(),
           avatar: profile.avatar || "👨‍🎓",
           targetMajorName: profile.targetMajorName || "Target PTN Belum Dipilih",
           xp: profile.xp || 0,
@@ -201,13 +202,47 @@
     } catch(e) {}
   }
 
+  /**
+   * Memeriksa ketersediaan email dan username ke Cloud Database secara realtime
+   * @param {string} username
+   * @param {string} email
+   * @param {string|null} excludeUserId
+   * @returns {Promise<{available: boolean, usernameAvailable: boolean, emailAvailable: boolean, field: string|null, message: string}>}
+   */
+  async function checkAvailability(username, email, excludeUserId = null) {
+    try {
+      const u = encodeURIComponent((username || "").trim().toLowerCase());
+      const e = encodeURIComponent((email || "").trim().toLowerCase());
+      const ex = excludeUserId ? `&exclude=${encodeURIComponent(excludeUserId)}` : '';
+      const url = `${API_ENDPOINT}?check=availability&username=${u}&email=${e}${ex}&_t=${Date.now()}`;
+      
+      const res = await fetch(url, { method: "GET" });
+      if (res.status === 200 || res.status === 409) {
+        const data = await res.json();
+        return {
+          available: Boolean(data.available),
+          usernameAvailable: Boolean(data.usernameAvailable),
+          emailAvailable: Boolean(data.emailAvailable),
+          field: data.field || null,
+          message: data.message || (data.available ? "Kredensial tersedia" : "Kredensial sudah terdaftar")
+        };
+      }
+    } catch(err) {
+      console.warn("Cloud checkAvailability error (offline mode fallback):", err.message);
+    }
+    // Jika offline / error jaringan, fallback return available = true agar tidak memblokir pengguna
+    return { available: true, usernameAvailable: true, emailAvailable: true, field: null, message: "OK" };
+  }
+
   // Export ke Window Global
   window.CloudLeaderboard = {
     syncUserToCloud,
     fetchGlobalLeaderboard,
+    checkAvailability,
     startPolling,
     stopPolling,
     API_ENDPOINT
   };
 
 })(typeof window !== 'undefined' ? window : this);
+

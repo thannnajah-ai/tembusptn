@@ -65,6 +65,51 @@ export async function onRequestGet(context) {
       users = memoryRegistry;
     }
 
+    // 0. Fitur Validasi Kredensial (Cek ketersediaan email & username secara realtime)
+    const checkMode = url.searchParams.get("check");
+    if (checkMode === "availability" || checkMode === "1") {
+      const checkUsername = (url.searchParams.get("username") || "").trim().toLowerCase();
+      const checkEmail = (url.searchParams.get("email") || "").trim().toLowerCase();
+      const excludeId = url.searchParams.get("exclude") || "";
+
+      let usernameAvailable = true;
+      let emailAvailable = true;
+
+      const userEntries = Object.values(users);
+      for (const u of userEntries) {
+        if (excludeId && u.id === excludeId) continue;
+        if (checkEmail && u.email && u.email.toLowerCase() === checkEmail) {
+          emailAvailable = false;
+        }
+        if (checkUsername && u.username && u.username.toLowerCase() === checkUsername) {
+          usernameAvailable = false;
+        }
+      }
+
+      let message = "Kredensial tersedia";
+      let conflictField = null;
+      if (!emailAvailable) {
+        conflictField = "email";
+        message = `Email "${checkEmail}" sudah terdaftar! Silakan gunakan email lain atau langsung Masuk.`;
+      } else if (!usernameAvailable) {
+        conflictField = "username";
+        message = `Username "@${checkUsername}" sudah digunakan! Silakan pilih username yang lain.`;
+      }
+
+      const isAvailable = usernameAvailable && emailAvailable;
+      return new Response(JSON.stringify({
+        status: isAvailable ? "success" : "conflict",
+        available: isAvailable,
+        usernameAvailable,
+        emailAvailable,
+        field: conflictField,
+        message
+      }), {
+        status: isAvailable ? 200 : 409,
+        headers: CORS_HEADERS
+      });
+    }
+
     // Kalkulasi XP berdasarkan periode waktu
     const now = Date.now();
     const oneDay = 24 * 60 * 60 * 1000;
@@ -145,11 +190,65 @@ export async function onRequestPost(context) {
 
     const userId = body.id;
     const now = Date.now();
+    const cleanUsername = String(body.username || "pejuang").toLowerCase().trim().slice(0, 30);
+    const cleanEmail = String(body.email || "").toLowerCase().trim().slice(0, 80);
+
+    // Ambil registry user saat ini untuk cek validasi duplikasi
+    let currentUsers = {};
+    const kv = context.env && (context.env.LEADERBOARD_KV || context.env.KV_LEADERBOARD || context.env.TEMBUSPTN_KV);
+    if (kv) {
+      currentUsers = (await kv.get("global_users_registry", { type: "json" })) || {};
+    } else if (context.env && context.env.DB) {
+      try {
+        const { results } = await context.env.DB.prepare("SELECT data FROM leaderboard_users").all();
+        if (results && results.length) {
+          results.forEach(r => {
+            try {
+              const u = JSON.parse(r.data);
+              if (u && u.id) currentUsers[u.id] = u;
+            } catch(e) {}
+          });
+        }
+      } catch(e) {}
+    } else {
+      currentUsers = memoryRegistry;
+    }
+
+    // Validasi Anti-Duplikasi Email & Username (Lintas Akun / Perangkat)
+    for (const [existingId, existingUser] of Object.entries(currentUsers)) {
+      if (existingId !== userId) {
+        // Cek Email
+        if (cleanEmail && existingUser.email && existingUser.email.toLowerCase() === cleanEmail) {
+          return new Response(JSON.stringify({
+            status: "error",
+            code: "DUPLICATE_EMAIL",
+            field: "email",
+            message: `Email "${cleanEmail}" sudah terdaftar! Silakan gunakan email lain atau langsung Masuk.`
+          }), {
+            status: 409,
+            headers: CORS_HEADERS
+          });
+        }
+        // Cek Username
+        if (cleanUsername && existingUser.username && existingUser.username.toLowerCase() === cleanUsername) {
+          return new Response(JSON.stringify({
+            status: "error",
+            code: "DUPLICATE_USERNAME",
+            field: "username",
+            message: `Username "@${cleanUsername}" sudah digunakan! Silakan pilih username yang lain.`
+          }), {
+            status: 409,
+            headers: CORS_HEADERS
+          });
+        }
+      }
+    }
 
     const userData = {
       id: userId,
       name: String(body.name || "Pejuang PTN").slice(0, 50),
-      username: String(body.username || "pejuang").toLowerCase().slice(0, 30),
+      username: cleanUsername,
+      email: cleanEmail,
       avatar: body.avatar || "👨‍🎓",
       targetMajorName: String(body.targetMajorName || "Target PTN Belum Dipilih").slice(0, 80),
       xp: Math.max(0, parseInt(body.xp, 10) || 0),
@@ -160,11 +259,9 @@ export async function onRequestPost(context) {
     };
 
     // 1. Simpan ke Cloudflare KV jika tersedia
-    const kv = context.env && (context.env.LEADERBOARD_KV || context.env.KV_LEADERBOARD || context.env.TEMBUSPTN_KV);
     if (kv) {
-      let stored = await kv.get("global_users_registry", { type: "json" }) || {};
-      stored[userId] = userData;
-      await kv.put("global_users_registry", JSON.stringify(stored));
+      currentUsers[userId] = userData;
+      await kv.put("global_users_registry", JSON.stringify(currentUsers));
     } else if (context.env && context.env.DB) {
       // 2. Simpan ke Cloudflare D1 jika tersedia
       await context.env.DB.exec(`

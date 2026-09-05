@@ -157,6 +157,79 @@ function getCurrentUser() {
   return null;
 }
 
+// Validasi ketersediaan Username & Email (Pencegahan Duplikasi Akun)
+function checkCredentialsAvailableLocal(username, email, excludeUserId = null) {
+  const cleanUsername = (username || "").trim().toLowerCase();
+  const cleanEmail = (email || "").trim().toLowerCase();
+
+  const users = getAllUsers();
+  const userList = Object.values(users);
+
+  // 1. Cek duplikasi email di registry lokal
+  if (cleanEmail) {
+    const existingEmail = userList.find(u => 
+      u.id !== excludeUserId && (
+        (u.email && u.email.toLowerCase() === cleanEmail) ||
+        (u.profile && u.profile.email && u.profile.email.toLowerCase() === cleanEmail)
+      )
+    );
+    if (existingEmail) {
+      return {
+        success: false,
+        field: "email",
+        message: `Email "${cleanEmail}" sudah terdaftar! Silakan gunakan email lain atau silakan Masuk.`
+      };
+    }
+  }
+
+  // 2. Cek duplikasi username di registry lokal
+  if (cleanUsername) {
+    const existingUsername = userList.find(u => 
+      u.id !== excludeUserId && (
+        (u.username && u.username.toLowerCase() === cleanUsername) ||
+        (u.profile && u.profile.username && u.profile.username.toLowerCase() === cleanUsername)
+      )
+    );
+    if (existingUsername) {
+      return {
+        success: false,
+        field: "username",
+        message: `Username "@${cleanUsername}" sudah digunakan! Silakan pilih username yang lain.`
+      };
+    }
+  }
+
+  // 3. Cek juga di cache pengguna cloud yang tersimpan lokal (utbk_cloud_users_sync_cache)
+  try {
+    const cloudRaw = localStorage.getItem("utbk_cloud_users_sync_cache");
+    if (cloudRaw) {
+      const cloudUsers = Object.values(JSON.parse(cloudRaw));
+      if (cleanEmail) {
+        const foundCloudEmail = cloudUsers.find(u => u.id !== excludeUserId && u.email && u.email.toLowerCase() === cleanEmail);
+        if (foundCloudEmail) {
+          return {
+            success: false,
+            field: "email",
+            message: `Email "${cleanEmail}" sudah terdaftar! Silakan gunakan email lain atau silakan Masuk.`
+          };
+        }
+      }
+      if (cleanUsername) {
+        const foundCloudUser = cloudUsers.find(u => u.id !== excludeUserId && u.username && u.username.toLowerCase() === cleanUsername);
+        if (foundCloudUser) {
+          return {
+            success: false,
+            field: "username",
+            message: `Username "@${cleanUsername}" sudah digunakan! Silakan pilih username yang lain.`
+          };
+        }
+      }
+    }
+  } catch(e) {}
+
+  return { success: true, field: null, message: "Kredensial tersedia" };
+}
+
 // Register Akun Baru
 function registerUser({ name, username, email, password, avatar, targetPtn, targetMajorId, targetMajorName, targetScore }) {
   const trimmedName = (name || "").trim();
@@ -165,30 +238,25 @@ function registerUser({ name, username, email, password, avatar, targetPtn, targ
   const cleanPassword = (password || "").trim();
 
   if (!trimmedName) {
-    return { success: false, message: "Nama lengkap wajib diisi!" };
+    return { success: false, field: "name", message: "Nama lengkap wajib diisi!" };
   }
   if (!trimmedUsername || trimmedUsername.length < 3) {
-    return { success: false, message: "Username minimal 3 karakter!" };
+    return { success: false, field: "username", message: "Username minimal 3 karakter!" };
   }
   if (!trimmedEmail || !trimmedEmail.includes("@")) {
-    return { success: false, message: "Format email tidak valid!" };
+    return { success: false, field: "email", message: "Format email tidak valid!" };
   }
   if (!cleanPassword || cleanPassword.length < 3) {
-    return { success: false, message: "Password minimal 3 karakter!" };
+    return { success: false, field: "password", message: "Password minimal 3 karakter!" };
+  }
+
+  // Validasi Kredensial Anti-Duplikasi
+  const credCheck = checkCredentialsAvailableLocal(trimmedUsername, trimmedEmail);
+  if (!credCheck.success) {
+    return credCheck;
   }
 
   const users = getAllUsers();
-
-  // Cek duplikasi username atau email
-  const isDuplicate = Object.values(users).some(u => 
-    (u.username && u.username.toLowerCase() === trimmedUsername) ||
-    (u.email && u.email.toLowerCase() === trimmedEmail)
-  );
-
-  if (isDuplicate) {
-    return { success: false, message: "Username atau Email tersebut sudah terdaftar! Silakan gunakan yang lain." };
-  }
-
   const newId = "usr_" + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
   const today = new Date().toISOString().split("T")[0];
 
@@ -203,6 +271,8 @@ function registerUser({ name, username, email, password, avatar, targetPtn, targ
     createdAt: today,
     profile: {
       name: trimmedName,
+      username: trimmedUsername,
+      email: trimmedEmail,
       avatar: avatar || "👨‍🎓",
       targetPtn: targetPtn || "ui",
       targetMajorId: targetMajorId || "ui-ilmu-komputer",
@@ -629,6 +699,7 @@ if (typeof window !== 'undefined') {
   window.getActiveUserId = getActiveUserId;
   window.setActiveUserId = setActiveUserId;
   window.getCurrentUser = getCurrentUser;
+  window.checkCredentialsAvailableLocal = checkCredentialsAvailableLocal;
   window.registerUser = registerUser;
   window.loginUser = loginUser;
   window.logoutUser = logoutUser;
@@ -651,6 +722,7 @@ if (typeof module !== 'undefined' && module.exports) {
     setActiveUserId,
     isUserLoggedIn,
     getCurrentUser,
+    checkCredentialsAvailableLocal,
     registerUser,
     loginUser,
     logoutUser,
