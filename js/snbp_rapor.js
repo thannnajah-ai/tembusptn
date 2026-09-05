@@ -517,8 +517,8 @@ function renderSnbpRaporView() {
           <button type="button" onclick="handleLoadDefaultSmaSubjects()" class="px-3 py-2 rounded-xl text-xs font-bold border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition flex items-center gap-1.5">
             <span>💡</span> <span>Muat Mapel Standar SMA</span>
           </button>
-          <button type="button" onclick="addSnbpSubjectRow()" class="px-3 py-2 rounded-xl text-xs font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 transition flex items-center gap-1.5">
-            <span>➕</span> <span>Tambah Mapel</span>
+          <button type="button" onclick="openAddSubjectModal()" class="px-3 py-2 rounded-xl text-xs font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 transition flex items-center gap-1.5">
+            <span>➕</span> <span>Pilih & Tambah Mapel</span>
           </button>
         </div>
       </div>
@@ -552,8 +552,8 @@ function renderSnbpRaporView() {
         </button>
 
         <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end">
-          <button type="button" onclick="addSnbpSubjectRow()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition flex items-center justify-center gap-1.5">
-            <span>➕</span> <span>Tambah Baris Mapel</span>
+          <button type="button" onclick="openAddSubjectModal()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition flex items-center justify-center gap-1.5">
+            <span>➕</span> <span>Pilih & Tambah Mapel</span>
           </button>
           <button type="button" onclick="handleSaveSnbpForm()" class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white text-xs font-extrabold shadow-md shadow-indigo-600/20 transition flex items-center justify-center gap-2">
             <span>💾</span> <span>Simpan Nilai Rapor</span>
@@ -651,16 +651,130 @@ function onSnbpSubjectRevertPreset(rowIndex) {
   renderSnbpRaporView();
 }
 
+// MODAL PILIH MATA PELAJARAN (SNBP)
+function openAddSubjectModal() {
+  const modal = document.getElementById("add-subject-modal");
+  if (!modal) return;
+
+  const selectEl = document.getElementById("modal-subject-select");
+  const chipsContainer = document.getElementById("modal-subject-chips");
+  const customWrapper = document.getElementById("modal-custom-subject-wrapper");
+  const customInput = document.getElementById("modal-custom-subject-input");
+
+  if (customWrapper) customWrapper.classList.add("hidden");
+  if (customInput) customInput.value = "";
+
+  const existingSubjects = currentSnbpGrades.map(g => (g.subject || "").trim().toLowerCase());
+
+  // 1. Populate Dropdown Options
+  if (selectEl) {
+    let optionsHtml = '<option value="" disabled selected>-- Silakan Pilih Mata Pelajaran --</option>';
+    
+    optionsHtml += '<optgroup label="── 24 Mapel Kurikulum Merdeka SMA/MA ──">';
+    UNIFIED_SMA_SUBJECTS.forEach(subj => {
+      const isAlreadyAdded = existingSubjects.includes(subj.toLowerCase());
+      optionsHtml += `
+        <option value="${escapeHtml(subj)}">
+          ${subj} ${isAlreadyAdded ? '✓ (Sudah ada di rapor)' : ''}
+        </option>
+      `;
+    });
+    optionsHtml += '</optgroup>';
+
+    optionsHtml += '<option value="__CUSTOM__">➕ Ketik Nama Mapel Sendiri (Custom)...</option>';
+
+    selectEl.innerHTML = optionsHtml;
+  }
+
+  // 2. Populate Quick Chips (Mapel yang belum ada di tabel)
+  if (chipsContainer) {
+    const unadded = UNIFIED_SMA_SUBJECTS.filter(s => !existingSubjects.includes(s.toLowerCase()));
+    if (unadded.length > 0) {
+      chipsContainer.innerHTML = unadded.map(subj => `
+        <button type="button" onclick="selectSubjectFromChip('${escapeHtml(subj)}')"
+          class="px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-600 hover:text-white transition flex items-center gap-1">
+          <span>+</span> <span>${subj}</span>
+        </button>
+      `).join("");
+    } else {
+      chipsContainer.innerHTML = '<span class="text-[11px] text-slate-400 italic">Seluruh mapel standar telah ada di tabel rapor. Kamu juga bisa menambah mapel kustom di atas.</span>';
+    }
+  }
+
+  modal.classList.remove("hidden");
+}
+
+function closeAddSubjectModal() {
+  const modal = document.getElementById("add-subject-modal");
+  if (modal) modal.classList.add("hidden");
+}
+
+function onModalSubjectSelectChange(val) {
+  const customWrapper = document.getElementById("modal-custom-subject-wrapper");
+  const customInput = document.getElementById("modal-custom-subject-input");
+  if (val === "__CUSTOM__") {
+    if (customWrapper) customWrapper.classList.remove("hidden");
+    if (customInput) customInput.focus();
+  } else {
+    if (customWrapper) customWrapper.classList.add("hidden");
+  }
+}
+
+function selectSubjectFromChip(subjName) {
+  const selectEl = document.getElementById("modal-subject-select");
+  const customWrapper = document.getElementById("modal-custom-subject-wrapper");
+  if (selectEl) {
+    selectEl.value = subjName;
+  }
+  if (customWrapper) customWrapper.classList.add("hidden");
+}
+
+function confirmAddSelectedSubject() {
+  const selectEl = document.getElementById("modal-subject-select");
+  const customInput = document.getElementById("modal-custom-subject-input");
+
+  let subjectToAdd = selectEl ? selectEl.value : "";
+  if (!subjectToAdd) {
+    alert("Silakan pilih mata pelajaran terlebih dahulu dari daftar!");
+    return;
+  }
+
+  if (subjectToAdd === "__CUSTOM__") {
+    subjectToAdd = customInput ? customInput.value.trim() : "";
+    if (!subjectToAdd) {
+      alert("Silakan ketik nama mata pelajaran kustom!");
+      if (customInput) customInput.focus();
+      return;
+    }
+  }
+
+  // Tambahkan baris baru dengan nama mapel yang DIPILIH oleh user
+  currentSnbpGrades.push({
+    subject: subjectToAdd,
+    sem1: "",
+    sem2: "",
+    sem3: "",
+    sem4: "",
+    sem5: ""
+  });
+
+  saveSnbpGradesToStorage(currentSnbpGrades, false);
+  closeAddSubjectModal();
+  renderSnbpRaporView();
+
+  if (typeof showXpNotification === "function") {
+    showXpNotification(0, `Mata pelajaran "${subjectToAdd}" berhasil ditambahkan ke rapor! 📚`);
+  }
+}
+
 function addSnbpSubjectRow(subjectName = "") {
-  let defaultName = subjectName;
-  if (!defaultName) {
-    const existing = currentSnbpGrades.map(g => g.subject);
-    const available = UNIFIED_SMA_SUBJECTS.find(s => !existing.includes(s));
-    defaultName = available || "Mata Pelajaran Tambahan";
+  if (!subjectName) {
+    openAddSubjectModal();
+    return;
   }
 
   currentSnbpGrades.push({
-    subject: defaultName,
+    subject: subjectName,
     sem1: "",
     sem2: "",
     sem3: "",
@@ -763,3 +877,8 @@ window.removeSnbpSubjectRow = removeSnbpSubjectRow;
 window.handleLoadDefaultSmaSubjects = handleLoadDefaultSmaSubjects;
 window.handleSaveSnbpForm = handleSaveSnbpForm;
 window.handleResetSnbpGrades = handleResetSnbpGrades;
+window.openAddSubjectModal = openAddSubjectModal;
+window.closeAddSubjectModal = closeAddSubjectModal;
+window.onModalSubjectSelectChange = onModalSubjectSelectChange;
+window.selectSubjectFromChip = selectSubjectFromChip;
+window.confirmAddSelectedSubject = confirmAddSelectedSubject;
