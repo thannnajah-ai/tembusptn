@@ -671,6 +671,9 @@ function updateDailyQuestProgress(questId, amount = 1) {
   const q = quests[questId];
   if (q.current < q.target) {
     q.current = Math.min(q.target, q.current + amount);
+    if (!profile.dailyQuests) {
+      profile.dailyQuests = { date: new Date().toISOString().split("T")[0], quests: {} };
+    }
     profile.dailyQuests.quests = quests;
     saveUserProfile(profile);
 
@@ -2794,6 +2797,7 @@ function updateFlashcardCategoryUI() {
     { id: "fc-cat-math", cat: "Penalaran Matematika & PK" },
     { id: "fc-cat-fisika", cat: "Fisika" },
     { id: "fc-cat-kimia", cat: "Kimia" },
+    { id: "fc-cat-biologi", cat: "Biologi" },
     { id: "fc-cat-soshum", cat: "Ekonomi & Sosiologi" },
     { id: "fc-cat-tps", cat: "TPS" }
   ];
