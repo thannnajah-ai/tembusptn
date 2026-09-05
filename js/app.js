@@ -3724,14 +3724,49 @@ async function handleResetAllUsersClick() {
 window.handleResetAllUsersClick = handleResetAllUsersClick;
 
 // ============================================================
-// 9. EKSPLORASI PTN & JURUSAN (SIMPLE & CLEAN UI)
+// 9. EKSPLORASI PTN & JURUSAN RESMI SNPMB (SNBP & SNBT)
+// Sumber Data Resmi: Portal SNPMB BPPP Kemdiktisaintek (https://snpmb.id/)
 // ============================================================
+let currentPtnPathway = (typeof window !== "undefined" && window.SNPMB_SERVICE)
+  ? window.SNPMB_SERVICE.initPathwayFromStorage()
+  : "snbt"; // "snbt" | "snbp"
+
 let currentPtnFilterCategory = "all"; // "all" | "akademik" | "vokasi" | "ptkin"
 let currentPtnSearchQuery = "";
 let currentDetailPtnId = null;
 let currentDetailProdiSearch = "";
 let currentDetailCategory = "all"; // "all" | "Saintek" | "Soshum"
 let currentDetailDegree = "all"; // "all" | "S1" | "D4" | "D3"
+let currentPtnProdiList = [];
+let isLoadingProdi = false;
+let activeModalProdi = null;
+
+function setSnpmbPathway(pathway) {
+  if (pathway !== "snbp" && pathway !== "snbt") return;
+  currentPtnPathway = pathway;
+  if (window.SNPMB_SERVICE) {
+    window.SNPMB_SERVICE.setPathway(pathway);
+  }
+  if (currentDetailPtnId) {
+    renderPtnDetail(currentDetailPtnId);
+  } else {
+    renderPtnSimpleList();
+  }
+}
+window.setSnpmbPathway = setSnpmbPathway;
+
+function refreshSnpmbData() {
+  if (window.SNPMB_SERVICE) {
+    showXpNotification(0, `🔄 Memperbarui data live dari https://snpmb.id/...`);
+    window.SNPMB_SERVICE.getPtnList(currentPtnPathway, true).then(() => {
+      showXpNotification(0, `✓ Data ${currentPtnPathway.toUpperCase()} berhasil diperbarui!`);
+      renderPtnSimpleList();
+    }).catch(err => {
+      console.warn("Refresh failed:", err);
+    });
+  }
+}
+window.refreshSnpmbData = refreshSnpmbData;
 
 function escapeHtml(str) {
   if (!str) return "";
@@ -3743,26 +3778,30 @@ function escapeHtml(str) {
     .replace(/'/g, "&#039;");
 }
 
-function getPtnCategory(ptn) {
+function getSnpmbPtnCategory(ptn) {
+  if (window.SNPMB_SERVICE) return window.SNPMB_SERVICE.detectPtnType(ptn);
   if (!ptn) return "akademik";
-  const isVokasi = ptn.type === "Politeknik" || (ptn.name && ptn.name.includes("Politeknik"));
-  const isPtkin = ptn.type === "UIN" || ptn.type === "PTKIN" || (ptn.name && (ptn.name.includes("UIN") || ptn.name.includes("IAIN")));
-  if (isVokasi) return "vokasi";
-  if (isPtkin) return "ptkin";
+  if (ptn.is_ptkin == 1) return "ptkin";
+  if (ptn.is_vokasi == 1) return "vokasi";
   return "akademik";
 }
 
-function getPtnCategoryCounts() {
-  let all = PTN_LIST.length;
+function getSnpmbCategoryCounts() {
+  const pathway = currentPtnPathway || "snbt";
+  const ptnList = (window.SNPMB_PTN_DATA && window.SNPMB_PTN_DATA[pathway])
+    ? window.SNPMB_PTN_DATA[pathway]
+    : (Array.isArray(PTN_LIST) ? PTN_LIST : []);
+
+  let all = ptnList.length;
   let akademik = 0;
   let vokasi = 0;
   let ptkin = 0;
 
-  PTN_LIST.forEach(ptn => {
-    const cat = getPtnCategory(ptn);
-    if (cat === "akademik") akademik++;
-    else if (cat === "vokasi") vokasi++;
-    else if (cat === "ptkin") ptkin++;
+  ptnList.forEach(p => {
+    const c = getSnpmbPtnCategory(p);
+    if (c === "akademik") akademik++;
+    else if (c === "vokasi") vokasi++;
+    else if (c === "ptkin") ptkin++;
   });
 
   return { all, akademik, vokasi, ptkin };
@@ -3798,27 +3837,71 @@ function renderPtnSimpleList() {
   if (detailContainer) detailContainer.classList.add("hidden");
   container.classList.remove("hidden");
 
-  const counts = getPtnCategoryCounts();
+  const counts = getSnpmbCategoryCounts();
+  const isSnbp = currentPtnPathway === "snbp";
 
   container.innerHTML = `
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden">
-      <!-- Header & Search Input -->
-      <div class="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800">
-        <div class="flex items-center gap-2 mb-3">
-          <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 21h18M3 10h18M5 10v11M9 10v11M15 10v11M19 10v11M12 2L2 7h20L12 2z"/>
-          </svg>
-          <h2 class="text-base sm:text-lg font-bold text-indigo-600 dark:text-indigo-400 tracking-tight">
-            Daftar PTN
-          </h2>
+    <!-- Dual Pathway Selector (SNBP vs SNBT) -->
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-sm space-y-3">
+      <div class="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 dark:bg-slate-800/90 rounded-2xl border border-slate-200/80 dark:border-slate-700">
+        <!-- Tab SNBP -->
+        <button
+          type="button"
+          onclick="setSnpmbPathway('snbp')"
+          class="py-3 px-3 sm:px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all ${isSnbp ? 'bg-emerald-600 text-white shadow-md ring-2 ring-emerald-300 dark:ring-emerald-900' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-700/50'}"
+        >
+          <span class="text-base sm:text-lg">🏆</span>
+          <div class="text-left leading-tight">
+            <div class="font-extrabold tracking-tight">Jalur SNBP 2026</div>
+            <div class="text-[10px] font-medium opacity-85 hidden sm:block">Prestasi & Rapor (Min. 20% Kuota)</div>
+          </div>
+        </button>
+
+        <!-- Tab SNBT -->
+        <button
+          type="button"
+          onclick="setSnpmbPathway('snbt')"
+          class="py-3 px-3 sm:px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all ${!isSnbp ? 'bg-indigo-600 text-white shadow-md ring-2 ring-indigo-300 dark:ring-indigo-900' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-700/50'}"
+        >
+          <span class="text-base sm:text-lg">⚔️</span>
+          <div class="text-left leading-tight">
+            <div class="font-extrabold tracking-tight">Jalur SNBT 2026</div>
+            <div class="text-[10px] font-medium opacity-85 hidden sm:block">Tes UTBK Terstandar (Min. 40% Kuota)</div>
+          </div>
+        </button>
+      </div>
+
+      <!-- SNPMB Official Source Badge -->
+      <div class="flex items-center justify-between flex-wrap gap-2 px-3 py-2 rounded-xl ${isSnbp ? 'bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-900/40 text-emerald-900 dark:text-emerald-200' : 'bg-indigo-50/80 dark:bg-indigo-950/30 border border-indigo-200/60 dark:border-indigo-900/40 text-indigo-900 dark:text-indigo-200'} text-[11px] sm:text-xs">
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center justify-center w-4 h-4 rounded-full ${isSnbp ? 'bg-emerald-600 text-white' : 'bg-indigo-600 text-white'} text-[10px] font-black">✓</span>
+          <span>Sumber data resmi: <strong>Portal SNPMB Kemdiktisaintek</strong> (<a href="https://snpmb.id" target="_blank" rel="noopener" class="underline font-semibold hover:opacity-80">snpmb.id</a>)</span>
         </div>
+        <div class="flex items-center gap-1.5 text-[10px] font-bold">
+          <span class="inline-block w-2 h-2 rounded-full ${isSnbp ? 'bg-emerald-500 animate-pulse' : 'bg-indigo-500 animate-pulse'}"></span>
+          <span>146 PTN NASIONAL</span>
+        </div>
+      </div>
+
+      <!-- Pathway Guideline Explainer -->
+      <div class="text-xs text-slate-600 dark:text-slate-400 px-1 leading-relaxed">
+        ${isSnbp 
+          ? '🏆 <strong>SNBP (Seleksi Nasional Berdasarkan Prestasi)</strong>: Berfokus pada rerata nilai rapor semester 1–5, prestasi terakreditasi, dan portofolio bagi program studi Seni & Olahraga. Tidak ada tes tertulis.' 
+          : '⚔️ <strong>SNBT (Seleksi Nasional Berdasarkan Tes UTBK)</strong>: Berfokus pada nilai ujian tertulis standar nasional (Tes Potensi Skolastik, Literasi Bahasa Indonesia & Inggris, serta Penalaran Matematika).'}
+      </div>
+    </div>
+
+    <!-- Main List Card -->
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden">
+      <!-- Search Bar -->
+      <div class="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800">
         <div class="relative">
           <input
             type="text"
             id="ptn-search-input"
             value="${escapeHtml(currentPtnSearchQuery)}"
             oninput="onPtnSearchInput(this.value)"
-            placeholder="Cari nama PTN..."
+            placeholder="Cari nama kampus, singkatan, kode SNPMB, atau provinsi..."
             class="w-full text-xs sm:text-sm py-2.5 sm:py-3 pl-4 pr-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 font-medium transition"
           />
           <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
@@ -3829,17 +3912,17 @@ function renderPtnSimpleList() {
         </div>
       </div>
 
-      <!-- 2x2 Filter Buttons -->
-      <div class="p-3 sm:p-4 bg-slate-50/50 dark:bg-slate-800/30 border-b border-slate-100 dark:border-slate-800">
-        <div class="grid grid-cols-2 gap-2 sm:gap-2.5">
+      <!-- Category Filter Tabs -->
+      <div class="p-3 sm:p-4 bg-slate-50/60 dark:bg-slate-800/30 border-b border-slate-100 dark:border-slate-800">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <!-- Semua -->
           <button
             type="button"
             onclick="setPtnCategoryFilter('all')"
-            class="w-full py-2 sm:py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition ${currentPtnFilterCategory === 'all' ? 'bg-[#3b66d1] dark:bg-indigo-600 text-white shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'}"
+            class="py-2 px-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition ${currentPtnFilterCategory === 'all' ? (isSnbp ? 'bg-emerald-600 text-white shadow-sm' : 'bg-indigo-600 text-white shadow-sm') : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'}"
           >
             <span>Semua</span>
-            <span class="${currentPtnFilterCategory === 'all' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'} text-[11px] font-bold px-2 py-0.5 rounded-full">
+            <span class="${currentPtnFilterCategory === 'all' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'} text-[11px] font-bold px-1.5 py-0.5 rounded-full">
               ${counts.all}
             </span>
           </button>
@@ -3848,10 +3931,10 @@ function renderPtnSimpleList() {
           <button
             type="button"
             onclick="setPtnCategoryFilter('akademik')"
-            class="w-full py-2 sm:py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition ${currentPtnFilterCategory === 'akademik' ? 'bg-[#3b66d1] dark:bg-indigo-600 text-white shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'}"
+            class="py-2 px-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition ${currentPtnFilterCategory === 'akademik' ? (isSnbp ? 'bg-emerald-600 text-white shadow-sm' : 'bg-indigo-600 text-white shadow-sm') : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'}"
           >
-            <span>PTN Akademik</span>
-            <span class="${currentPtnFilterCategory === 'akademik' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'} text-[11px] font-bold px-2 py-0.5 rounded-full">
+            <span>Akademik</span>
+            <span class="${currentPtnFilterCategory === 'akademik' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'} text-[11px] font-bold px-1.5 py-0.5 rounded-full">
               ${counts.akademik}
             </span>
           </button>
@@ -3860,10 +3943,10 @@ function renderPtnSimpleList() {
           <button
             type="button"
             onclick="setPtnCategoryFilter('vokasi')"
-            class="w-full py-2 sm:py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition ${currentPtnFilterCategory === 'vokasi' ? 'bg-[#3b66d1] dark:bg-indigo-600 text-white shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'}"
+            class="py-2 px-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition ${currentPtnFilterCategory === 'vokasi' ? (isSnbp ? 'bg-emerald-600 text-white shadow-sm' : 'bg-indigo-600 text-white shadow-sm') : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'}"
           >
-            <span>PTN Vokasi</span>
-            <span class="${currentPtnFilterCategory === 'vokasi' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'} text-[11px] font-bold px-2 py-0.5 rounded-full">
+            <span>Vokasi</span>
+            <span class="${currentPtnFilterCategory === 'vokasi' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'} text-[11px] font-bold px-1.5 py-0.5 rounded-full">
               ${counts.vokasi}
             </span>
           </button>
@@ -3872,10 +3955,10 @@ function renderPtnSimpleList() {
           <button
             type="button"
             onclick="setPtnCategoryFilter('ptkin')"
-            class="w-full py-2 sm:py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition ${currentPtnFilterCategory === 'ptkin' ? 'bg-[#3b66d1] dark:bg-indigo-600 text-white shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'}"
+            class="py-2 px-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition ${currentPtnFilterCategory === 'ptkin' ? (isSnbp ? 'bg-emerald-600 text-white shadow-sm' : 'bg-indigo-600 text-white shadow-sm') : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'}"
           >
             <span>PTKIN</span>
-            <span class="${currentPtnFilterCategory === 'ptkin' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'} text-[11px] font-bold px-2 py-0.5 rounded-full">
+            <span class="${currentPtnFilterCategory === 'ptkin' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'} text-[11px] font-bold px-1.5 py-0.5 rounded-full">
               ${counts.ptkin}
             </span>
           </button>
@@ -3883,7 +3966,7 @@ function renderPtnSimpleList() {
       </div>
 
       <!-- PTN List Items Container -->
-      <div id="ptn-items-container" class="divide-y divide-slate-100 dark:divide-slate-800 max-h-[70vh] overflow-y-auto">
+      <div id="ptn-items-container" class="divide-y divide-slate-100 dark:divide-slate-800 max-h-[72vh] overflow-y-auto">
         <!-- Rendered by renderPtnItemsOnly() -->
       </div>
     </div>
@@ -3896,23 +3979,32 @@ function renderPtnItemsOnly() {
   const container = document.getElementById("ptn-items-container");
   if (!container) return;
 
+  const pathway = currentPtnPathway || "snbt";
+  const ptnList = (window.SNPMB_PTN_DATA && window.SNPMB_PTN_DATA[pathway])
+    ? window.SNPMB_PTN_DATA[pathway]
+    : (Array.isArray(PTN_LIST) ? PTN_LIST : []);
+
   const query = currentPtnSearchQuery.toLowerCase().trim();
 
-  const filtered = PTN_LIST.filter(ptn => {
+  const filtered = ptnList.filter(ptn => {
     // Category match
     if (currentPtnFilterCategory !== "all") {
-      const cat = getPtnCategory(ptn);
+      const cat = getSnpmbPtnCategory(ptn);
       if (cat !== currentPtnFilterCategory) return false;
     }
 
-    // Search query match (name, code, shortName, location, or majors)
+    // Search query match
     if (query) {
-      const nameMatch = (ptn.name || "").toLowerCase().includes(query);
-      const codeMatch = (ptn.code || "").toLowerCase().includes(query);
-      const shortMatch = (ptn.shortName || "").toLowerCase().includes(query);
-      const locMatch = (ptn.location || "").toLowerCase().includes(query);
-      const majorMatch = Array.isArray(ptn.majors) && ptn.majors.some(m => (m.name || "").toLowerCase().includes(query));
-      return nameMatch || codeMatch || shortMatch || locMatch || majorMatch;
+      const name = (ptn.nama || ptn.name || "").toLowerCase();
+      const code = String(ptn.kode_ptn || ptn.code || ptn.id_ptn || "").toLowerCase();
+      const short = (ptn.shortName || "").toLowerCase();
+      let prov = "";
+      if (Array.isArray(ptn.provinsi) && ptn.provinsi[0]) {
+        prov = (ptn.provinsi[0].nama_prov1 || ptn.provinsi[0].nama_kota || "").toLowerCase();
+      } else if (ptn.location) {
+        prov = ptn.location.toLowerCase();
+      }
+      return name.includes(query) || code.includes(query) || short.includes(query) || prov.includes(query);
     }
 
     return true;
@@ -3927,21 +4019,53 @@ function renderPtnItemsOnly() {
     return;
   }
 
+  const isSnbp = pathway === "snbp";
+
   container.innerHTML = filtered.map(ptn => {
+    const ptnId = ptn.id_ptn || ptn.kode_ptn || ptn.id;
+    const name = ptn.nama || ptn.name || "";
+    const code = ptn.kode_ptn || ptn.code || ptn.id_ptn || "-";
+    const cat = getSnpmbPtnCategory(ptn);
+    const isPtnbh = ptn.is_ptnbh == 1;
+
+    let prov = "";
+    if (Array.isArray(ptn.provinsi) && ptn.provinsi[0]) {
+      prov = ptn.provinsi[0].nama_prov1 || ptn.provinsi[0].nama_kota || "";
+    } else if (ptn.location) {
+      prov = ptn.location;
+    }
+
+    let catBadge = "PTN Akademik";
+    let catClass = "bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200/60 dark:border-blue-900/60";
+    if (cat === "vokasi") {
+      catBadge = "PTN Vokasi";
+      catClass = "bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-200/60 dark:border-amber-900/60";
+    } else if (cat === "ptkin") {
+      catBadge = "PTKIN";
+      catClass = "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200/60 dark:border-emerald-900/60";
+    }
+
     return `
       <div
-        onclick="openPtnDetail('${ptn.id}')"
+        onclick="openPtnDetail('${ptnId}')"
         class="px-4 sm:px-5 py-3.5 sm:py-4 flex items-center justify-between hover:bg-slate-50/90 dark:hover:bg-slate-800/60 cursor-pointer transition-colors group"
       >
-        <div class="pr-3">
-          <div class="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100 uppercase tracking-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-            ${escapeHtml(ptn.name)}
+        <div class="pr-3 space-y-1">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border ${catClass}">
+              ${catBadge}
+            </span>
+            ${isPtnbh ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border border-purple-200/60">PTN-BH</span>` : ""}
+            ${prov ? `<span class="text-[11px] text-slate-400 dark:text-slate-500 font-medium">📍 ${escapeHtml(prov)}</span>` : ""}
           </div>
-          <div class="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-mono font-medium mt-0.5">
-            ${escapeHtml(ptn.code || "-")}
+          <div class="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100 uppercase tracking-tight group-hover:${isSnbp ? 'text-emerald-600 dark:text-emerald-400' : 'text-indigo-600 dark:text-indigo-400'} transition-colors">
+            ${escapeHtml(name)}
+          </div>
+          <div class="text-[11px] text-slate-400 dark:text-slate-500 font-mono font-medium">
+            Kode SNPMB: <strong>${escapeHtml(code)}</strong>
           </div>
         </div>
-        <div class="text-indigo-400 dark:text-indigo-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-transform group-hover:translate-x-1 flex-shrink-0">
+        <div class="${isSnbp ? 'text-emerald-400 group-hover:text-emerald-600' : 'text-indigo-400 group-hover:text-indigo-600'} transition-transform group-hover:translate-x-1 flex-shrink-0">
           <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
           </svg>
@@ -3968,12 +4092,17 @@ function backToPtnList() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function renderPtnDetail(ptnId) {
+async function renderPtnDetail(ptnId) {
   const listContainer = document.getElementById("ptn-screen-list");
   const detailContainer = document.getElementById("ptn-screen-detail");
   if (!detailContainer) return;
 
-  const ptn = PTN_LIST.find(p => p.id === ptnId);
+  const pathway = currentPtnPathway || "snbt";
+  const ptnList = (window.SNPMB_PTN_DATA && window.SNPMB_PTN_DATA[pathway])
+    ? window.SNPMB_PTN_DATA[pathway]
+    : (Array.isArray(PTN_LIST) ? PTN_LIST : []);
+
+  const ptn = ptnList.find(p => String(p.id_ptn) === String(ptnId) || String(p.kode_ptn) === String(ptnId) || String(p.id) === String(ptnId));
   if (!ptn) {
     backToPtnList();
     return;
@@ -3983,17 +4112,31 @@ function renderPtnDetail(ptnId) {
   detailContainer.classList.remove("hidden");
   window.scrollTo({ top: 0, behavior: "smooth" });
 
-  const totalMajors = Array.isArray(ptn.majors) ? ptn.majors.length : 0;
-  const saintekCount = Array.isArray(ptn.majors) ? ptn.majors.filter(m => m.category === "Saintek").length : 0;
-  const soshumCount = Array.isArray(ptn.majors) ? ptn.majors.filter(m => m.category === "Soshum").length : 0;
+  const name = ptn.nama || ptn.name || "";
+  const code = ptn.kode_ptn || ptn.code || ptn.id_ptn || "-";
+  const cat = getSnpmbPtnCategory(ptn);
+  const isPtnbh = ptn.is_ptnbh == 1;
+  const isSnbp = pathway === "snbp";
+
+  let prov = "";
+  if (Array.isArray(ptn.provinsi) && ptn.provinsi[0]) {
+    prov = ptn.provinsi[0].nama_prov1 || ptn.provinsi[0].nama_kota || "";
+  } else if (ptn.location) {
+    prov = ptn.location;
+  }
+  const web = ptn.web || ptn.website || "";
+
+  let catBadge = "PTN Akademik";
+  if (cat === "vokasi") catBadge = "PTN Vokasi";
+  else if (cat === "ptkin") catBadge = "PTKIN";
 
   detailContainer.innerHTML = `
-    <!-- Back Button -->
-    <div class="flex items-center justify-between gap-3">
+    <!-- Top Navigation & Pathway Toggle -->
+    <div class="flex items-center justify-between flex-wrap gap-2">
       <button
         type="button"
         onclick="backToPtnList()"
-        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold text-xs sm:text-sm shadow-sm transition"
+        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold text-xs sm:text-sm shadow-sm transition active:scale-95"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
@@ -4001,89 +4144,88 @@ function renderPtnDetail(ptnId) {
         <span>Kembali ke Daftar PTN</span>
       </button>
 
-      <span class="text-xs font-mono font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg">
-        SNPMB: ${escapeHtml(ptn.code || "-")}
-      </span>
+      <!-- Pathway Switcher Inside PTN -->
+      <div class="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
+        <button
+          type="button"
+          onclick="setSnpmbPathway('snbp')"
+          class="px-3 py-1.5 rounded-lg font-bold transition ${isSnbp ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}"
+        >
+          🏆 Kuota SNBP
+        </button>
+        <button
+          type="button"
+          onclick="setSnpmbPathway('snbt')"
+          class="px-3 py-1.5 rounded-lg font-bold transition ${!isSnbp ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}"
+        >
+          ⚔️ Kuota SNBT
+        </button>
+      </div>
     </div>
 
-    <!-- PTN Banner Card -->
-    <div class="bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-800 text-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-md relative overflow-hidden">
-      <div class="relative z-10 space-y-2.5">
+    <!-- PTN Header Card -->
+    <div class="${isSnbp ? 'bg-gradient-to-r from-emerald-800 via-teal-800 to-cyan-900' : 'bg-gradient-to-r from-blue-800 via-indigo-800 to-purple-900'} text-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-md relative overflow-hidden">
+      <div class="relative z-10 space-y-3">
         <div class="flex items-center gap-2 flex-wrap text-xs">
           <span class="px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md font-bold text-white">
-            ${escapeHtml(ptn.type || 'PTN')}
+            ${escapeHtml(catBadge)}
           </span>
-          <span class="px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-indigo-100">
-            📍 ${escapeHtml(ptn.location || 'Indonesia')}
+          ${isPtnbh ? `<span class="px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md font-bold text-purple-200">PTN-BH</span>` : ""}
+          <span class="px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-white/90">
+            📍 ${escapeHtml(prov || "Indonesia")}
           </span>
-          <span class="px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-indigo-100">
-            Wilayah: ${escapeHtml(ptn.region || 'Nasional')}
+          <span class="px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md font-mono font-bold text-white/90">
+            Kode: ${escapeHtml(code)}
           </span>
         </div>
+
         <h2 class="text-xl sm:text-2xl font-black uppercase tracking-tight">
-          ${escapeHtml(ptn.name)}
+          ${escapeHtml(name)}
         </h2>
-        <p class="text-xs sm:text-sm text-indigo-100 leading-relaxed">
-          Tersedia <strong>${totalMajors} Program Studi</strong> (${saintekCount} Saintek, ${soshumCount} Soshum). Tentukan target Pilihan 1 & Pilihan 2 untuk simulasi rasionalisasi peluang lolos SNBT.
-        </p>
+
+        <div class="flex items-center justify-between flex-wrap gap-2 text-xs text-white/90 pt-1">
+          <div>
+            Jalur Aktif: <strong class="text-white">${isSnbp ? '🏆 SNBP (Prestasi Rapor)' : '⚔️ SNBT (UTBK)'}</strong> • Data Resmi Portal SNPMB
+          </div>
+          ${web ? `
+            <a href="${web.startsWith('http') ? web : 'https://' + web}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-white font-semibold transition text-xs">
+              <span>🌐 Website Kampus</span>
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            </a>
+          ` : ""}
+        </div>
       </div>
     </div>
 
     <!-- Search & Filter Bar inside PTN -->
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3.5">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3">
       <div class="relative">
         <input
           type="text"
           id="ptn-detail-prodi-search"
           value="${escapeHtml(currentDetailProdiSearch)}"
           oninput="onDetailProdiSearch(this.value)"
-          placeholder="Cari jurusan di ${escapeHtml(ptn.shortName || ptn.name)} (cth: Kedokteran, Informatika, Akuntansi)..."
+          placeholder="Cari jurusan di ${escapeHtml(name)} (cth: Kedokteran, Informatika, Akuntansi, Farmasi)..."
           class="w-full text-xs sm:text-sm py-2.5 sm:py-3 pl-9 pr-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-indigo-500 font-medium transition"
         />
         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">🔍</span>
       </div>
 
       <div class="flex items-center justify-between flex-wrap gap-2 pt-1">
-        <!-- Rumpun Filter Pills -->
-        <div class="flex items-center gap-1.5 flex-wrap">
-          <span class="font-bold text-slate-400 text-[11px]">RUMPUN:</span>
-          <button
-            type="button"
-            onclick="setDetailCategoryFilter('all')"
-            class="px-2.5 py-1 rounded-full text-xs font-bold transition ${currentDetailCategory === 'all' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'}"
-          >
-            Semua
-          </button>
-          <button
-            type="button"
-            onclick="setDetailCategoryFilter('Saintek')"
-            class="px-2.5 py-1 rounded-full text-xs font-bold transition ${currentDetailCategory === 'Saintek' ? 'bg-cyan-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'}"
-          >
-            🔬 Saintek
-          </button>
-          <button
-            type="button"
-            onclick="setDetailCategoryFilter('Soshum')"
-            class="px-2.5 py-1 rounded-full text-xs font-bold transition ${currentDetailCategory === 'Soshum' ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'}"
-          >
-            ⚖️ Soshum
-          </button>
-        </div>
-
         <!-- Jenjang Filter Pills -->
         <div class="flex items-center gap-1.5 flex-wrap">
           <span class="font-bold text-slate-400 text-[11px]">JENJANG:</span>
           <button
             type="button"
             onclick="setDetailDegreeFilter('all')"
-            class="px-2.5 py-1 rounded-full text-xs font-bold transition ${currentDetailDegree === 'all' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'}"
+            class="px-2.5 py-1 rounded-full text-xs font-bold transition ${currentDetailDegree === 'all' ? (isSnbp ? 'bg-emerald-600 text-white shadow-sm' : 'bg-indigo-600 text-white shadow-sm') : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'}"
           >
             Semua
           </button>
           <button
             type="button"
             onclick="setDetailDegreeFilter('S1')"
-            class="px-2.5 py-1 rounded-full text-xs font-bold transition ${currentDetailDegree === 'S1' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'}"
+            class="px-2.5 py-1 rounded-full text-xs font-bold transition ${currentDetailDegree === 'S1' ? (isSnbp ? 'bg-emerald-600 text-white shadow-sm' : 'bg-indigo-600 text-white shadow-sm') : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'}"
           >
             🎓 S1
           </button>
@@ -4102,16 +4244,41 @@ function renderPtnDetail(ptnId) {
             🛠️ D3
           </button>
         </div>
+
+        <div id="ptn-prodi-counter" class="text-xs font-bold text-slate-500 dark:text-slate-400">
+          Memuat data program studi...
+        </div>
       </div>
     </div>
 
     <!-- Prodi Cards Container -->
     <div id="ptn-detail-prodi-container" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-      <!-- Injected by renderDetailProdiList() -->
+      <div class="col-span-full p-12 text-center text-slate-400 dark:text-slate-500 space-y-3">
+        <div class="spinner-border inline-block w-8 h-8 border-4 rounded-full border-t-transparent border-indigo-600 animate-spin"></div>
+        <p class="text-xs sm:text-sm font-medium">Mengambil data program studi resmi dari SNPMB Kemdiktisaintek...</p>
+      </div>
     </div>
   `;
 
-  renderDetailProdiList();
+  // Fetch prodis
+  isLoadingProdi = true;
+  try {
+    const prodis = await window.SNPMB_SERVICE.getProdiList(pathway, ptnId);
+    currentPtnProdiList = prodis || [];
+    renderDetailProdiList();
+  } catch(e) {
+    console.error("[SNPMB] Failed to load prodi:", e);
+    const c = document.getElementById("ptn-detail-prodi-container");
+    if (c) {
+      c.innerHTML = `
+        <div class="col-span-full p-8 text-center text-rose-500 bg-white dark:bg-slate-900 rounded-2xl border border-rose-200 dark:border-rose-900/60 text-xs sm:text-sm">
+          Gagal memuat data program studi dari portal SNPMB. Pastikan koneksi internet aktif atau coba beberapa saat lagi.
+        </div>
+      `;
+    }
+  } finally {
+    isLoadingProdi = false;
+  }
 }
 
 function onDetailProdiSearch(query) {
@@ -4121,29 +4288,33 @@ function onDetailProdiSearch(query) {
 
 function setDetailCategoryFilter(category) {
   currentDetailCategory = category;
-  renderPtnDetail(currentDetailPtnId);
+  renderDetailProdiList();
 }
 
 function setDetailDegreeFilter(degree) {
   currentDetailDegree = degree;
-  renderPtnDetail(currentDetailPtnId);
+  renderDetailProdiList();
 }
 
 function renderDetailProdiList() {
   const container = document.getElementById("ptn-detail-prodi-container");
+  const counterEl = document.getElementById("ptn-prodi-counter");
   if (!container) return;
 
-  const ptn = PTN_LIST.find(p => p.id === currentDetailPtnId);
-  if (!ptn || !Array.isArray(ptn.majors)) return;
+  const pathway = currentPtnPathway || "snbt";
+  const isSnbp = pathway === "snbp";
+  const query = (currentDetailProdiSearch || "").toLowerCase().trim();
 
-  const query = currentDetailProdiSearch.toLowerCase().trim();
-
-  const filtered = ptn.majors.filter(m => {
-    const matchCategory = currentDetailCategory === "all" || m.category === currentDetailCategory;
-    const matchDegree = currentDetailDegree === "all" || (m.degree || "S1") === currentDetailDegree;
-    const matchSearch = !query || (m.name || "").toLowerCase().includes(query);
-    return matchCategory && matchDegree && matchSearch;
+  const filtered = (currentPtnProdiList || []).filter(p => {
+    const matchDegree = currentDetailDegree === "all" || (p.jenjang || "S1").toUpperCase() === currentDetailDegree.toUpperCase();
+    const nameMatch = !query || (p.nama || "").toLowerCase().includes(query);
+    const codeMatch = !query || String(p.kode_prodi || "").toLowerCase().includes(query);
+    return matchDegree && (nameMatch || codeMatch);
   });
+
+  if (counterEl) {
+    counterEl.textContent = `${filtered.length} Program Studi`;
+  }
 
   if (filtered.length === 0) {
     container.innerHTML = `
@@ -4157,11 +4328,15 @@ function renderDetailProdiList() {
   const profile = getUserProfile();
   const loggedIn = typeof isUserLoggedIn === "function" ? isUserLoggedIn() : false;
 
-  container.innerHTML = filtered.map(m => {
-    const isP1 = loggedIn && profile.targetMajorId === m.id;
-    const isP2 = loggedIn && profile.targetMajorId2 === m.id;
-    const degree = m.degree || "S1";
-    const ratio = (m.quota && m.applicants) ? Math.round(m.applicants / m.quota) : "-";
+  container.innerHTML = filtered.map(p => {
+    const prodiId = String(p.kode_prodi || p.id_prodi);
+    const isP1 = loggedIn && profile.targetMajorId === prodiId;
+    const isP2 = loggedIn && profile.targetMajorId2 === prodiId;
+    const degree = p.jenjang || "S1";
+    const metrics = window.SNPMB_SERVICE.computeMetrics(p, pathway);
+    const portofolio = p.nama_portofolio && p.nama_portofolio !== "Tidak Ada" && p.kode_portofolio != 0
+      ? p.nama_portofolio
+      : null;
 
     let degreeBadgeClass = "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800";
     let degreeIcon = "🎓";
@@ -4176,62 +4351,285 @@ function renderDetailProdiList() {
     return `
       <div class="bg-white dark:bg-slate-900 border rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between ${isP1 ? 'border-indigo-500 ring-2 ring-indigo-200 dark:ring-indigo-900' : isP2 ? 'border-amber-400 ring-2 ring-amber-100 dark:ring-amber-900' : 'border-slate-200 dark:border-slate-800'}">
         <div class="space-y-3">
-          <!-- Top Tags -->
+          <!-- Top Badges -->
           <div class="flex items-center gap-1.5 flex-wrap">
             <span class="px-2 py-0.5 rounded-md text-[11px] font-bold border ${degreeBadgeClass}">
               ${degreeIcon} ${degree}
             </span>
-            <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold ${m.category === 'Saintek' ? 'bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800' : 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'}">
-              ${m.category}
+            <span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+              SNPMB: ${escapeHtml(p.kode_prodi || "-")}
             </span>
-            ${m.competitiveness ? `<span class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">Peminat: ${m.competitiveness}</span>` : ''}
+            ${p.is_new == 1 ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200">✨ Prodi Baru</span>` : ""}
+            <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold ${metrics.compColor}">
+              ${metrics.competitivenessLabel}
+            </span>
           </div>
 
-          <!-- Prodi Title -->
+          <!-- Title -->
           <div>
             <h3 class="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white leading-snug">
-              ${escapeHtml(m.name)}
+              ${escapeHtml(p.nama)}
             </h3>
+            ${portofolio ? `
+              <div class="text-[11px] text-amber-700 dark:text-amber-400 mt-1 flex items-center gap-1 font-medium">
+                <span>🎨 Portofolio:</span> <strong class="truncate">${escapeHtml(portofolio)}</strong>
+              </div>
+            ` : ""}
           </div>
 
-          <!-- Stats Grid -->
+          <!-- Metrics Grid -->
           <div class="grid grid-cols-3 gap-2 p-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-xl text-center">
             <div>
-              <div class="text-[10px] text-slate-400 font-medium">Passing Grade</div>
-              <div class="font-black text-indigo-600 dark:text-indigo-400 text-sm sm:text-base mt-0.5">${m.targetScore || "-"}</div>
+              <div class="text-[10px] text-slate-400 font-medium">Daya Tampung ${isSnbp ? 'SNBP' : 'SNBT'}</div>
+              <div class="font-black ${isSnbp ? 'text-emerald-600 dark:text-emerald-400' : 'text-indigo-600 dark:text-indigo-400'} text-sm sm:text-base mt-0.5">
+                ${metrics.dayaTampung ? metrics.dayaTampung.toLocaleString('id') : "-"} kursi
+              </div>
             </div>
             <div>
-              <div class="text-[10px] text-slate-400 font-medium">Daya Tampung</div>
-              <div class="font-bold text-slate-800 dark:text-slate-200 text-xs sm:text-sm mt-0.5">${m.quota || "-"} kursi</div>
+              <div class="text-[10px] text-slate-400 font-medium">Peminat Terakhir</div>
+              <div class="font-bold text-slate-800 dark:text-slate-200 text-xs sm:text-sm mt-0.5">
+                ${metrics.peminat ? metrics.peminat.toLocaleString('id') : "-"}
+              </div>
             </div>
             <div>
               <div class="text-[10px] text-slate-400 font-medium">Keketatan</div>
-              <div class="font-bold text-slate-800 dark:text-slate-200 text-xs sm:text-sm mt-0.5">${ratio !== "-" ? `1 : ${ratio}` : "-"}</div>
+              <div class="font-bold text-slate-800 dark:text-slate-200 text-xs sm:text-sm mt-0.5">
+                ${metrics.ratio ? `1 : ${metrics.ratio}` : "-"}
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Action Buttons -->
-        <div class="pt-3.5 mt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
+        <div class="pt-3.5 mt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
+          <!-- View 5-Year History Button -->
           <button
             type="button"
-            onclick="setTargetChoice('${m.id}', 1)"
-            class="flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 ${isP1 ? 'bg-indigo-600 text-white shadow-sm' : 'bg-indigo-50 dark:bg-slate-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-slate-700'}"
+            onclick="openSnpmbModal('${prodiId}')"
+            class="w-full py-1.5 px-3 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition flex items-center justify-center gap-1.5"
           >
-            <span>${isP1 ? 'Pilihan 1 ✓' : 'Pilihan 1 🎯'}</span>
+            <span>📊</span> <span>Lihat Riwayat & Tren 5 Tahun SNPMB</span>
           </button>
-          <button
-            type="button"
-            onclick="setTargetChoice('${m.id}', 2)"
-            class="flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 ${isP2 ? 'bg-amber-500 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}"
-          >
-            <span>${isP2 ? 'Pilihan 2 ✓' : 'Pilihan 2 🛡️'}</span>
-          </button>
+
+          <!-- Pilihan 1 & 2 Buttons -->
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              onclick="setTargetChoice('${prodiId}', 1)"
+              class="flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 ${isP1 ? (isSnbp ? 'bg-emerald-600 text-white shadow-sm' : 'bg-indigo-600 text-white shadow-sm') : 'bg-indigo-50 dark:bg-slate-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-slate-700'}"
+            >
+              <span>${isP1 ? 'Pilihan 1 ✓' : 'Pilihan 1 🎯'}</span>
+            </button>
+            <button
+              type="button"
+              onclick="setTargetChoice('${prodiId}', 2)"
+              class="flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 ${isP2 ? 'bg-amber-500 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}"
+            >
+              <span>${isP2 ? 'Pilihan 2 ✓' : 'Pilihan 2 🛡️'}</span>
+            </button>
+          </div>
         </div>
       </div>
     `;
   }).join("");
 }
+
+// Modal Detail Prodi & Riwayat 5 Tahun SNPMB
+function openSnpmbModal(prodiKode) {
+  const modal = document.getElementById("snpmb-prodi-modal");
+  const headerEl = document.getElementById("snpmb-modal-header");
+  const bodyEl = document.getElementById("snpmb-modal-body");
+  const footerEl = document.getElementById("snpmb-modal-footer");
+  if (!modal || !headerEl || !bodyEl || !footerEl) return;
+
+  const pathway = currentPtnPathway || "snbt";
+  const isSnbp = pathway === "snbp";
+
+  let prodi = null;
+  if (Array.isArray(currentPtnProdiList)) {
+    prodi = currentPtnProdiList.find(p => String(p.kode_prodi || p.id_prodi) === String(prodiKode));
+  }
+  if (!prodi && window.__SNPMB_PRODI_CACHE__ && window.__SNPMB_PRODI_CACHE__[String(prodiKode)]) {
+    const cached = window.__SNPMB_PRODI_CACHE__[String(prodiKode)];
+    prodi = {
+      nama: cached.name,
+      jenjang: cached.degree,
+      kode_prodi: cached.kode_prodi || prodiKode,
+      daya_tampung_snbp: cached.quota,
+      daya_tampung_snbt: cached.quota,
+      nama_portofolio: cached.portofolio,
+      history_daya_tampung: cached.history || [],
+      sebaran_peminat: cached.sebaran || []
+    };
+  }
+  if (!prodi) return;
+
+  activeModalProdi = prodi;
+  const metrics = window.SNPMB_SERVICE.computeMetrics(prodi, pathway);
+  const porto = prodi.nama_portofolio || "Tidak Ada";
+
+  headerEl.className = `p-4 sm:p-5 text-white relative flex-shrink-0 ${isSnbp ? 'bg-gradient-to-r from-emerald-700 to-teal-800' : 'bg-gradient-to-r from-blue-700 to-indigo-800'}`;
+  headerEl.innerHTML = `
+    <div class="pr-8 space-y-1">
+      <div class="flex items-center gap-2 text-xs font-bold opacity-90">
+        <span class="px-2 py-0.5 rounded bg-white/20 uppercase tracking-wider">${prodi.jenjang || "S1"}</span>
+        <span>Kode SNPMB: ${escapeHtml(prodi.kode_prodi || "-")}</span>
+        ${prodi.is_new == 1 ? `<span class="px-2 py-0.5 rounded bg-rose-500 text-white">✨ Baru</span>` : ""}
+      </div>
+      <h3 class="text-base sm:text-xl font-black leading-snug">
+        ${escapeHtml(prodi.nama)}
+      </h3>
+      <p class="text-xs opacity-90">Data Resmi Portal SNPMB Kemdiktisaintek (${isSnbp ? 'Jalur SNBP 2026' : 'Jalur SNBT 2026'})</p>
+    </div>
+    <button
+      type="button"
+      onclick="closeSnpmbModal()"
+      class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white font-bold transition"
+    >
+      ✕
+    </button>
+  `;
+
+  // Riwayat 5 Tahun Table
+  const history = metrics.history || [];
+  let historyTableHtml = "";
+  if (history.length > 0) {
+    const sorted = [...history].sort((a, b) => b.tahun - a.tahun);
+    historyTableHtml = `
+      <div class="space-y-2">
+        <h4 class="font-bold text-slate-800 dark:text-slate-200 text-xs sm:text-sm flex items-center gap-1.5">
+          <span>📈</span> <span>Riwayat Peminat & Daya Tampung (5 Tahun Terakhir)</span>
+        </h4>
+        <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+          <table class="w-full text-xs text-left border-collapse">
+            <thead class="bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700">
+              <tr>
+                <th class="py-2.5 px-3">Tahun</th>
+                <th class="py-2.5 px-3">Daya Tampung</th>
+                <th class="py-2.5 px-3">Peminat</th>
+                <th class="py-2.5 px-3">Diterima</th>
+                <th class="py-2.5 px-3">Keketatan (%)</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+              ${sorted.map(h => {
+                const dt = parseInt(h.daya_tampung || 0, 10);
+                const pem = parseInt(h.peminat || 0, 10);
+                const ter = parseInt(h.terima || dt, 10);
+                const pct = (dt > 0 && pem > 0) ? ((dt / pem) * 100).toFixed(2) + '%' : '—';
+                return `
+                  <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                    <td class="py-2 px-3 font-bold text-slate-800 dark:text-slate-200">${h.tahun}</td>
+                    <td class="py-2 px-3">${dt ? dt.toLocaleString('id') : '—'}</td>
+                    <td class="py-2 px-3 font-semibold">${pem ? pem.toLocaleString('id') : '—'}</td>
+                    <td class="py-2 px-3 text-emerald-600 dark:text-emerald-400 font-semibold">${ter ? ter.toLocaleString('id') : '—'}</td>
+                    <td class="py-2 px-3 font-bold text-indigo-600 dark:text-indigo-400">${pct}</td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  } else {
+    historyTableHtml = `
+      <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl text-center text-slate-400 text-xs">
+        Riwayat 5 tahun belum tersedia untuk prodi ini di portal SNPMB.
+      </div>
+    `;
+  }
+
+  // Sebaran Peminat per Provinsi (khusus SNBT jika ada)
+  let sebaranHtml = "";
+  if (!isSnbp && Array.isArray(prodi.sebaran_peminat) && prodi.sebaran_peminat.length > 0) {
+    const latestYear = Math.max(...prodi.sebaran_peminat.map(s => s.tahun || 0));
+    const yearSebaran = prodi.sebaran_peminat
+      .filter(s => s.tahun === latestYear)
+      .sort((a, b) => (b.jml_peminat || 0) - (a.jml_peminat || 0))
+      .slice(0, 10);
+
+    if (yearSebaran.length > 0) {
+      sebaranHtml = `
+        <div class="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <h4 class="font-bold text-slate-800 dark:text-slate-200 text-xs sm:text-sm flex items-center gap-1.5">
+            <span>🗺️</span> <span>Top 10 Asal Provinsi Peminat Terbanyak (${latestYear})</span>
+          </h4>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            ${yearSebaran.map(s => `
+              <div class="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs">
+                <span class="text-slate-700 dark:text-slate-300 truncate pr-1 font-medium">${escapeHtml(s.nama_prov || "-")}</span>
+                <span class="font-bold text-indigo-600 dark:text-indigo-400 flex-shrink-0">${(s.jml_peminat || 0).toLocaleString('id')}</span>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  bodyEl.innerHTML = `
+    <!-- Summary Chips -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-center">
+        <div class="text-[10px] text-slate-400 uppercase font-bold">Daya Tampung 2026</div>
+        <div class="font-black text-sm text-slate-900 dark:text-white mt-0.5">${metrics.dayaTampung || "—"} kursi</div>
+      </div>
+      <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-center">
+        <div class="text-[10px] text-slate-400 uppercase font-bold">Peminat Terakhir</div>
+        <div class="font-black text-sm text-slate-900 dark:text-white mt-0.5">${metrics.peminat ? metrics.peminat.toLocaleString('id') : "—"}</div>
+      </div>
+      <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-center">
+        <div class="text-[10px] text-slate-400 uppercase font-bold">Keketatan</div>
+        <div class="font-black text-sm ${isSnbp ? 'text-emerald-600' : 'text-indigo-600'} mt-0.5">${metrics.ratio ? `1 : ${metrics.ratio}` : "—"}</div>
+      </div>
+      <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-center">
+        <div class="text-[10px] text-slate-400 uppercase font-bold">Portofolio</div>
+        <div class="font-bold text-xs text-slate-700 dark:text-slate-300 mt-1 truncate" title="${escapeHtml(porto)}">${escapeHtml(porto)}</div>
+      </div>
+    </div>
+
+    <!-- 5-Year History Table -->
+    ${historyTableHtml}
+
+    <!-- Province Distribution -->
+    ${sebaranHtml}
+  `;
+
+  footerEl.innerHTML = `
+    <button
+      type="button"
+      onclick="setTargetChoice('${prodiKode}', 1); closeSnpmbModal();"
+      class="py-2 px-3.5 rounded-xl text-xs font-bold ${isSnbp ? 'bg-emerald-600' : 'bg-indigo-600'} text-white shadow-sm hover:opacity-90 transition"
+    >
+      🎯 Jadikan Pilihan 1
+    </button>
+    <button
+      type="button"
+      onclick="setTargetChoice('${prodiKode}', 2); closeSnpmbModal();"
+      class="py-2 px-3.5 rounded-xl text-xs font-bold bg-amber-500 text-white shadow-sm hover:opacity-90 transition"
+    >
+      🛡️ Jadikan Pilihan 2
+    </button>
+    <button
+      type="button"
+      onclick="closeSnpmbModal()"
+      class="py-2 px-3.5 rounded-xl text-xs font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600 transition"
+    >
+      Tutup
+    </button>
+  `;
+
+  modal.classList.remove("hidden");
+}
+window.openSnpmbModal = openSnpmbModal;
+
+function closeSnpmbModal() {
+  const modal = document.getElementById("snpmb-prodi-modal");
+  if (modal) modal.classList.add("hidden");
+  activeModalProdi = null;
+}
+window.closeSnpmbModal = closeSnpmbModal;
 
 // Set target choice langsung dari katalog / detail
 function setTargetChoice(majorId, choiceNumber) {
@@ -4242,21 +4640,49 @@ function setTargetChoice(majorId, choiceNumber) {
   }
 
   const m = findMajorById(majorId);
-  if (!m) return;
-
+  const pathway = currentPtnPathway || "snbt";
   const profile = getUserProfile();
-  if (choiceNumber === 1) {
-    profile.targetPtn = m.ptnId;
-    profile.targetMajorId = m.id;
-    profile.targetMajorName = `${m.name} (${m.ptnShort || m.ptnName})`;
-    profile.targetScore = m.targetScore;
-    showXpNotification(0, `🎯 ${m.name} (${m.ptnShort || m.ptnName}) dijadikan Pilihan 1!`);
+
+  if (m) {
+    if (choiceNumber === 1) {
+      profile.targetPtn = m.ptnId;
+      profile.targetMajorId = String(m.id || majorId);
+      profile.targetMajorName = `${m.name} (${m.ptnShort || m.ptnName})`;
+      profile.targetScore = m.targetScore || 640;
+      profile.targetPathway = pathway;
+      showXpNotification(0, `🎯 ${m.name} (${m.ptnShort || m.ptnName}) dijadikan Pilihan 1 ${pathway.toUpperCase()}!`);
+    } else {
+      profile.targetPtn2 = m.ptnId;
+      profile.targetMajorId2 = String(m.id || majorId);
+      profile.targetMajorName2 = `${m.name} (${m.ptnShort || m.ptnName})`;
+      profile.targetScore2 = m.targetScore || 640;
+      profile.targetPathway2 = pathway;
+      showXpNotification(0, `🛡️ ${m.name} (${m.ptnShort || m.ptnName}) dijadikan Pilihan 2 ${pathway.toUpperCase()}!`);
+    }
   } else {
-    profile.targetPtn2 = m.ptnId;
-    profile.targetMajorId2 = m.id;
-    profile.targetMajorName2 = `${m.name} (${m.ptnShort || m.ptnName})`;
-    profile.targetScore2 = m.targetScore;
-    showXpNotification(0, `🛡️ ${m.name} (${m.ptnShort || m.ptnName}) dijadikan Pilihan 2!`);
+    // Fallback jika tidak di cache tapi ada di currentPtnProdiList
+    const prodi = (currentPtnProdiList || []).find(p => String(p.kode_prodi || p.id_prodi) === String(majorId));
+    if (prodi) {
+      const ptn = (window.SNPMB_PTN_DATA && window.SNPMB_PTN_DATA[pathway])
+        ? window.SNPMB_PTN_DATA[pathway].find(p => String(p.id_ptn) === String(currentDetailPtnId))
+        : null;
+      const ptnName = ptn ? ptn.nama : "PTN";
+      if (choiceNumber === 1) {
+        profile.targetPtn = currentDetailPtnId;
+        profile.targetMajorId = String(majorId);
+        profile.targetMajorName = `${prodi.nama} (${ptnName})`;
+        profile.targetScore = 650;
+        profile.targetPathway = pathway;
+        showXpNotification(0, `🎯 ${prodi.nama} dijadikan Pilihan 1!`);
+      } else {
+        profile.targetPtn2 = currentDetailPtnId;
+        profile.targetMajorId2 = String(majorId);
+        profile.targetMajorName2 = `${prodi.nama} (${ptnName})`;
+        profile.targetScore2 = 650;
+        profile.targetPathway2 = pathway;
+        showXpNotification(0, `🛡️ ${prodi.nama} dijadikan Pilihan 2!`);
+      }
+    }
   }
 
   saveUserProfile(profile);
@@ -4265,6 +4691,7 @@ function setTargetChoice(majorId, choiceNumber) {
   renderPtnExplorer();
   if (activeTab === "rapor") renderRaporView();
 }
+window.setTargetChoice = setTargetChoice;
 
 // ============================================================
 // THEME ENGINE (Dark Mode / Light Mode Switcher)

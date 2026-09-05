@@ -587,17 +587,35 @@
 
     <!-- ------------------------------------------------------ -->
     <!-- ------------------------------------------------------ -->
-    <!-- VIEW 7: EKSPLORASI PTN & JURUSAN (SIMPLE & CLEAN) -->
+    <!-- VIEW 7: EKSPLORASI PTN & JURUSAN RESMI SNPMB (SNBP & SNBT) -->
     <!-- ------------------------------------------------------ -->
     <div id="view-ptn-explorer" class="hidden pb-12">
-      <!-- Screen 1: Simple PTN List View (as requested in reference design) -->
-      <div id="ptn-screen-list" class="max-w-md sm:max-w-xl mx-auto">
+      <!-- Screen 1: Simple PTN List View (SNBP & SNBT) -->
+      <div id="ptn-screen-list" class="max-w-2xl sm:max-w-3xl mx-auto space-y-4">
         <!-- Rendered by renderPtnSimpleList() -->
       </div>
 
       <!-- Screen 2: PTN Detail View (Program Studi & Rasionalisasi) -->
-      <div id="ptn-screen-detail" class="max-w-3xl mx-auto space-y-4 hidden">
+      <div id="ptn-screen-detail" class="max-w-4xl mx-auto space-y-4 hidden">
         <!-- Rendered by renderPtnDetail(ptnId) -->
+      </div>
+    </div>
+
+    <!-- Modal Detail & Riwayat Tren 5 Tahun SNPMB (https://snpmb.id) -->
+    <div id="snpmb-prodi-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 hidden animate-fade-in" onclick="if(event.target === this) closeSnpmbModal();">
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-scale-in">
+        <!-- Header -->
+        <div id="snpmb-modal-header" class="p-4 sm:p-5 text-white relative flex-shrink-0 bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-800">
+          <!-- Injected by JS -->
+        </div>
+        <!-- Body -->
+        <div id="snpmb-modal-body" class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1 text-slate-800 dark:text-slate-100 text-xs sm:text-sm">
+          <!-- Injected by JS -->
+        </div>
+        <!-- Footer -->
+        <div id="snpmb-modal-footer" class="p-3.5 sm:p-4 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2 flex-shrink-0">
+          <!-- Injected by JS -->
+        </div>
       </div>
     </div>
 
@@ -1080,6 +1098,8 @@
   <script src="js/data/bimbel_questions.js"></script>
   <script src="js/data/flashcards.js"></script>
   <script src="js/data/ptn_data.js"></script>
+  <script src="js/data/snpmb_ptn.js"></script>
+  <script src="js/snpmb_service.js"></script>
   <script src="js/cloud_leaderboard.js"></script>
   <script src="js/gamification.js"></script>
   <script src="js/cbt_engine.js"></script>

@@ -14321,10 +14321,14 @@ const PTN_LIST = [
 
 // Fungsi Helper Pencarian Jurusan
 function findMajorById(majorId) {
-  if (!majorId || !Array.isArray(PTN_LIST)) return null;
+  if (!majorId) return null;
+  if (typeof window !== "undefined" && window.__SNPMB_PRODI_CACHE__ && window.__SNPMB_PRODI_CACHE__[String(majorId)]) {
+    return window.__SNPMB_PRODI_CACHE__[String(majorId)];
+  }
+  if (!Array.isArray(PTN_LIST)) return null;
   for (const ptn of PTN_LIST) {
     if (!Array.isArray(ptn.majors)) continue;
-    const found = ptn.majors.find(m => m.id === majorId);
+    const found = ptn.majors.find(m => m.id === majorId || String(m.code || m.kode_prodi) === String(majorId));
     if (found) {
       return {
         ...found,
