@@ -1,0 +1,30 @@
+{
+  "name": "TembusPTN — Simulasi CBT & Bank Soal UTBK",
+  "short_name": "TembusPTN",
+  "description": "Platform simulasi CBT UTBK SNBT resmi, bank soal bimbel INTEN, rasionalisasi skor IRT, dan analisis SNBP gratis.",
+  "start_url": "/",
+  "id": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#020617",
+  "theme_color": "#0f172a",
+  "categories": [
+    "education",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "assets/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

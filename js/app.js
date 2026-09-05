@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderDashboard();
   initSettingsModal();
   renderLatex();
+  initPwaSupport();
 
   // Sinkronisasi data user aktif ke Cloud Leaderboard saat inisialisasi
   if (typeof isUserLoggedIn === "function" && isUserLoggedIn() && typeof getCurrentUser === "function" && typeof getUserProfile === "function") {
@@ -2491,6 +2492,24 @@ function renderRaporSnbtView() {
           </div>
         </div>
       </div>
+
+      <!-- Action Viral Share Buttons -->
+      <div class="mt-6 pt-5 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 w-full relative z-10">
+        <div class="flex items-center gap-2 text-xs text-indigo-200">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          <span>Pamerkan hasil belajarmu & ajak teman sekelas simulasi bareng!</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+          <button onclick="triggerShareScoreCard()" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 transition active:scale-95">
+            <span>📸</span>
+            <span>Buat Story IG / Status WA</span>
+          </button>
+          <button onclick="triggerShareScoreWhatsApp()" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs sm:text-sm shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition active:scale-95">
+            <span>💬</span>
+            <span>Kirim ke WhatsApp</span>
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Grid Visual Analytics -->
@@ -3192,6 +3211,31 @@ async function renderLeaderboard(forceRefresh = false) {
           `}
         </div>
       </div>
+
+      <!-- Viral Leaderboard Challenge Banner -->
+      <div class="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-amber-500/15 via-indigo-500/15 to-purple-500/15 border border-amber-400/30 dark:border-amber-400/20 backdrop-blur-sm space-y-3">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2 font-black text-sm text-slate-900 dark:text-white">
+              <span class="text-base">🔥</span>
+              <span>Tantang Teman Sekelas Adu Skor!</span>
+            </div>
+            <p class="text-xs text-slate-600 dark:text-slate-300">
+              Ajak teman bimbel & sekelasmu untuk merebut tahta peringkat #1 di Leaderboard Nasional TembusPTN.
+            </p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+            <button onclick="triggerShareLeaderboard('wa')" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-md transition flex items-center justify-center gap-1.5 active:scale-95">
+              <span>💬</span>
+              <span>Tantang di WA</span>
+            </button>
+            <button onclick="triggerShareLeaderboard('card')" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-md transition flex items-center justify-center gap-1.5 active:scale-95">
+              <span>📸</span>
+              <span>Story Peringkat</span>
+            </button>
+          </div>
+        </div>
+      </div>
     `;
     return;
   }
@@ -3297,6 +3341,31 @@ async function renderLeaderboard(forceRefresh = false) {
     ${podiumHtml}
     <div class="space-y-2.5">
       ${listItemsHtml}
+    </div>
+
+    <!-- Viral Leaderboard Challenge Banner -->
+    <div class="mt-6 p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-amber-500/15 via-indigo-500/15 to-purple-500/15 border border-amber-400/30 dark:border-amber-400/20 backdrop-blur-sm space-y-3">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 font-black text-sm text-slate-900 dark:text-white">
+            <span class="text-base">🔥</span>
+            <span>Tantang Teman Sekelas Adu Skor!</span>
+          </div>
+          <p class="text-xs text-slate-600 dark:text-slate-300">
+            Ajak teman bimbel & sekelasmu untuk merebut tahta peringkat #1 di Leaderboard Nasional TembusPTN.
+          </p>
+        </div>
+        <div class="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+          <button onclick="triggerShareLeaderboard('wa')" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-md transition flex items-center justify-center gap-1.5 active:scale-95">
+            <span>💬</span>
+            <span>Tantang di WA</span>
+          </button>
+          <button onclick="triggerShareLeaderboard('card')" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-md transition flex items-center justify-center gap-1.5 active:scale-95">
+            <span>📸</span>
+            <span>Story Peringkat</span>
+          </button>
+        </div>
+      </div>
     </div>
   `;
 }
@@ -5837,5 +5906,169 @@ window.onDetailProdiSearch = onDetailProdiSearch;
 window.setDetailCategoryFilter = setDetailCategoryFilter;
 window.setDetailDegreeFilter = setDetailDegreeFilter;
 window.setTargetChoice = setTargetChoice;
+
+// ============================================================
+// PWA (Progressive Web App) Support
+// ============================================================
+function initPwaSupport() {
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch((err) => {
+        console.warn('PWA ServiceWorker notice:', err);
+      });
+    });
+  }
+
+  let deferredPwaPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPwaPrompt = e;
+    const banner = document.getElementById('pwa-install-banner');
+    if (banner && !sessionStorage.getItem('tembusptn_pwa_dismissed')) {
+      banner.classList.remove('hidden');
+    }
+  });
+
+  const btnInstall = document.getElementById('btn-pwa-install');
+  if (btnInstall) {
+    btnInstall.addEventListener('click', async () => {
+      if (deferredPwaPrompt) {
+        deferredPwaPrompt.prompt();
+        const { outcome } = await deferredPwaPrompt.userChoice;
+        if (outcome === 'accepted') {
+          const banner = document.getElementById('pwa-install-banner');
+          if (banner) banner.classList.add('hidden');
+        }
+        deferredPwaPrompt = null;
+      } else {
+        alert('Untuk memasang TembusPTN, buka menu titik tiga di browser Anda lalu pilih "Tambahkan ke Layar Utama" / "Install App".');
+      }
+    });
+  }
+
+  const btnDismiss = document.getElementById('btn-pwa-dismiss');
+  if (btnDismiss) {
+    btnDismiss.addEventListener('click', () => {
+      const banner = document.getElementById('pwa-install-banner');
+      if (banner) banner.classList.add('hidden');
+      sessionStorage.setItem('tembusptn_pwa_dismissed', 'true');
+    });
+  }
+}
+
+// ============================================================
+// VIRAL LOOP & SOCIAL SHARING HANDLERS
+// ============================================================
+function triggerShareScoreCard() {
+  const history = typeof getExamHistory === 'function' ? getExamHistory() : [];
+  const latestResult = (currentReviewResult && currentReviewResult.result) || history[0];
+  if (!latestResult) {
+    alert('Selesaikan minimal 1 sesi Try Out CBT untuk membuat kartu skor estetik.');
+    return;
+  }
+  const profile = getUserProfile();
+  const major1 = findMajorById(profile.targetMajorId);
+  const major2 = findMajorById(profile.targetMajorId2);
+  const dualStrategy = analyzeDualStrategy(latestResult.overallScore, major1, major2);
+  const analysis = analyzeStrengthsAndWeaknesses(latestResult.subtestScores);
+  const activeUser = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+
+  if (window.ShareCard && typeof window.ShareCard.openScoreShareModal === 'function') {
+    window.ShareCard.openScoreShareModal({
+      overallScore: latestResult.overallScore || 0,
+      studentName: (activeUser && activeUser.name) || profile.name || 'Pejuang PTN 2026',
+      avatar: (activeUser && activeUser.avatar) || profile.avatar || '🎓',
+      target1Name: major1 ? major1.name : 'Pilihan 1 Belum Dipilih',
+      target1Ptn: major1 ? `${major1.ptnName} (${major1.ptnShort})` : '-',
+      target1Chance: dualStrategy && dualStrategy.r1 ? dualStrategy.r1.chancePercent : '-',
+      target2Name: major2 ? major2.name : 'Pilihan 2 Belum Dipilih',
+      target2Ptn: major2 ? `${major2.ptnName} (${major2.ptnShort})` : '-',
+      target2Chance: dualStrategy && dualStrategy.r2 ? dualStrategy.r2.chancePercent : '-',
+      strongestSubtest: analysis && analysis.strongest ? analysis.strongest.name : 'Penalaran Umum',
+      strongestScore: analysis && analysis.strongest ? analysis.strongest.score : '-',
+      date: latestResult.date || new Date().toISOString()
+    });
+  }
+}
+
+function triggerShareScoreWhatsApp() {
+  const history = typeof getExamHistory === 'function' ? getExamHistory() : [];
+  const latestResult = (currentReviewResult && currentReviewResult.result) || history[0];
+  if (!latestResult) {
+    alert('Selesaikan minimal 1 sesi Try Out CBT untuk membagikan skor ke WhatsApp.');
+    return;
+  }
+  const profile = getUserProfile();
+  const major1 = findMajorById(profile.targetMajorId);
+  const major2 = findMajorById(profile.targetMajorId2);
+  const dualStrategy = analyzeDualStrategy(latestResult.overallScore, major1, major2);
+  const activeUser = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+
+  if (window.ShareCard && typeof window.ShareCard.shareToWhatsApp === 'function') {
+    const text = window.ShareCard.buildScoreShareText({
+      overallScore: latestResult.overallScore || 0,
+      studentName: (activeUser && activeUser.name) || profile.name || 'Saya',
+      target1Name: major1 ? major1.name : '',
+      target1Ptn: major1 ? major1.ptnShort : '',
+      target1Chance: dualStrategy && dualStrategy.r1 ? dualStrategy.r1.chancePercent : '',
+      target2Name: major2 ? major2.name : '',
+      target2Ptn: major2 ? major2.ptnShort : '',
+      target2Chance: dualStrategy && dualStrategy.r2 ? dualStrategy.r2.chancePercent : ''
+    });
+    window.ShareCard.shareToWhatsApp(text);
+  }
+}
+
+function triggerShareLeaderboard(mode = 'wa') {
+  const profile = getUserProfile();
+  const activeUser = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+  const major1 = findMajorById(profile.targetMajorId);
+  const userXp = (activeUser && activeUser.xp) || (profile && profile.xp) || 0;
+  const userName = (activeUser && activeUser.name) || profile.name || 'Pejuang PTN';
+  const userPtn = major1 ? `${major1.name} - ${major1.ptnShort}` : (profile.targetPtn || 'PTN Impian');
+
+  let rank = 1;
+  const lbItems = document.querySelectorAll('#leaderboard-list > div.space-y-2\\.5 > div');
+  if (lbItems && lbItems.length) {
+    lbItems.forEach((el, idx) => {
+      if (el.textContent.includes('Kamu')) rank = idx + 4;
+    });
+  }
+
+  const payload = {
+    rank: rank,
+    xp: userXp,
+    studentName: userName,
+    ptn: userPtn
+  };
+
+  if (mode === 'card') {
+    if (window.ShareCard && typeof window.ShareCard.openLeaderboardShareModal === 'function') {
+      window.ShareCard.openLeaderboardShareModal(payload);
+    }
+  } else {
+    if (window.ShareCard && typeof window.ShareCard.buildLeaderboardShareText === 'function') {
+      const text = window.ShareCard.buildLeaderboardShareText(payload);
+      window.ShareCard.shareToWhatsApp(text);
+    }
+  }
+}
+
+function triggerShareReferral(channel = 'wa') {
+  const text = `Halo teman-teman pejuang PTN 2026/2027! 🎓🔥\n\nYuk latihan bareng di TembusPTN! Ada 1.800+ bank soal bimbel INTEN resmi, simulasi Try Out CBT berbobot IRT standar nasional, dan rasionalisasi peluang lolos PTN 100% GRATIS!\n\nLangsung coba di sini ya:\n👉 https://tembusptn.my.id`;
+
+  if (channel === 'wa') {
+    if (window.ShareCard) window.ShareCard.shareToWhatsApp(text);
+  } else {
+    if (window.ShareCard) window.ShareCard.copyToClipboard(text, 'Teks ajakan belajar bareng & link TembusPTN berhasil disalin! 🤝');
+  }
+}
+
+window.initPwaSupport = initPwaSupport;
+window.triggerShareScoreCard = triggerShareScoreCard;
+window.triggerShareScoreWhatsApp = triggerShareScoreWhatsApp;
+window.triggerShareLeaderboard = triggerShareLeaderboard;
+window.triggerShareReferral = triggerShareReferral;
+
 
 
