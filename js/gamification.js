@@ -238,6 +238,11 @@ function registerUser({ name, username, email, password, avatar, targetPtn, targ
   saveAllUsers(users);
   setActiveUserId(newId);
 
+  // Sync akun baru ke Cloud Leaderboard seketika
+  if (typeof window !== "undefined" && window.CloudLeaderboard && typeof window.CloudLeaderboard.syncUserToCloud === "function") {
+    window.CloudLeaderboard.syncUserToCloud(newUser, newUser.profile, true);
+  }
+
   return { success: true, user: newUser };
 }
 
@@ -266,6 +271,12 @@ function loginUser(identifier, password) {
   }
 
   setActiveUserId(foundUser.id);
+
+  // Sync profil saat login ke Cloud Leaderboard
+  if (typeof window !== "undefined" && window.CloudLeaderboard && typeof window.CloudLeaderboard.syncUserToCloud === "function") {
+    window.CloudLeaderboard.syncUserToCloud(foundUser, foundUser.profile || {}, true);
+  }
+
   return { success: true, user: foundUser };
 }
 
@@ -336,6 +347,11 @@ function saveUserProfile(profile) {
     if (profile.name) users[activeId].name = profile.name;
     if (profile.avatar) users[activeId].avatar = profile.avatar;
     saveAllUsers(users);
+
+    // Sync perubahan profil ke Cloud Leaderboard
+    if (typeof window !== "undefined" && window.CloudLeaderboard && typeof window.CloudLeaderboard.syncUserToCloud === "function") {
+      window.CloudLeaderboard.syncUserToCloud(users[activeId], profile);
+    }
   }
   localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(profile));
 }
@@ -551,8 +567,8 @@ function getUserXpForPeriod(profile, period = 'hari') {
   return Math.min(totalXp, periodSum);
 }
 
-// Leaderboard Nasional Pejuang UTBK Murni (Hanya Akun Terdaftar)
-function getLeaderboardData(period = 'hari') {
+// Leaderboard Lokal (Fallback jika offline atau tanpa koneksi cloud)
+function getLeaderboardDataLocal(period = 'hari') {
   const activeUser = getCurrentUser();
   const allUsers = getAllUsers();
 
@@ -585,6 +601,26 @@ function getLeaderboardData(period = 'hari') {
   return registeredEntries;
 }
 
+// Leaderboard Nasional Terpadu (Prioritaskan Cloud Cache, fallback ke lokal)
+function getLeaderboardData(period = 'hari') {
+  try {
+    const cached = localStorage.getItem("utbk_cloud_lb_cache_" + period);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (parsed && Array.isArray(parsed.data) && parsed.data.length > 0) {
+        const activeUser = getCurrentUser();
+        return parsed.data.map(item => ({
+          ...item,
+          isUser: Boolean(activeUser && item.id === activeUser.id),
+          name: (activeUser && item.id === activeUser.id) ? (item.rawName || item.name) + " (Kamu)" : (item.rawName || item.name)
+        }));
+      }
+    }
+  } catch(e) {}
+
+  return getLeaderboardDataLocal(period);
+}
+
 // Window Global Hooks for Browser
 if (typeof window !== 'undefined') {
   window.getAllUsers = getAllUsers;
@@ -602,6 +638,7 @@ if (typeof window !== 'undefined') {
   window.updateStreak = updateStreak;
   window.addXp = addXp;
   window.getUserXpForPeriod = getUserXpForPeriod;
+  window.getLeaderboardDataLocal = getLeaderboardDataLocal;
   window.getLeaderboardData = getLeaderboardData;
 }
 

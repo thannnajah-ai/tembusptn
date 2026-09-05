@@ -24,6 +24,15 @@ document.addEventListener("DOMContentLoaded", () => {
   initSettingsModal();
   renderLatex();
 
+  // Sinkronisasi data user aktif ke Cloud Leaderboard saat inisialisasi
+  if (typeof isUserLoggedIn === "function" && isUserLoggedIn() && typeof getCurrentUser === "function" && typeof getUserProfile === "function") {
+    const activeUser = getCurrentUser();
+    const prof = getUserProfile();
+    if (activeUser && typeof window.CloudLeaderboard !== "undefined" && typeof window.CloudLeaderboard.syncUserToCloud === "function") {
+      window.CloudLeaderboard.syncUserToCloud(activeUser, prof, false);
+    }
+  }
+
   // Navigasi Tab Tersimpan / URL Hash saat Refresh (Anti-Reset ke Beranda)
   const hashTab = window.location.hash ? window.location.hash.replace("#", "") : null;
   const savedTab = localStorage.getItem("tembusptn_active_tab");
@@ -31,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const initialTargetTab = validTabs.includes(hashTab) ? hashTab : (validTabs.includes(savedTab) ? savedTab : "dashboard");
   if (initialTargetTab && initialTargetTab !== "dashboard") {
     // Jika tab tujuan adalah fitur terlindungi dan belum login, arahkan ke Beranda
-    const protectedTabs = ["drill", "cbt", "rapor", "flashcards", "profile"];
+    const protectedTabs = ["drill", "cbt", "rapor", "flashcards", "bank-soal", "profile"];
     if (protectedTabs.includes(initialTargetTab) && (typeof isUserLoggedIn === "function" && !isUserLoggedIn())) {
       switchTab("dashboard");
     } else {
@@ -509,8 +518,18 @@ function switchTab(tabName) {
   if (tabName === "bank-soal") renderBankSoal();
   if (tabName === "flashcards") renderFlashcards();
   if (tabName === "ptn-explorer") renderPtnExplorer();
-  if (tabName === "leaderboard") renderLeaderboard();
   if (tabName === "profile") renderProfileView();
+  
+  if (tabName === "leaderboard") {
+    renderLeaderboard(true);
+    if (typeof window.CloudLeaderboard !== "undefined" && typeof window.CloudLeaderboard.startPolling === "function") {
+      window.CloudLeaderboard.startPolling(() => renderLeaderboard(false), 15000);
+    }
+  } else {
+    if (typeof window.CloudLeaderboard !== "undefined" && typeof window.CloudLeaderboard.stopPolling === "function") {
+      window.CloudLeaderboard.stopPolling();
+    }
+  }
 
   setTimeout(renderLatex, 50);
   if (window.lucide) lucide.createIcons();
@@ -2793,10 +2812,10 @@ let currentLeaderboardPeriod = "hari";
 
 function setLeaderboardPeriod(period) {
   currentLeaderboardPeriod = period || "hari";
-  renderLeaderboard();
+  renderLeaderboard(true);
 }
 
-function renderLeaderboard() {
+async function renderLeaderboard(forceRefresh = false) {
   const container = document.getElementById("leaderboard-list");
   if (!container) return;
 
@@ -2820,7 +2839,49 @@ function renderLeaderboard() {
   };
   const periodLabel = periodLabelMap[currentLeaderboardPeriod] || "Periode Ini";
 
-  const data = typeof getLeaderboardData === "function" ? getLeaderboardData(currentLeaderboardPeriod) : [];
+  // Tampilkan skeleton ringan jika pertama kali render atau refresh paksa
+  if (forceRefresh && (!container.children.length || container.innerHTML.includes("Belum Ada"))) {
+    container.innerHTML = `
+      <div class="space-y-3 animate-pulse py-2">
+        <div class="h-28 bg-slate-100 dark:bg-slate-800 rounded-3xl"></div>
+        <div class="h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl"></div>
+        <div class="h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl"></div>
+      </div>
+    `;
+  }
+
+  // Ambil data dari CloudLeaderboard
+  let cloudResult = null;
+  if (typeof window.CloudLeaderboard !== "undefined" && typeof window.CloudLeaderboard.fetchGlobalLeaderboard === "function") {
+    cloudResult = await window.CloudLeaderboard.fetchGlobalLeaderboard(currentLeaderboardPeriod, forceRefresh);
+  }
+
+  const data = (cloudResult && Array.isArray(cloudResult.data) && cloudResult.data.length > 0)
+    ? cloudResult.data
+    : (typeof getLeaderboardData === "function" ? getLeaderboardData(currentLeaderboardPeriod) : []);
+
+  // Perbarui status badge cloud
+  const statusBadge = document.getElementById("lb-status-badge");
+  if (statusBadge) {
+    const isOnline = cloudResult && cloudResult.status === "online";
+    const total = (cloudResult && cloudResult.totalUsers) ? cloudResult.totalUsers : data.length;
+    if (isOnline) {
+      statusBadge.innerHTML = `
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+        <span>Cloud Real-Time Live (${total} Pejuang)</span>
+      `;
+      statusBadge.className = "inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-bold shadow-sm";
+    } else {
+      statusBadge.innerHTML = `
+        <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+        <span>Peringkat Terhubung (${total} Pejuang)</span>
+      `;
+      statusBadge.className = "inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 text-xs font-bold shadow-sm";
+    }
+  }
 
   // Jika belum ada pejuang terdaftar atau belum ada yang mendapat XP
   if (!data || data.length === 0) {
@@ -2833,7 +2894,7 @@ function renderLeaderboard() {
         <div class="space-y-1">
           <h3 class="text-base font-bold text-slate-800 dark:text-slate-100">Belum Ada Pejuang di Leaderboard ${periodLabel}</h3>
           <p class="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
-            Leaderboard ini murni menampilkan akun terdaftar se-Indonesia. Kumpulkan XP dari Drill Kilat & Try Out untuk merebut tahta peringkat #1!
+            Leaderboard ini terhubung langsung antar seluruh siswa se-Indonesia. Kumpulkan XP dari Drill Kilat & Try Out untuk merebut tahta peringkat #1!
           </p>
         </div>
         <div class="flex items-center justify-center gap-3 pt-1">
