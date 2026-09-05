@@ -432,6 +432,10 @@ function initNavigation() {
 }
 
 function switchTab(tabName) {
+  if (typeof window !== "undefined" && window.TrafficTracker && typeof window.TrafficTracker.setCurrentTab === "function") {
+    try { window.TrafficTracker.setCurrentTab(tabName); } catch(e) {}
+  }
+
   // Jika sedang ujian CBT aktif dan pengguna ingin meninggalkan ujian, gunakan pop up custom modern (tanpa pop up native browser/google)
   if (activeTab === "cbt" && currentCbtSession && !currentCbtSession.isFinished && tabName !== "cbt") {
     openCbtLeaveModal(tabName);
