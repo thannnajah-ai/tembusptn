@@ -241,11 +241,31 @@
     return { available: true, nameAvailable: true, usernameAvailable: true, emailAvailable: true, field: null, message: "OK" };
   }
 
+  /**
+   * Reset seluruh pengguna dan leaderboard di Cloud database
+   */
+  async function resetCloudLeaderboard() {
+    try {
+      const res = await fetch(`${API_ENDPOINT}?action=reset`, { method: "POST" });
+      if (res.ok) {
+        const data = await res.json();
+        // Bersihkan cache lokal cloud
+        setLocalCachedUsers({});
+        return data;
+      }
+    } catch (err) {
+      console.warn("Reset cloud leaderboard error:", err);
+    }
+    setLocalCachedUsers({});
+    return { status: "success" };
+  }
+
   // Export ke Window Global
   window.CloudLeaderboard = {
     syncUserToCloud,
     fetchGlobalLeaderboard,
     checkAvailability,
+    resetCloudLeaderboard,
     startPolling,
     stopPolling,
     API_ENDPOINT

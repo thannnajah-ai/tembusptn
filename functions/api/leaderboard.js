@@ -23,12 +23,33 @@ export async function onRequestOptions() {
 export async function onRequestGet(context) {
   try {
     const url = new URL(context.request.url);
+    const kv = context.env && (context.env.LEADERBOARD_KV || context.env.KV_LEADERBOARD || context.env.TEMBUSPTN_KV);
+
+    // 0. RESET SELURUH DATA USER & LEADERBOARD (Cloud Purge)
+    if (url.searchParams.get("action") === "reset") {
+      if (kv) {
+        try { await kv.put("global_users_registry", JSON.stringify({})); } catch(e) {}
+      }
+      if (context.env && context.env.DB) {
+        try { await context.env.DB.prepare("DELETE FROM leaderboard_users").run(); } catch(e) {}
+      }
+      memoryRegistry = {};
+      return new Response(JSON.stringify({
+        status: "success",
+        message: "Seluruh data pengguna dan leaderboard cloud berhasil di-reset menjadi kosong (0 user).",
+        totalUsers: 0,
+        data: []
+      }), {
+        status: 200,
+        headers: CORS_HEADERS
+      });
+    }
+
     const period = url.searchParams.get("period") || "hari";
 
     let users = {};
 
     // 1. Cek apakah Cloudflare KV di-binding (LEADERBOARD_KV atau KV_LEADERBOARD)
-    const kv = context.env && (context.env.LEADERBOARD_KV || context.env.KV_LEADERBOARD || context.env.TEMBUSPTN_KV);
     if (kv) {
       try {
         const stored = await kv.get("global_users_registry", { type: "json" });
@@ -186,6 +207,29 @@ export async function onRequestGet(context) {
 // POST /api/leaderboard
 export async function onRequestPost(context) {
   try {
+    const url = new URL(context.request.url);
+    const kv = context.env && (context.env.LEADERBOARD_KV || context.env.KV_LEADERBOARD || context.env.TEMBUSPTN_KV);
+
+    // 0. RESET SELURUH DATA USER & LEADERBOARD (Cloud Purge)
+    if (url.searchParams.get("action") === "reset") {
+      if (kv) {
+        try { await kv.put("global_users_registry", JSON.stringify({})); } catch(e) {}
+      }
+      if (context.env && context.env.DB) {
+        try { await context.env.DB.prepare("DELETE FROM leaderboard_users").run(); } catch(e) {}
+      }
+      memoryRegistry = {};
+      return new Response(JSON.stringify({
+        status: "success",
+        message: "Seluruh data pengguna dan leaderboard cloud berhasil di-reset menjadi kosong (0 user).",
+        totalUsers: 0,
+        data: []
+      }), {
+        status: 200,
+        headers: CORS_HEADERS
+      });
+    }
+
     const body = await context.request.json();
     if (!body || !body.id) {
       return new Response(JSON.stringify({
@@ -320,4 +364,9 @@ export async function onRequestPost(context) {
       headers: CORS_HEADERS
     });
   }
+}
+
+// DELETE /api/leaderboard (Reset)
+export async function onRequestDelete(context) {
+  return onRequestGet(context);
 }

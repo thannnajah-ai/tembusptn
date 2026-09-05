@@ -3709,6 +3709,20 @@ function saveSettingsForm() {
   if (activeTab === "ptn-explorer") renderPtnExplorerList();
 }
 
+async function handleResetAllUsersClick() {
+  if (confirm("⚠️ PERINGATAN: Apakah kamu yakin ingin me-reset SELURUH data pengguna dan leaderboard (baik di perangkat ini maupun di Cloud)?\n\nSemua akun akan dihapus dan peringkat kembali menjadi 0.")) {
+    if (typeof resetAllUsers === "function") {
+      await resetAllUsers();
+    } else if (typeof resetAllUsersData === "function") {
+      resetAllUsersData();
+    }
+    alert("✅ Seluruh data akun dan leaderboard telah berhasil di-reset menjadi kosong (0 user)!");
+    location.reload();
+  }
+}
+
+window.handleResetAllUsersClick = handleResetAllUsersClick;
+
 // ============================================================
 // 9. EKSPLORASI PTN & JURUSAN (SIMPLE & CLEAN UI)
 // ============================================================

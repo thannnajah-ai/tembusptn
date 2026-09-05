@@ -26,6 +26,27 @@ export default {
 
       const kv = env && (env.LEADERBOARD_KV || env.KV_LEADERBOARD || env.TEMBUSPTN_KV);
 
+      // 0. RESET SELURUH DATA USER & LEADERBOARD (Cloud Purge)
+      if (url.searchParams.get("action") === "reset" || request.method === "DELETE") {
+        if (kv) {
+          try {
+            await kv.put("global_users_registry", JSON.stringify({}));
+          } catch(e) {
+            console.error("KV reset error:", e);
+          }
+        }
+        memoryRegistry = {};
+        return new Response(JSON.stringify({
+          status: "success",
+          message: "Seluruh data pengguna dan leaderboard cloud berhasil di-reset menjadi kosong (0 user).",
+          totalUsers: 0,
+          data: []
+        }), {
+          status: 200,
+          headers: CORS_HEADERS
+        });
+      }
+
       // GET /api/leaderboard
       if (request.method === "GET") {
         try {

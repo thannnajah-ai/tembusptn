@@ -46,14 +46,53 @@ function getAllUsers() {
   return {};
 }
 
-// Reset dan bersihkan seluruh data user & histori
+// Reset dan bersihkan seluruh data user & histori lokal
 function resetAllUsersData() {
+  if (typeof localStorage === 'undefined') return;
   localStorage.removeItem(STORAGE_KEY_USERS);
   localStorage.removeItem(STORAGE_KEY_ACTIVE_USER);
   localStorage.removeItem(STORAGE_KEY_USER);
+  localStorage.removeItem(STORAGE_KEY_STATS);
   localStorage.removeItem(STORAGE_KEY_TO_HISTORY);
   localStorage.removeItem(STORAGE_KEY_BOOKMARKS);
+  localStorage.removeItem("utbk_cloud_users_sync_cache");
+  localStorage.removeItem("utbk_cloud_last_sync");
+  localStorage.removeItem("utbk_cloud_lb_cache_hari");
+  localStorage.removeItem("utbk_cloud_lb_cache_minggu");
+  localStorage.removeItem("utbk_cloud_lb_cache_bulan");
 }
+
+// Reset seluruh data pengguna (Lokal + Cloud Database Terpusat)
+async function resetAllUsers() {
+  resetAllUsersData();
+  if (typeof window !== "undefined" && window.CloudLeaderboard && typeof window.CloudLeaderboard.resetCloudLeaderboard === "function") {
+    await window.CloudLeaderboard.resetCloudLeaderboard();
+  }
+  if (typeof window !== "undefined") {
+    if (typeof onUserSessionChanged === "function") {
+      onUserSessionChanged();
+    }
+    if (typeof renderLeaderboard === "function") {
+      renderLeaderboard();
+    }
+  }
+  return { success: true, message: "Seluruh data user dan leaderboard berhasil di-reset menjadi kosong (0 user)!" };
+}
+
+// Auto-purge global reset epoch: Memastikan SEMUA perangkat & tab otomatis reset ke kondisi bersih
+(function autoPurgeAllUsersOnResetRequest() {
+  try {
+    if (typeof localStorage === 'undefined') return;
+    const RESET_VERSION = "tembusptn_reset_epoch_2026_09_05_clean";
+    if (!localStorage.getItem(RESET_VERSION)) {
+      resetAllUsersData();
+      localStorage.setItem(RESET_VERSION, "true");
+      if (typeof fetch === 'function') {
+        fetch("/api/leaderboard?action=reset", { method: "POST" }).catch(() => {});
+      }
+    }
+  } catch(e) {}
+})();
 
 // Bersihkan demo bot lama satu kali saja jika masih ada, TANPA menghapus akun user riil
 (function purgeLegacyDemoUsers() {
@@ -794,6 +833,7 @@ if (typeof window !== 'undefined') {
   window.getAllUsers = getAllUsers;
   window.saveAllUsers = saveAllUsers;
   window.resetAllUsersData = resetAllUsersData;
+  window.resetAllUsers = resetAllUsers;
   window.getActiveUserId = getActiveUserId;
   window.setActiveUserId = setActiveUserId;
   window.getCurrentUser = getCurrentUser;
@@ -817,6 +857,7 @@ if (typeof module !== 'undefined' && module.exports) {
     getAllUsers,
     saveAllUsers,
     resetAllUsersData,
+    resetAllUsers,
     getActiveUserId,
     setActiveUserId,
     isUserLoggedIn,
