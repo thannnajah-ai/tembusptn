@@ -4683,8 +4683,22 @@ function openGoogleAuthModal() {
   const alertBox = document.getElementById("google-auth-alert");
   if (alertBox) alertBox.classList.add("hidden");
   if (modal) modal.classList.remove("hidden");
-  const nameInput = document.getElementById("g-name");
-  if (nameInput) nameInput.focus();
+
+  // Jika Google GIS SDK tersedia dan Google Client ID terkonfigurasi, trigger prompt resmi
+  if (window.google && window.google.accounts && window.google.accounts.id && window.GOOGLE_CLIENT_ID) {
+    try {
+      window.google.accounts.id.initialize({
+        client_id: window.GOOGLE_CLIENT_ID,
+        callback: handleGoogleCredentialResponse
+      });
+      window.google.accounts.id.prompt();
+    } catch(err) {
+      console.warn("Google GIS prompt fallback:", err);
+    }
+  }
+
+  // Render akun Google yang tersedia di browser/perangkat ini
+  renderGoogleAccountsList();
 }
 
 function closeGoogleAuthModal() {
@@ -4699,6 +4713,125 @@ function showGoogleAuthAlert(message, isSuccess = false) {
     ? "p-2.5 rounded-xl text-xs font-semibold leading-snug bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 block"
     : "p-2.5 rounded-xl text-xs font-semibold leading-snug bg-rose-50 dark:bg-rose-950/50 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800 block";
   box.textContent = message;
+}
+
+function renderGoogleAccountsList() {
+  const container = document.getElementById("google-accounts-container");
+  const accountsView = document.getElementById("google-accounts-view");
+  const inputView = document.getElementById("google-input-view");
+  const backBtn = document.getElementById("btn-back-to-accounts");
+  const title = document.getElementById("google-modal-title");
+
+  if (!container) return;
+
+  const users = typeof getAllUsers === "function" ? Object.values(getAllUsers()) : [];
+  const availableAccounts = users.filter(u => u.email || (u.profile && u.profile.email));
+
+  if (availableAccounts.length === 0) {
+    showGoogleInputView(false);
+    return;
+  }
+
+  if (title) title.textContent = "Pilih akun";
+  if (accountsView) accountsView.classList.remove("hidden");
+  if (inputView) inputView.classList.add("hidden");
+  if (backBtn) backBtn.classList.remove("hidden");
+
+  container.innerHTML = availableAccounts.map(u => {
+    const email = u.email || (u.profile && u.profile.email) || `${u.username}@gmail.com`;
+    const name = u.name || (u.profile && u.profile.name) || "Pejuang PTN";
+    const initial = (name.charAt(0) || "P").toUpperCase();
+    const avatar = u.avatar || (u.profile && u.profile.avatar) || "👨‍🎓";
+
+    return `
+      <div onclick="selectGoogleAccount('${email}', '${name.replace(/'/g, "\\'")}')" class="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/80 cursor-pointer transition group border border-transparent hover:border-slate-200 dark:hover:border-slate-700">
+        <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-sm group-hover:scale-105 transition shrink-0">
+          ${avatar !== "👨‍🎓" ? avatar : initial}
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="text-xs font-bold text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">${name}</div>
+          <div class="text-[11px] text-slate-500 dark:text-slate-400 truncate">${email}</div>
+        </div>
+        <div class="text-slate-400 group-hover:text-blue-500 transition text-xs font-semibold">
+          Masuk →
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function showGoogleInputView(canGoBack = true) {
+  const accountsView = document.getElementById("google-accounts-view");
+  const inputView = document.getElementById("google-input-view");
+  const backBtn = document.getElementById("btn-back-to-accounts");
+  const title = document.getElementById("google-modal-title");
+
+  if (accountsView) accountsView.classList.add("hidden");
+  if (inputView) inputView.classList.remove("hidden");
+  if (title) title.textContent = "Login dengan Google";
+  if (backBtn) {
+    if (canGoBack) backBtn.classList.remove("hidden");
+    else backBtn.classList.add("hidden");
+  }
+
+  const emailInput = document.getElementById("g-email-only");
+  if (emailInput) {
+    emailInput.focus();
+  }
+}
+
+function showGoogleAccountsView() {
+  renderGoogleAccountsList();
+}
+
+function selectGoogleAccount(email, name = "") {
+  if (!email) return;
+  executeGoogleLogin(name, email);
+}
+
+function handleGoogleInputSubmit(event) {
+  event.preventDefault();
+  const emailInput = document.getElementById("g-email-only");
+  const email = emailInput ? emailInput.value.trim() : "";
+  if (!email) return;
+
+  const prefix = email.split("@")[0].replace(/[^a-zA-Z0-9_]/g, "");
+  const inferredName = prefix ? (prefix.charAt(0).toUpperCase() + prefix.slice(1)) : "Pejuang PTN";
+
+  executeGoogleLogin(inferredName, email);
+}
+
+function executeGoogleLogin(name, email) {
+  const submitBtn = document.getElementById("btn-submit-google-email");
+  const originalText = submitBtn ? submitBtn.innerHTML : "Lanjutkan";
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<span>Menghubungkan... ⏳</span>`;
+  }
+
+  if (typeof loginOrRegisterWithGoogle === "function") {
+    const res = loginOrRegisterWithGoogle({ name, email, avatar: "👨‍🎓" });
+    if (res.success) {
+      showGoogleAuthAlert(res.message, true);
+      triggerConfetti();
+      setTimeout(() => {
+        closeGoogleAuthModal();
+        closeAuthModal();
+        onUserSessionChanged();
+        if (pendingTargetTab) {
+          const target = pendingTargetTab;
+          pendingTargetTab = null;
+          switchTab(target);
+        }
+      }, 600);
+    } else {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+      }
+      showGoogleAuthAlert(res.message, false);
+    }
+  }
 }
 
 // Decode Google JWT Credential dari Google Identity Services
@@ -4749,65 +4882,17 @@ function handleGoogleCredentialResponse(response) {
 
 // Trigger saat tombol "Lanjutkan dengan Google / Gmail" diklik
 function handleGoogleSignInClick() {
-  // Jika Google GIS SDK tersedia dan Google Client ID terkonfigurasi, trigger prompt resmi
-  if (window.google && window.google.accounts && window.google.accounts.id && window.GOOGLE_CLIENT_ID) {
-    try {
-      window.google.accounts.id.initialize({
-        client_id: window.GOOGLE_CLIENT_ID,
-        callback: handleGoogleCredentialResponse
-      });
-      window.google.accounts.id.prompt();
-      return;
-    } catch(err) {
-      console.warn("Google GIS prompt fallback:", err);
-    }
-  }
-
-  // Fast-track Google Modal: Cukup masukkan Gmail untuk langsung masuk/daftar seketika
   openGoogleAuthModal();
 }
 
-async function handleGoogleFormSubmit(event) {
-  event.preventDefault();
-  const name = document.getElementById("g-name").value.trim();
-  const email = document.getElementById("g-email").value.trim();
-
-  const submitBtn = document.getElementById("btn-submit-google-form");
-  const originalHtml = submitBtn ? submitBtn.innerHTML : "Masuk";
-  if (submitBtn) {
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = `<span>Menghubungkan Akun Google... ⏳</span>`;
-  }
-
-  if (typeof loginOrRegisterWithGoogle === "function") {
-    const res = loginOrRegisterWithGoogle({ name, email, avatar: "👨‍🎓" });
-    if (res.success) {
-      showGoogleAuthAlert(res.message, true);
-      triggerConfetti();
-      setTimeout(() => {
-        closeGoogleAuthModal();
-        closeAuthModal();
-        onUserSessionChanged();
-        if (pendingTargetTab) {
-          const target = pendingTargetTab;
-          pendingTargetTab = null;
-          switchTab(target);
-        }
-      }, 700);
-    } else {
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalHtml;
-      }
-      showGoogleAuthAlert(res.message, false);
-    }
-  }
-}
-
 window.handleGoogleSignInClick = handleGoogleSignInClick;
-window.handleGoogleFormSubmit = handleGoogleFormSubmit;
 window.openGoogleAuthModal = openGoogleAuthModal;
 window.closeGoogleAuthModal = closeGoogleAuthModal;
+window.renderGoogleAccountsList = renderGoogleAccountsList;
+window.showGoogleInputView = showGoogleInputView;
+window.showGoogleAccountsView = showGoogleAccountsView;
+window.selectGoogleAccount = selectGoogleAccount;
+window.handleGoogleInputSubmit = handleGoogleInputSubmit;
 window.handleGoogleCredentialResponse = handleGoogleCredentialResponse;
 
 function handleLogout() {
