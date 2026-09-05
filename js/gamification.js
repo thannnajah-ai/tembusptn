@@ -316,6 +316,64 @@ function registerUser({ name, username, email, password, avatar, targetPtn, targ
   return { success: true, user: newUser };
 }
 
+// Login atau Registrasi Instan via Google / Gmail
+function loginOrRegisterWithGoogle({ name, email, avatar = "👨‍🎓", googleId = null }) {
+  const cleanEmail = (email || "").trim().toLowerCase();
+  if (!cleanEmail || !cleanEmail.includes("@")) {
+    return { success: false, message: "Alamat email Gmail tidak valid!" };
+  }
+
+  const users = getAllUsers();
+  const userList = Object.values(users);
+
+  // 1. Cek apakah akun dengan email ini sudah pernah terdaftar sebelumnya
+  let existing = userList.find(u => 
+    (u.email && u.email.toLowerCase() === cleanEmail) ||
+    (u.profile && u.profile.email && u.profile.email.toLowerCase() === cleanEmail)
+  );
+
+  if (existing) {
+    // Akun sudah terdaftar -> Langsung Login seketika!
+    setActiveUserId(existing.id);
+    if (typeof window !== "undefined" && window.CloudLeaderboard && typeof window.CloudLeaderboard.syncUserToCloud === "function") {
+      window.CloudLeaderboard.syncUserToCloud(existing, existing.profile || {}, true);
+    }
+    return { 
+      success: true, 
+      isNew: false, 
+      user: existing,
+      message: `Selamat datang kembali, ${existing.name}! Masuk via Google berhasil. 🎉`
+    };
+  }
+
+  // 2. Akun belum ada -> Daftarkan secara otomatis dan langsung login!
+  const emailPrefix = cleanEmail.split("@")[0].replace(/[^a-zA-Z0-9_]/g, "").toLowerCase() || "pejuang";
+  let finalUsername = emailPrefix;
+  let counter = 1;
+  while (userList.some(u => (u.username && u.username.toLowerCase() === finalUsername.toLowerCase()) || (u.profile && u.profile.username && u.profile.username.toLowerCase() === finalUsername.toLowerCase()))) {
+    finalUsername = `${emailPrefix}${counter}`;
+    counter++;
+  }
+
+  const cleanName = (name || "").trim() || (emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1));
+  const autoPassword = "gauth_" + Math.random().toString(36).slice(2, 10);
+
+  const res = registerUser({
+    name: cleanName,
+    username: finalUsername,
+    email: cleanEmail,
+    password: autoPassword,
+    avatar: avatar || "👨‍🎓"
+  });
+
+  if (res.success) {
+    res.isNew = true;
+    res.message = `Pendaftaran via Google berhasil! Selamat bergabung, ${cleanName} (+50 XP). 🎉`;
+  }
+
+  return res;
+}
+
 // Login Akun (Mendukung Username, Email, atau Nama Lengkap)
 function loginUser(identifier, password) {
   const cleanId = (identifier || "").trim().toLowerCase();
@@ -701,6 +759,7 @@ if (typeof window !== 'undefined') {
   window.getCurrentUser = getCurrentUser;
   window.checkCredentialsAvailableLocal = checkCredentialsAvailableLocal;
   window.registerUser = registerUser;
+  window.loginOrRegisterWithGoogle = loginOrRegisterWithGoogle;
   window.loginUser = loginUser;
   window.logoutUser = logoutUser;
   window.isUserLoggedIn = isUserLoggedIn;
@@ -724,6 +783,7 @@ if (typeof module !== 'undefined' && module.exports) {
     getCurrentUser,
     checkCredentialsAvailableLocal,
     registerUser,
+    loginOrRegisterWithGoogle,
     loginUser,
     logoutUser,
     getUserProfile,

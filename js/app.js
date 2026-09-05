@@ -4672,6 +4672,143 @@ async function handleRegisterSubmit(event) {
   }
 }
 
+// ============================================================
+// FITUR REGISTER / LOGIN VIA GMAIL / GOOGLE
+// ============================================================
+
+window.GOOGLE_CLIENT_ID = window.GOOGLE_CLIENT_ID || ""; // Dapat diisi Client ID dari Google Cloud Console jika tersedia
+
+function openGoogleAuthModal() {
+  const modal = document.getElementById("google-auth-modal");
+  const alertBox = document.getElementById("google-auth-alert");
+  if (alertBox) alertBox.classList.add("hidden");
+  if (modal) modal.classList.remove("hidden");
+  const nameInput = document.getElementById("g-name");
+  if (nameInput) nameInput.focus();
+}
+
+function closeGoogleAuthModal() {
+  const modal = document.getElementById("google-auth-modal");
+  if (modal) modal.classList.add("hidden");
+}
+
+function showGoogleAuthAlert(message, isSuccess = false) {
+  const box = document.getElementById("google-auth-alert");
+  if (!box) return;
+  box.className = isSuccess
+    ? "p-2.5 rounded-xl text-xs font-semibold leading-snug bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 block"
+    : "p-2.5 rounded-xl text-xs font-semibold leading-snug bg-rose-50 dark:bg-rose-950/50 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800 block";
+  box.textContent = message;
+}
+
+// Decode Google JWT Credential dari Google Identity Services
+function parseGoogleJwt(token) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
+  } catch(e) {
+    return null;
+  }
+}
+
+// Handler callback saat Google GSI mengembalikan credential resmi
+function handleGoogleCredentialResponse(response) {
+  if (!response || !response.credential) return;
+  const payload = parseGoogleJwt(response.credential);
+  if (!payload || !payload.email) {
+    showAuthAlert("Gagal memverifikasi akun Google. Silakan coba lagi.", false);
+    return;
+  }
+
+  const name = payload.name || payload.given_name || "Pejuang PTN";
+  const email = payload.email;
+  const avatar = "👨‍🎓";
+
+  if (typeof loginOrRegisterWithGoogle === "function") {
+    const res = loginOrRegisterWithGoogle({ name, email, avatar, googleId: payload.sub });
+    if (res.success) {
+      closeAuthModal();
+      closeGoogleAuthModal();
+      showAuthAlert(res.message, true);
+      triggerConfetti();
+      onUserSessionChanged();
+      if (pendingTargetTab) {
+        const target = pendingTargetTab;
+        pendingTargetTab = null;
+        switchTab(target);
+      }
+    } else {
+      showAuthAlert(res.message, false);
+    }
+  }
+}
+
+// Trigger saat tombol "Lanjutkan dengan Google / Gmail" diklik
+function handleGoogleSignInClick() {
+  // Jika Google GIS SDK tersedia dan Google Client ID terkonfigurasi, trigger prompt resmi
+  if (window.google && window.google.accounts && window.google.accounts.id && window.GOOGLE_CLIENT_ID) {
+    try {
+      window.google.accounts.id.initialize({
+        client_id: window.GOOGLE_CLIENT_ID,
+        callback: handleGoogleCredentialResponse
+      });
+      window.google.accounts.id.prompt();
+      return;
+    } catch(err) {
+      console.warn("Google GIS prompt fallback:", err);
+    }
+  }
+
+  // Fast-track Google Modal: Cukup masukkan Gmail untuk langsung masuk/daftar seketika
+  openGoogleAuthModal();
+}
+
+async function handleGoogleFormSubmit(event) {
+  event.preventDefault();
+  const name = document.getElementById("g-name").value.trim();
+  const email = document.getElementById("g-email").value.trim();
+
+  const submitBtn = document.getElementById("btn-submit-google-form");
+  const originalHtml = submitBtn ? submitBtn.innerHTML : "Masuk";
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<span>Menghubungkan Akun Google... ⏳</span>`;
+  }
+
+  if (typeof loginOrRegisterWithGoogle === "function") {
+    const res = loginOrRegisterWithGoogle({ name, email, avatar: "👨‍🎓" });
+    if (res.success) {
+      showGoogleAuthAlert(res.message, true);
+      triggerConfetti();
+      setTimeout(() => {
+        closeGoogleAuthModal();
+        closeAuthModal();
+        onUserSessionChanged();
+        if (pendingTargetTab) {
+          const target = pendingTargetTab;
+          pendingTargetTab = null;
+          switchTab(target);
+        }
+      }, 700);
+    } else {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalHtml;
+      }
+      showGoogleAuthAlert(res.message, false);
+    }
+  }
+}
+
+window.handleGoogleSignInClick = handleGoogleSignInClick;
+window.handleGoogleFormSubmit = handleGoogleFormSubmit;
+window.openGoogleAuthModal = openGoogleAuthModal;
+window.closeGoogleAuthModal = closeGoogleAuthModal;
+window.handleGoogleCredentialResponse = handleGoogleCredentialResponse;
 
 function handleLogout() {
   const user = typeof getCurrentUser === "function" ? getCurrentUser() : null;
