@@ -318,11 +318,16 @@ function getSubtestPool(subtestId) {
 
 function getDiverseSample(pool, count, stageNumber = 1) {
   if (!pool || pool.length === 0) return [];
-  if (pool.length <= count) return [...pool];
+  if (pool.length <= count) {
+    const copy = [...pool];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
 
-  const stage = Math.max(1, parseInt(stageNumber, 10) || 1);
-
-  // Kelompokkan per kategori/topik agar soal dalam 1 sesi tidak berulang polanya
+  // Kelompokkan per kategori/topik agar soal terdistribusi merata
   const byCat = {};
   pool.forEach(q => {
     const cat = q.category || "Umum";
@@ -330,42 +335,61 @@ function getDiverseSample(pool, count, stageNumber = 1) {
     byCat[cat].push(q);
   });
 
+  // Fisher-Yates shuffle urutan kategori secara dinamis
   const catNames = Object.keys(byCat);
-  // Urutkan kategori secara deterministik berbasis stage agar setiap stage mendapatkan variasi unik
-  catNames.sort((a, b) => {
-    const hashA = (a.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0) * 19 + stage * 37) % 1000;
-    const hashB = (b.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0) * 19 + stage * 37) % 1000;
-    return hashA - hashB;
+  for (let i = catNames.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [catNames[i], catNames[j]] = [catNames[j], catNames[i]];
+  }
+
+  // Fisher-Yates shuffle butir soal di setiap kategori
+  catNames.forEach(cat => {
+    const list = byCat[cat];
+    for (let i = list.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [list[i], list[j]] = [list[j], list[i]];
+    }
   });
 
   const selected = [];
   const selectedIds = new Set();
+  const maxCategoryLen = Math.max(...catNames.map(c => byCat[c].length));
   let round = 0;
 
-  while (selected.length < count && round < pool.length) {
+  // Rotasi round-robin antar kategori dengan urutan yang sudah diacak murni
+  while (selected.length < count && round < maxCategoryLen) {
     for (const cat of catNames) {
       if (selected.length >= count) break;
       const list = byCat[cat];
-      const idx = (Math.floor((stage - 1) * 3) + round) % list.length;
-      const candidate = list[idx];
-      if (candidate && !selectedIds.has(candidate.id)) {
-        selected.push(candidate);
-        selectedIds.add(candidate.id);
+      if (round < list.length) {
+        const candidate = list[round];
+        if (candidate && !selectedIds.has(candidate.id)) {
+          selected.push(candidate);
+          selectedIds.add(candidate.id);
+        }
       }
     }
     round++;
   }
 
-  // Lengkapi jika jumlah kategori lebih sedikit dari count yang dibutuhkan
+  // Lengkapi jika masih kurang dengan mengacak sisa pool
   if (selected.length < count) {
-    const stride = Math.max(1, Math.floor(pool.length / count));
-    for (let i = 0; i < pool.length && selected.length < count; i++) {
-      const candidate = pool[(i * stride + stage * 7) % pool.length];
-      if (candidate && !selectedIds.has(candidate.id)) {
-        selected.push(candidate);
-        selectedIds.add(candidate.id);
-      }
+    const remaining = pool.filter(q => !selectedIds.has(q.id));
+    for (let i = remaining.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
     }
+    for (const candidate of remaining) {
+      if (selected.length >= count) break;
+      selected.push(candidate);
+      selectedIds.add(candidate.id);
+    }
+  }
+
+  // Acak urutan final agar urutan pengerjaan soal benar-benar segar dan tidak berpola
+  for (let i = selected.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [selected[i], selected[j]] = [selected[j], selected[i]];
   }
 
   return selected;

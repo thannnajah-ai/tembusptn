@@ -6,6 +6,10 @@ window.activeTab = activeTab;
 window.getActiveTab = () => activeTab;
 let currentDrillIndex = 0;
 let filteredDrillQuestions = [];
+let currentDrillSubtest = "all";
+let currentDrillQuestion = null;
+let drillAnsweredHistory = new Set();
+let drillSessionCount = 0;
 let currentCbtSession = null;
 let currentReviewResult = null;
 let flashcardIndex = 0;
@@ -1047,76 +1051,79 @@ function renderDashboard() {
 }
 
 // ============================================================
-// 2. DRILL MODE (Latihan Kilat Interaktif - Skuling style)
+// 2. DRILL MODE (Latihan Kilat Interaktif - Acak Murni Tiap Soal)
 // ============================================================
-function shuffleDiverseQuestions(arr) {
-  if (!arr || arr.length <= 1) return arr ? [...arr] : [];
-  // Kelompokkan berdasarkan kategori agar dua soal berturutan tidak pernah berpola atau berulang sama
-  const byCat = {};
-  arr.forEach(q => {
-    const cat = q.category || "Umum";
-    if (!byCat[cat]) byCat[cat] = [];
-    byCat[cat].push(q);
-  });
 
-  // Fisher-Yates shuffle di dalam tiap kategori
-  Object.keys(byCat).forEach(k => {
-    for (let i = byCat[k].length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [byCat[k][i], byCat[k][j]] = [byCat[k][j], byCat[k][i]];
+// Mengambil seluruh bank soal untuk subtes aktif
+function getDrillPool(subtestFilter = currentDrillSubtest) {
+  let pool = [];
+  if (subtestFilter === "all" || !subtestFilter) {
+    pool = (typeof QUESTIONS_DATA !== "undefined" && Array.isArray(QUESTIONS_DATA)) ? [...QUESTIONS_DATA] : [];
+  } else {
+    pool = (typeof QUESTIONS_DATA !== "undefined" && Array.isArray(QUESTIONS_DATA))
+      ? QUESTIONS_DATA.filter(q => q.subtest === subtestFilter)
+      : [];
+  }
+  if (pool.length === 0 && typeof QUESTIONS_DATA !== "undefined" && Array.isArray(QUESTIONS_DATA)) {
+    pool = [...QUESTIONS_DATA];
+  }
+  return pool;
+}
+
+// Memilih soal acak murni dari subtes yang sedang dikerjakan tanpa pola berulang
+function pickNextRandomDrillQuestion(subtestFilter = currentDrillSubtest) {
+  currentDrillSubtest = subtestFilter || "all";
+  const pool = getDrillPool(currentDrillSubtest);
+  if (!pool || pool.length === 0) return null;
+
+  // Saring soal yang belum pernah dijawab pada sesi latihan saat ini
+  let available = pool.filter(q => !drillAnsweredHistory.has(q.id));
+
+  // Jika seluruh soal di subtes ini telah selesai dikerjakan, reset riwayat sesi agar latihan tidak pernah berhenti
+  if (available.length === 0) {
+    drillAnsweredHistory.clear();
+    // Hindari mendapatkan soal yang persis sama dengan soal yang baru saja selesai dijawab
+    if (currentDrillQuestion) {
+      available = pool.filter(q => q.id !== currentDrillQuestion.id);
     }
-  });
-
-  // Acak urutan kategori
-  const catKeys = Object.keys(byCat);
-  for (let i = catKeys.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [catKeys[i], catKeys[j]] = [catKeys[j], catKeys[i]];
+    if (available.length === 0) available = pool;
   }
 
-  // Interleave silang antar kategori (kategori A -> kategori B -> kategori C...)
-  const result = [];
-  let round = 0;
-  let added = true;
-  while (added) {
-    added = false;
-    for (const k of catKeys) {
-      if (round < byCat[k].length) {
-        result.push(byCat[k][round]);
-        added = true;
-      }
-    }
-    round++;
-  }
-  return result;
+  // Pengacakan sejati (True Random Selection)
+  const randomIndex = Math.floor(Math.random() * available.length);
+  currentDrillQuestion = available[randomIndex];
+  drillAnsweredHistory.add(currentDrillQuestion.id);
+  drillSessionCount++;
+
+  // Kompatibilitas referensi lama
+  filteredDrillQuestions = [currentDrillQuestion];
+  currentDrillIndex = 0;
+
+  return currentDrillQuestion;
 }
 
 function renderDrillMode(subtestFilter = "all", reShuffle = true) {
-  let pool = [];
-  if (subtestFilter === "all") {
-    pool = [...QUESTIONS_DATA];
-  } else {
-    pool = QUESTIONS_DATA.filter(q => q.subtest === subtestFilter);
+  const isSubtestChanged = currentDrillSubtest !== subtestFilter;
+  currentDrillSubtest = subtestFilter || "all";
+
+  if (isSubtestChanged) {
+    drillAnsweredHistory.clear();
+    drillSessionCount = 0;
+    currentDrillQuestion = null;
   }
 
-  if (pool.length === 0) {
-    pool = [...QUESTIONS_DATA];
+  if (reShuffle || !currentDrillQuestion) {
+    pickNextRandomDrillQuestion(currentDrillSubtest);
   }
 
-  // Acak secara variatif dan interleave kategori agar bebas pola berulang
-  if (reShuffle || !filteredDrillQuestions || filteredDrillQuestions.length === 0) {
-    filteredDrillQuestions = shuffleDiverseQuestions(pool);
-  }
-
-  currentDrillIndex = 0;
-  renderDrillSubtestPills(subtestFilter);
+  renderDrillSubtestPills(currentDrillSubtest);
   renderCurrentDrillQuestion();
 }
 
 window.shuffleDrillQuestions = function() {
-  const activeBtn = document.querySelector("[data-drill-subtest].bg-indigo-600");
-  const subtestId = activeBtn ? activeBtn.getAttribute("data-drill-subtest") : "all";
-  renderDrillMode(subtestId || "all", true);
+  pickNextRandomDrillQuestion(currentDrillSubtest);
+  renderCurrentDrillQuestion();
+  showXpToast(0, "Soal berhasil diacak ulang! 🔀");
 };
 
 function startDrillSubtest(subtestId) {
@@ -1197,17 +1204,20 @@ function renderCurrentDrillQuestion() {
   const card = document.getElementById("drill-card-container");
   if (!card) return;
 
+  const pool = getDrillPool(currentDrillSubtest);
+  const q = currentDrillQuestion || pickNextRandomDrillQuestion(currentDrillSubtest);
+
+  if (!q) {
+    card.innerHTML = `<div class="p-8 text-center text-slate-500">Belum ada soal tersedia pada kategori ini. Silakan pilih subtes lain! 🚀</div>`;
+    return;
+  }
+
   // Update Drill Progress Bar
   const pBar = document.getElementById("drill-progress-bar");
   if (pBar) {
-    const pct = filteredDrillQuestions.length > 0 ? Math.round(((currentDrillIndex + 1) / filteredDrillQuestions.length) * 100) : 0;
+    const totalCount = pool.length || 1;
+    const pct = Math.min(100, Math.max(8, Math.round((drillAnsweredHistory.size / totalCount) * 100)));
     pBar.style.width = `${pct}%`;
-  }
-
-  const q = filteredDrillQuestions[currentDrillIndex];
-  if (!q) {
-    card.innerHTML = `<div class="p-8 text-center text-slate-500">Semua soal pada kategori ini telah selesai! 🎉</div>`;
-    return;
   }
 
   const isBookmarked = checkIsBookmarked(q.id);
@@ -1215,16 +1225,15 @@ function renderCurrentDrillQuestion() {
   card.innerHTML = `
     <div class="glass-card card-hover-lift rounded-3xl border border-slate-200 dark:border-slate-800 shadow-lg overflow-hidden">
       <!-- Header Soal -->
-      <!-- Header Soal -->
       <div class="p-3.5 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-start justify-between gap-2 bg-slate-50/70 dark:bg-slate-900/50">
         <div class="flex items-center flex-wrap gap-1.5 sm:gap-2 flex-1 min-w-0">
-          <span class="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-xl text-[11px] sm:text-xs font-bold bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">${q.subtestName}</span>
+          <span class="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-xl text-[11px] sm:text-xs font-bold bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">${q.subtestName || 'Subtes UTBK'}</span>
           <span class="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-xl text-[11px] sm:text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 inline-flex items-center gap-1 sm:gap-1.5 shadow-sm max-w-full">
             <span>📍 Sumber:</span>
             <strong class="text-blue-600 dark:text-blue-400 font-bold break-words">${q.source || 'SNBT Resmi'}</strong>
           </span>
-          <span class="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-xl text-[11px] sm:text-xs font-semibold ${q.difficulty === 'HOTS' ? 'bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800' : 'bg-amber-100 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800'}">${q.difficulty}</span>
-          <span class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">Soal ${currentDrillIndex + 1} dari ${filteredDrillQuestions.length}</span>
+          <span class="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-xl text-[11px] sm:text-xs font-semibold ${q.difficulty === 'HOTS' ? 'bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800' : 'bg-amber-100 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800'}">${q.difficulty || 'Standar'}</span>
+          <span class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">Latihan ke-${drillSessionCount} • Pool: ${pool.length} Soal (Diacak Otomatis 🔀)</span>
         </div>
         <button onclick="toggleBookmark('${q.id}')" class="p-1.5 sm:p-2 rounded-xl hover:bg-slate-200/60 dark:hover:bg-slate-700 transition shrink-0 ${isBookmarked ? 'text-amber-500' : 'text-slate-400'}">
           <i data-lucide="bookmark" class="w-4 h-4 sm:w-5 sm:h-5 ${isBookmarked ? 'fill-amber-500' : ''}"></i>
@@ -1245,7 +1254,7 @@ function renderCurrentDrillQuestion() {
 
         <!-- Opsi Pilihan Ganda -->
         <div class="space-y-2 sm:space-y-2.5 pt-1 sm:pt-2" id="drill-options-list">
-          ${q.options.map(opt => `
+          ${(q.options || []).map(opt => `
             <button onclick="handleDrillAnswer('${opt.key}')" id="drill-opt-${opt.key}" class="w-full text-left p-3 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-50/40 dark:hover:bg-indigo-950/30 transition flex items-start gap-2.5 sm:gap-3 group min-h-[46px] sm:min-h-[48px]">
               <span class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-slate-100 dark:bg-slate-800 group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center font-bold text-xs text-slate-700 dark:text-slate-300 shrink-0 transition shadow-sm mt-0.5">
                 ${opt.key}
@@ -1294,6 +1303,7 @@ function renderCurrentDrillQuestion() {
           <div class="flex justify-end pt-2">
             <button onclick="nextDrillQuestion()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 hover:from-indigo-700 hover:to-purple-700 text-white font-bold text-sm rounded-xl shadow-lg hover:shadow-sm flex items-center gap-2 transition card-hover-lift">
               <span>Soal Berikutnya</span>
+              <span class="text-xs opacity-90">🔀</span>
               <i data-lucide="arrow-right" class="w-4 h-4"></i>
             </button>
           </div>
@@ -1307,7 +1317,7 @@ function renderCurrentDrillQuestion() {
 }
 
 function handleDrillAnswer(selectedKey) {
-  const q = filteredDrillQuestions[currentDrillIndex];
+  const q = currentDrillQuestion;
   if (!q) return;
 
   // Disable all options
@@ -1320,12 +1330,12 @@ function handleDrillAnswer(selectedKey) {
 
   // Highlight
   if (isCorrect) {
-    selectedBtn.classList.add("bg-emerald-50", "dark:bg-emerald-950/50", "border-emerald-500", "ring-2", "ring-emerald-300");
+    if (selectedBtn) selectedBtn.classList.add("bg-emerald-50", "dark:bg-emerald-950/50", "border-emerald-500", "ring-2", "ring-emerald-300");
     addXp(15, "Jawaban Benar Latihan Kilat!");
     showXpToast(15, "Jawaban Benar! 🎉");
     updateDailyQuestProgress("quest_drill", 1);
   } else {
-    selectedBtn.classList.add("bg-rose-50", "dark:bg-rose-950/50", "border-rose-500", "ring-2", "ring-rose-300");
+    if (selectedBtn) selectedBtn.classList.add("bg-rose-50", "dark:bg-rose-950/50", "border-rose-500", "ring-2", "ring-rose-300");
     if (correctBtn) {
       correctBtn.classList.add("bg-emerald-50", "dark:bg-emerald-950/50", "border-emerald-500");
     }
@@ -1351,13 +1361,14 @@ function handleDrillAnswer(selectedKey) {
 }
 
 function nextDrillQuestion() {
-  if (currentDrillIndex < filteredDrillQuestions.length - 1) {
-    currentDrillIndex++;
-    renderCurrentDrillQuestion();
-  } else {
-    alert("Hebat! Kamu telah menyelesaikan semua soal latihan di sesi ini. Terus tingkatkan latihanmu! 🚀");
-    currentDrillIndex = 0;
-    renderCurrentDrillQuestion();
+  // Setiap habis mengerjakan sebuah soal, langsung acak murni dari subtes yang sedang dikerjakan
+  pickNextRandomDrillQuestion(currentDrillSubtest);
+  renderCurrentDrillQuestion();
+
+  // Scroll kembali ke atas kontainer latihan agar nyaman
+  const drillView = document.getElementById("view-drill");
+  if (drillView) {
+    drillView.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 }
 
