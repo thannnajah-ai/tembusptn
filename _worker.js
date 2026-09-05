@@ -512,7 +512,208 @@ export default {
       }
     }
 
-    // 3. FALLBACK ASET STATIS (HTML, CSS, JS, Gambar)
+    // 3. RUTE API KHUSUS ADMIN (Dilindungi Kunci Rahasia ADMIN_SECRET_KEY)
+    if (url.pathname.startsWith("/api/admin")) {
+      if (request.method === "OPTIONS") {
+        return new Response(null, {
+          status: 204,
+          headers: CORS_HEADERS
+        });
+      }
+
+      const ADMIN_SECRET_KEY = "tembusptn2026";
+      const providedKey = request.headers.get("x-admin-key") || url.searchParams.get("key") || url.searchParams.get("token");
+
+      if (providedKey !== ADMIN_SECRET_KEY) {
+        return new Response(JSON.stringify({
+          status: "error",
+          code: "UNAUTHORIZED",
+          message: "Akses ditolak: Kunci rahasia admin tidak valid atau belum dimasukkan."
+        }), {
+          status: 401,
+          headers: CORS_HEADERS
+        });
+      }
+
+      const kv = env && (env.LEADERBOARD_KV || env.KV_LEADERBOARD || env.TEMBUSPTN_KV);
+
+      // A. GET /api/admin/users -> Transparansi penuh seluruh akun pengguna di database
+      if (url.pathname === "/api/admin/users" && request.method === "GET") {
+        let users = {};
+        if (kv) {
+          try {
+            users = (await kv.get("global_users_registry", { type: "json" })) || {};
+          } catch(e) {}
+        } else {
+          users = memoryRegistry;
+        }
+
+        const userList = Object.values(users).map(u => ({
+          id: u.id,
+          name: u.name || "Pejuang PTN",
+          username: u.username || "pejuang",
+          email: u.email || "-",
+          avatar: u.avatar || "👨‍🎓",
+          targetMajorName: u.targetMajorName || "Belum Memilih Target",
+          xp: u.xp || 0,
+          streak: u.streak || 0,
+          highestScore: u.highestScore || 0,
+          xpHistory: Array.isArray(u.xpHistory) ? u.xpHistory : [],
+          lastUpdated: u.lastUpdated || 0,
+          inLeaderboard: (u.xp || 0) > 0
+        }));
+
+        userList.sort((a, b) => b.xp - a.xp);
+
+        return new Response(JSON.stringify({
+          status: "success",
+          totalUsers: userList.length,
+          activeUsersWithXp: userList.filter(u => u.xp > 0).length,
+          zeroXpUsers: userList.filter(u => u.xp === 0).length,
+          data: userList,
+          timestamp: Date.now()
+        }), {
+          status: 200,
+          headers: CORS_HEADERS
+        });
+      }
+
+      // B. POST /api/admin/users?action=delete&id=... -> Hapus satu akun pengguna dari cloud
+      if (url.pathname === "/api/admin/users" && request.method === "POST" && url.searchParams.get("action") === "delete") {
+        const targetId = url.searchParams.get("id");
+        if (!targetId) {
+          return new Response(JSON.stringify({ status: "error", message: "ID pengguna diperlukan" }), {
+            status: 400,
+            headers: CORS_HEADERS
+          });
+        }
+
+        let users = {};
+        if (kv) {
+          try {
+            users = (await kv.get("global_users_registry", { type: "json" })) || {};
+          } catch(e) {}
+        } else {
+          users = memoryRegistry;
+        }
+
+        const deletedUser = users[targetId] ? { ...users[targetId] } : null;
+        if (users[targetId]) {
+          delete users[targetId];
+          if (kv) {
+            await kv.put("global_users_registry", JSON.stringify(users));
+          } else {
+            memoryRegistry = users;
+          }
+        }
+
+        return new Response(JSON.stringify({
+          status: "success",
+          message: deletedUser ? `Pengguna "${deletedUser.name}" (${targetId}) berhasil dihapus permanen dari cloud.` : `Pengguna dengan ID ${targetId} telah dihapus.`,
+          deletedId: targetId,
+          remainingUsers: Object.keys(users).length
+        }), {
+          status: 200,
+          headers: CORS_HEADERS
+        });
+      }
+
+      // C. POST /api/admin/users?action=reset_all -> Reset SELURUH pengguna di cloud
+      if (url.pathname === "/api/admin/users" && request.method === "POST" && url.searchParams.get("action") === "reset_all") {
+        if (kv) {
+          try {
+            await kv.put("global_users_registry", JSON.stringify({}));
+          } catch(e) {}
+        }
+        memoryRegistry = {};
+
+        return new Response(JSON.stringify({
+          status: "success",
+          message: "Seluruh data pengguna dan leaderboard cloud berhasil di-reset menjadi kosong (0 user).",
+          totalUsers: 0,
+          data: []
+        }), {
+          status: 200,
+          headers: CORS_HEADERS
+        });
+      }
+
+      // D. POST /api/admin/users?action=edit_xp&id=...&xp=... -> Edit nilai XP pengguna
+      if (url.pathname === "/api/admin/users" && request.method === "POST" && url.searchParams.get("action") === "edit_xp") {
+        const targetId = url.searchParams.get("id");
+        const newXp = Math.max(0, parseInt(url.searchParams.get("xp"), 10) || 0);
+
+        let users = {};
+        if (kv) {
+          try {
+            users = (await kv.get("global_users_registry", { type: "json" })) || {};
+          } catch(e) {}
+        } else {
+          users = memoryRegistry;
+        }
+
+        if (users[targetId]) {
+          users[targetId].xp = newXp;
+          users[targetId].lastUpdated = Date.now();
+          if (kv) {
+            await kv.put("global_users_registry", JSON.stringify(users));
+          } else {
+            memoryRegistry = users;
+          }
+          return new Response(JSON.stringify({
+            status: "success",
+            message: `XP pengguna "${users[targetId].name}" berhasil diperbarui menjadi ${newXp} XP.`,
+            user: users[targetId]
+          }), {
+            status: 200,
+            headers: CORS_HEADERS
+          });
+        } else {
+          return new Response(JSON.stringify({ status: "error", message: "Pengguna tidak ditemukan" }), {
+            status: 404,
+            headers: CORS_HEADERS
+          });
+        }
+      }
+
+      // E. POST /api/admin/traffic?action=reset -> Bersihkan log traffic
+      if (url.pathname === "/api/admin/traffic" && request.method === "POST" && url.searchParams.get("action") === "reset") {
+        if (kv) {
+          try {
+            await kv.put("global_traffic_visitors", JSON.stringify({}));
+            await kv.put("global_traffic_stats", JSON.stringify({
+              totalVisits: 0,
+              totalPageviews: 0,
+              deviceBreakdown: { desktop: 0, mobile: 0, tablet: 0 },
+              browserBreakdown: {},
+              tabBreakdown: {},
+              locationBreakdown: {},
+              hourlyTrend: {}
+            }));
+          } catch(e) {}
+        }
+        memoryTrafficVisitors = {};
+        memoryTrafficStats = {
+          totalVisits: 0,
+          totalPageviews: 0,
+          deviceBreakdown: { desktop: 0, mobile: 0, tablet: 0 },
+          browserBreakdown: {},
+          tabBreakdown: {},
+          locationBreakdown: {},
+          hourlyTrend: {}
+        };
+
+        return new Response(JSON.stringify({
+          status: "success",
+          message: "Data log traffic berhasil dibersihkan secara total."
+        }), {
+          status: 200,
+          headers: CORS_HEADERS
+        });
+      }
+    }
+
+    // 4. FALLBACK ASET STATIS (HTML, CSS, JS, Gambar)
     if (env && env.ASSETS && typeof env.ASSETS.fetch === "function") {
       return env.ASSETS.fetch(request);
     }
