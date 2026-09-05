@@ -411,11 +411,37 @@
     </div>
 
     <!-- ------------------------------------------------------ -->
-    <!-- VIEW 4: RAPOR HASIL BELAJAR & RASIONALISASI (Pahamify Style) -->
+    <!-- VIEW 4: RAPOR HASIL BELAJAR & RASIONALISASI (DUAL: SNBT & SNBP) -->
     <!-- ------------------------------------------------------ -->
     <div id="view-rapor" class="hidden space-y-6">
-      <div id="rapor-main-area">
-        <!-- Rendered by JS: IRT Score, Radar Chart, PTN chance, explanations -->
+      <!-- Sub-Nav Switcher: Jalur SNBT vs Jalur SNBP -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl p-2 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <button id="rapor-tab-snbt" onclick="switchRaporMode('snbt')" class="flex-1 sm:flex-none px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-2 bg-indigo-600 text-white shadow-md shadow-indigo-600/20">
+            <span>📊 Jalur SNBT</span>
+            <span class="text-[10px] py-0.5 px-2 rounded-full bg-white/20 text-white font-semibold">Try Out CBT & IRT</span>
+          </button>
+          <button id="rapor-tab-snbp" onclick="switchRaporMode('snbp')" class="flex-1 sm:flex-none px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
+            <span>📑 Jalur SNBP</span>
+            <span class="text-[10px] py-0.5 px-2 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-semibold">Nilai Rapor Smt 1–5</span>
+          </button>
+        </div>
+        <div class="text-xs text-slate-500 dark:text-slate-400 font-medium px-2 hidden sm:flex items-center gap-1.5">
+          <span>🎯</span>
+          <span>Rasionalisasi Peluang Kelulusan Resmi SNPMB</span>
+        </div>
+      </div>
+
+      <!-- SNBT Area (Try Out CBT & Nilai IRT) -->
+      <div id="rapor-snbt-view" class="space-y-6">
+        <div id="rapor-main-area">
+          <!-- Rendered by JS: IRT Score, Radar Chart, PTN chance, explanations -->
+        </div>
+      </div>
+
+      <!-- SNBP Area (Input Rapor Smt 1-5 Mandiri & Rasionalisasi) -->
+      <div id="rapor-snbp-view" class="hidden space-y-6">
+        <!-- Injected by snbp_rapor.js -->
       </div>
     </div>
 
@@ -808,15 +834,6 @@
         <!-- Injected by JS -->
       </div>
 
-      <!-- Reset Seluruh Data Pengguna (Data Reset) -->
-      <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-3">
-        <div class="text-[11px] text-slate-400">
-          Mulai ulang dari awal (bersihkan seluruh user & cloud leaderboard)
-        </div>
-        <button type="button" onclick="handleResetAllUsersClick()" class="py-1.5 px-3 rounded-lg border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-[11px] font-bold transition shrink-0">
-          🗑️ Reset Seluruh Pengguna
-        </button>
-      </div>
 
       <!-- Footer Buttons -->
       <div class="pt-2 border-t border-slate-100 flex gap-2">
@@ -1120,6 +1137,7 @@
   <script src="js/gamification.js"></script>
   <script src="js/cbt_engine.js"></script>
   <script src="js/analytics.js"></script>
+  <script src="js/snbp_rapor.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

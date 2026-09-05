@@ -2239,9 +2239,53 @@ window.addEventListener("popstate", (e) => {
 });
 
 // ============================================================
-// 4. RAPOR BELAJAR & RASIONALISASI (Pahamify & Sainsin style)
+// 4. RAPOR BELAJAR & RASIONALISASI (DUAL MODE: SNBT & SNBP)
 // ============================================================
+let currentRaporMode = "snbt";
+
+function switchRaporMode(mode) {
+  currentRaporMode = mode;
+  const btnSnbt = document.getElementById("rapor-tab-snbt");
+  const btnSnbp = document.getElementById("rapor-tab-snbp");
+  const viewSnbt = document.getElementById("rapor-snbt-view");
+  const viewSnbp = document.getElementById("rapor-snbp-view");
+
+  if (mode === "snbt") {
+    if (btnSnbt) {
+      btnSnbt.className = "flex-1 sm:flex-none px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-2 bg-indigo-600 text-white shadow-md shadow-indigo-600/20";
+    }
+    if (btnSnbp) {
+      btnSnbp.className = "flex-1 sm:flex-none px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700";
+    }
+    if (viewSnbt) viewSnbt.classList.remove("hidden");
+    if (viewSnbp) viewSnbp.classList.add("hidden");
+    renderRaporSnbtView();
+  } else {
+    if (btnSnbp) {
+      btnSnbp.className = "flex-1 sm:flex-none px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-2 bg-indigo-600 text-white shadow-md shadow-indigo-600/20";
+    }
+    if (btnSnbt) {
+      btnSnbt.className = "flex-1 sm:flex-none px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700";
+    }
+    if (viewSnbt) viewSnbt.classList.add("hidden");
+    if (viewSnbp) viewSnbp.classList.remove("hidden");
+    if (typeof renderSnbpRaporView === "function") {
+      renderSnbpRaporView();
+    }
+  }
+}
+window.switchRaporMode = switchRaporMode;
+window.currentRaporMode = currentRaporMode;
+
 function renderRaporView() {
+  if (currentRaporMode === "snbp") {
+    switchRaporMode("snbp");
+  } else {
+    switchRaporMode("snbt");
+  }
+}
+
+function renderRaporSnbtView() {
   const container = document.getElementById("rapor-main-area");
   if (!container) return;
 
@@ -3246,6 +3290,51 @@ async function renderLeaderboard(forceRefresh = false) {
 // ============================================================
 let selectedProfileAvatar = null;
 
+function buildProfilePtnOptionsHtml(selectedPtnId) {
+  if (typeof PTN_LIST === "undefined" || !Array.isArray(PTN_LIST)) return "";
+  const topIds = ["ui", "itb", "ugm", "unair", "its", "undip", "unpad", "ub", "uns", "ipb"];
+  const groups = [
+    { label: "⭐ Top Kampus Terfavorit", list: PTN_LIST.filter(p => topIds.includes(p.id)) },
+    { label: "🏛️ Universitas Pulau Jawa", list: PTN_LIST.filter(p => p.region === "Jawa" && (p.type === "Universitas" || !p.type) && !topIds.includes(p.id)) },
+    { label: "🌴 Universitas Pulau Sumatera", list: PTN_LIST.filter(p => p.region === "Sumatera" && (p.type === "Universitas" || !p.type)) },
+    { label: "🌺 Bali & Nusa Tenggara", list: PTN_LIST.filter(p => p.region === "Bali & Nusa Tenggara" && (p.type === "Universitas" || !p.type)) },
+    { label: "🌲 Pulau Kalimantan", list: PTN_LIST.filter(p => p.region === "Kalimantan" && (p.type === "Universitas" || !p.type)) },
+    { label: "🌊 Pulau Sulawesi", list: PTN_LIST.filter(p => p.region === "Sulawesi" && (p.type === "Universitas" || !p.type)) },
+    { label: "⛰️ Maluku & Papua", list: PTN_LIST.filter(p => p.region === "Maluku & Papua" && (p.type === "Universitas" || !p.type)) },
+    { label: "⚙️ Politeknik Negeri (Vokasi D4)", list: PTN_LIST.filter(p => p.type === "Politeknik") },
+    { label: "🕌 UIN / IAIN (PTKIN)", list: PTN_LIST.filter(p => p.type === "UIN") },
+    { label: "🎨 Institut Seni & Teknologi", list: PTN_LIST.filter(p => p.type === "Institut" && !topIds.includes(p.id)) }
+  ];
+
+  return groups.map(g => {
+    if (!g.list || g.list.length === 0) return "";
+    return `
+      <optgroup label="${g.label}">
+        ${g.list.map(p => `<option value="${p.id}" ${p.id === selectedPtnId ? 'selected' : ''}>${p.name} (${p.shortName})</option>`).join("")}
+      </optgroup>
+    `;
+  }).join("");
+}
+
+function buildProfileMajorOptionsHtml(ptnId, selectedMajorId = null) {
+  if (typeof PTN_LIST === "undefined" || !Array.isArray(PTN_LIST)) return "";
+  const ptn = PTN_LIST.find(p => p.id === ptnId) || PTN_LIST[0];
+  if (!ptn || !Array.isArray(ptn.majors)) return "";
+  return ptn.majors.map(m => {
+    const isSel = (selectedMajorId && m.id === selectedMajorId) ? "selected" : "";
+    return `<option value="${m.id}" ${isSel}>${m.name} (${m.degree || 'S1'}) - Target Skor: ${m.targetScore || 650}</option>`;
+  }).join("");
+}
+
+function onProfilePtnSelectChange(ptnId) {
+  const majorSelect = document.getElementById("prof-input-major");
+  if (!majorSelect) return;
+  majorSelect.innerHTML = buildProfileMajorOptionsHtml(ptnId);
+}
+window.onProfilePtnSelectChange = onProfilePtnSelectChange;
+window.buildProfilePtnOptionsHtml = buildProfilePtnOptionsHtml;
+window.buildProfileMajorOptionsHtml = buildProfileMajorOptionsHtml;
+
 function renderProfileView() {
   const container = document.getElementById("profile-container");
   if (!container) return;
@@ -3379,7 +3468,7 @@ function renderProfileView() {
               <div class="text-xs text-slate-300 flex items-center gap-2 flex-wrap pt-0.5">
                 <span>🏫 ${profile.school || 'Belum Mengisi Asal Sekolah'}</span>
                 <span>•</span>
-                <span>🎯 Target UTBK ${profile.targetYear || '2027'}</span>
+                <span>🎯 Target: ${m1 ? `${m1.name} (${m1.ptnShort})` : (profile.targetMajorName || 'Belum Memilih Target')}</span>
               </div>
               <p class="text-xs text-slate-300 italic pt-1 line-clamp-2">
                 "${profile.bio || 'Fokus belajar, konsisten latihan, bismillah tembus PTN impian!'}"
@@ -3504,9 +3593,9 @@ function renderProfileView() {
               </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Rumpun Jurusan Minat</label>
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Rumpun Minat</label>
                 <select id="prof-input-stream" class="w-full text-xs p-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:border-indigo-500 font-medium transition">
                   <option value="Saintek" ${(profile.stream || 'Saintek') === 'Saintek' ? 'selected' : ''}>Saintek (IPA & Teknik)</option>
                   <option value="Soshum" ${(profile.stream || '') === 'Soshum' ? 'selected' : ''}>Soshum (IPS, Hukum & Bisnis)</option>
@@ -3515,12 +3604,16 @@ function renderProfileView() {
               </div>
 
               <div>
-                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Tahun Target UTBK</label>
-                <select id="prof-input-year" class="w-full text-xs p-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:border-indigo-500 font-medium transition">
-                  <option value="2025" ${(profile.targetYear || '') === '2025' ? 'selected' : ''}>2025</option>
-                  <option value="2026" ${(profile.targetYear || '') === '2026' ? 'selected' : ''}>2026</option>
-                  <option value="2027" ${(profile.targetYear || '2027') === '2027' ? 'selected' : ''}>2027</option>
-                  <option value="2028" ${(profile.targetYear || '') === '2028' ? 'selected' : ''}>2028</option>
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Universitas Target (PTN)</label>
+                <select id="prof-input-ptn" onchange="onProfilePtnSelectChange(this.value)" class="w-full text-xs p-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:border-indigo-500 font-medium transition">
+                  ${buildProfilePtnOptionsHtml(profile.targetPtn || 'ui')}
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Jurusan / Prodi Target</label>
+                <select id="prof-input-major" class="w-full text-xs p-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:border-indigo-500 font-medium transition">
+                  ${buildProfileMajorOptionsHtml(profile.targetPtn || 'ui', profile.targetMajorId)}
                 </select>
               </div>
             </div>
@@ -3689,7 +3782,8 @@ function handleSaveProfileForm(event) {
   const nameInput = document.getElementById("prof-input-name");
   const schoolInput = document.getElementById("prof-input-school");
   const streamInput = document.getElementById("prof-input-stream");
-  const yearInput = document.getElementById("prof-input-year");
+  const ptnInput = document.getElementById("prof-input-ptn");
+  const majorInput = document.getElementById("prof-input-major");
   const bioInput = document.getElementById("prof-input-bio");
 
   if (nameInput && nameInput.value.trim()) {
@@ -3704,8 +3798,16 @@ function handleSaveProfileForm(event) {
   if (streamInput) {
     profile.stream = streamInput.value;
   }
-  if (yearInput) {
-    profile.targetYear = yearInput.value;
+  if (ptnInput && ptnInput.value) {
+    profile.targetPtn = ptnInput.value;
+  }
+  if (majorInput && majorInput.value) {
+    profile.targetMajorId = majorInput.value;
+    const m = typeof findMajorById === "function" ? findMajorById(majorInput.value) : null;
+    if (m) {
+      profile.targetMajorName = `${m.name} (${m.ptnShort || ''})`.trim();
+      profile.targetScore = m.targetScore || 680;
+    }
   }
   if (bioInput) {
     profile.bio = bioInput.value.trim();
@@ -3714,6 +3816,7 @@ function handleSaveProfileForm(event) {
   saveUserProfile(profile);
 
   renderHeaderStats();
+  renderDashboard();
   initSettingsModal();
   renderProfileView();
 
@@ -3921,19 +4024,6 @@ function saveSettingsForm() {
   if (activeTab === "ptn-explorer") renderPtnExplorerList();
 }
 
-async function handleResetAllUsersClick() {
-  if (confirm("⚠️ PERINGATAN: Apakah kamu yakin ingin me-reset SELURUH data pengguna dan leaderboard (baik di perangkat ini maupun di Cloud)?\n\nSemua akun akan dihapus dan peringkat kembali menjadi 0.")) {
-    if (typeof resetAllUsers === "function") {
-      await resetAllUsers();
-    } else if (typeof resetAllUsersData === "function") {
-      resetAllUsersData();
-    }
-    alert("✅ Seluruh data akun dan leaderboard telah berhasil di-reset menjadi kosong (0 user)!");
-    location.reload();
-  }
-}
-
-window.handleResetAllUsersClick = handleResetAllUsersClick;
 
 // ============================================================
 // 9. EKSPLORASI PTN & JURUSAN RESMI SNPMB (SNBP & SNBT)
@@ -5369,7 +5459,7 @@ async function handleRegisterSubmit(event) {
 
   const res = registerUser({ name, username, email, password, avatar });
   if (res.success) {
-    showAuthAlert(`Pendaftaran berhasil! Selamat bergabung, ${res.user.name} (+50 XP).`, true);
+    showAuthAlert(`Pendaftaran berhasil! Selamat bergabung, ${res.user.name}! 🎉`, true);
     triggerConfetti();
     setTimeout(() => {
       closeAuthModal();

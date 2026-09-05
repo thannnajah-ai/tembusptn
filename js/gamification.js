@@ -354,16 +354,10 @@ function registerUser({ name, username, email, password, avatar, targetPtn, targ
       targetPtn2: "itb",
       targetMajorId2: "itb-stei-komputasi-informati",
       targetMajorName2: "STEI - Komputasi (ITB)",
-      targetScore2: 728,
-      xp: 50, // Bonus sambutan registrasi!
-      xpHistory: [{
-        amount: 50,
-        reason: "Bonus Sambutan Registrasi",
-        timestamp: Date.now(),
-        date: today
-      }],
+      xp: 0, // Akun baru mulai dari 0 XP (mencegah manipulasi bot pada leaderboard)
+      xpHistory: [],
       masteredFlashcards: [],
-      streak: 1,
+      streak: 0,
       lastActiveDate: today,
       level: 1,
       totalQuestions: 0,
@@ -371,7 +365,7 @@ function registerUser({ name, username, email, password, avatar, targetPtn, targ
       tryoutsCompleted: 0,
       highestScore: 0,
       mathCorrect: 0,
-      unlockedBadges: ["first_blood"]
+      unlockedBadges: []
     },
     tryoutHistory: [],
     bookmarks: []
@@ -447,7 +441,7 @@ function loginOrRegisterWithGoogle({ name, email, avatar = "👨‍🎓", google
 
   if (res.success) {
     res.isNew = true;
-    res.message = `Pendaftaran via Google berhasil! Selamat bergabung, ${finalName} (+50 XP). 🎉`;
+    res.message = `Pendaftaran via Google berhasil! Selamat bergabung, ${finalName}! 🎉`;
   }
 
   return res;
