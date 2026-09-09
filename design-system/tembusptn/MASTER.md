@@ -25,12 +25,12 @@
 | Accent Hover | `#D97706` | `--accent-hover` | `amber-600` |
 | Success | `#10B981` | `--success` | `emerald-500` |
 | Destructive | `#EF4444` | `--danger` | `rose-500` / `red-500` |
-| Dark Canvas | `#080C14` | `--bg-dark-base` | `slate-950` |
-| Dark Surface | `#0B0F19` | `--bg-dark-surface`| `slate-900` |
-| Light Canvas | `#F8FAFC` | `--bg-light-base`| `slate-50` |
+| Dark Canvas | `#081026` | `--bg-base` | `dark:bg-[#081026]` |
+| Dark Surface | `#0E172E` | `--bg-surface` | `slate-900` |
+| Light Canvas | `#EDF4FE` | `--bg-base` | `bg-[#edf4fe]` |
 | Focus Ring | `#2563EB` | `--ring` | `ring-primary` |
 
-**Color Notes:** Academic Royal Cobalt (`#2563EB`) gives authoritative scholastic presence; Focus Amber/Gold (`#F59E0B`) highlights streaks, badges, and CTAs; Deep Obsidian (`#080C14`) provides fatigue-free dark mode reading for extended CBT drills.
+**Color Notes:** Academic Royal Cobalt (`#2563EB`) gives authoritative scholastic presence; Focus Amber/Gold (`#F59E0B`) highlights streaks, badges, and CTAs; Light Canvas features an Academic Soft Cobalt Wash (`#EDF4FE`) that makes white study cards pop cleanly; Dark Canvas uses Deep Midnight Navy (`#081026`) for fatigue-free reading during long CBT exams.
 
 ### Typography
 

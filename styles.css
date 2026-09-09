@@ -17,6 +17,17 @@
   --accent-hover: #d97706;
   --success: #10b981;
   --danger: #ef4444;
+
+  /* Base Canvas Colors (Academic Soft Cobalt Tint) */
+  --bg-base: #edf4fe;
+  --bg-surface: #ffffff;
+  --text-base: #0f172a;
+}
+
+.dark {
+  --bg-base: #081026;
+  --bg-surface: #0e172e;
+  --text-base: #f8fafc;
 }
 
 html {
@@ -26,13 +37,21 @@ html {
 
 body {
   font-family: var(--font-body);
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: var(--bg-base);
+  color: var(--text-base);
+  background-image: radial-gradient(at 50% -20%, rgba(37, 99, 235, 0.08) 0px, transparent 65%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.5;
   overflow-x: hidden;
   width: 100%;
+}
+
+.dark body, body.dark {
+  background-color: #081026;
+  background-image: radial-gradient(at 50% -20%, rgba(37, 99, 235, 0.16) 0px, transparent 65%);
 }
 
 h1, h2, h3, h4, h5, h6, .font-heading, .font-display {
@@ -85,16 +104,27 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 /* SURFACE & ELEVATION                                         */
 /* ============================================================ */
 .glass-header {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid #e2e8f0;
+  background: rgba(237, 244, 254, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(37, 99, 235, 0.12);
+}
+
+.dark .glass-header {
+  background: rgba(8, 16, 38, 0.88);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .glass-card {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+  border: 1px solid #dbeafe;
+  box-shadow: 0 1px 3px 0 rgba(37, 99, 235, 0.04);
+}
+
+.dark .glass-card {
+  background: #0e172e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
 }
 
 /* Subtle, Ergonomic Card Lift (Standard ease, no elastic bounce) */
