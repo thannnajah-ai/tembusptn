@@ -5159,7 +5159,14 @@ function updateThemeButtonUI(theme) {
   const themeIcon = document.getElementById("theme-icon");
   const themeBtn = document.getElementById("theme-toggle-btn");
   if (themeIcon) {
-    themeIcon.textContent = isDark ? "☀️" : "🌙";
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+      themeIcon.innerHTML = isDark 
+        ? '<i data-lucide="sun" class="w-4 h-4 text-amber-300"></i>' 
+        : '<i data-lucide="moon" class="w-4 h-4 text-slate-700 dark:text-slate-300"></i>';
+      lucide.createIcons({ root: themeIcon });
+    } else {
+      themeIcon.textContent = isDark ? "☀️" : "🌙";
+    }
   }
   if (themeBtn) {
     themeBtn.title = isDark ? "Ganti ke Tampilan Terang" : "Ganti ke Tampilan Gelap";

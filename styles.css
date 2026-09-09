@@ -6,15 +6,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
 
 :root {
-  --font-heading: 'Plus Jakarta Sans', 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: 'Outfit', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
   
   /* Educational Platform Palette (UI/UX Pro Max) */
-  --primary: #4f46e5;
-  --primary-hover: #4338ca;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
   --accent: #f59e0b;
-  --accent-hover: #ea580c;
+  --accent-hover: #d97706;
   --success: #10b981;
   --danger: #ef4444;
 }
@@ -47,21 +47,21 @@ p, .exam-text {
 
 /* UI/UX Pro Max Accessible Focus Indicator */
 :focus-visible {
-  outline: 2px solid #4f46e5 !important;
+  outline: 2px solid #2563eb !important;
   outline-offset: 2px !important;
 }
 
 .dark :focus-visible {
-  outline: 2px solid #818cf8 !important;
+  outline: 2px solid #60a5fa !important;
 }
 
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex="0"]:focus-visible {
-  outline: 2px solid #4f46e5 !important;
+  outline: 2px solid #2563eb !important;
   outline-offset: 2px !important;
 }
 
 .dark button:focus-visible, .dark a:focus-visible, .dark input:focus-visible, .dark select:focus-visible, .dark textarea:focus-visible, .dark [tabindex="0"]:focus-visible {
-  outline: 2px solid #818cf8 !important;
+  outline: 2px solid #60a5fa !important;
 }
 
 /* Custom Clean Scrollbar */
@@ -123,9 +123,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 .nav-active {
-  background-color: #4f46e5 !important;
+  background-color: #2563eb !important;
   color: #ffffff !important;
-  box-shadow: 0 2px 8px -1px rgba(79, 70, 229, 0.35);
+  box-shadow: 0 2px 8px -1px rgba(37, 99, 235, 0.35);
 }
 
 .nav-active i {
@@ -427,7 +427,7 @@ body.font-scale-lg .exam-text {
 }
 
 .mobile-nav-btn.mobile-nav-active {
-  color: #4f46e5;
+  color: #2563eb;
   font-weight: 700;
 }
 
@@ -445,7 +445,7 @@ body.font-scale-lg .exam-text {
 }
 
 .dark .mobile-nav-btn.mobile-nav-active {
-  color: #818cf8;
+  color: #60a5fa;
 }
 
 /* Modal backdrop smooth lock */
@@ -509,21 +509,59 @@ body.modal-open {
 }
 
 .cbt-option-selected {
-  border-color: #4f46e5 !important;
-  background-color: rgba(79, 70, 229, 0.08) !important;
-  box-shadow: 0 0 0 1px #4f46e5;
+  border-color: #2563eb !important;
+  background-color: rgba(37, 99, 235, 0.08) !important;
+  box-shadow: 0 0 0 1px #2563eb;
 }
 
 .dark .cbt-option-selected {
-  border-color: #818cf8 !important;
-  background-color: rgba(99, 102, 241, 0.16) !important;
-  box-shadow: 0 0 0 1px #818cf8;
+  border-color: #60a5fa !important;
+  background-color: rgba(59, 130, 246, 0.16) !important;
+  box-shadow: 0 0 0 1px #60a5fa;
 }
 
 .badge-streak {
-  background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
   color: #ffffff;
   box-shadow: 0 2px 8px -1px rgba(234, 88, 12, 0.35);
 }
 
 
+
+/* Tabular Numbers for Timers & Scores */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  -webkit-font-feature-settings: "tnum";
+  font-feature-settings: "tnum";
+}
+
+/* CBT Question Palette State Colors */
+.cbt-pal-answered {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  border-color: #1d4ed8 !important;
+}
+
+.cbt-pal-doubtful {
+  background-color: #f59e0b !important;
+  color: #ffffff !important;
+  border-color: #d97706 !important;
+}
+
+.cbt-pal-active {
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #2563eb !important;
+}
+
+.dark .cbt-pal-active {
+  box-shadow: 0 0 0 2px #080c14, 0 0 0 4px #60a5fa !important;
+}
+
+/* Accessible Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
