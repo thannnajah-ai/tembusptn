@@ -102,7 +102,7 @@
       ctx.fillRect(x + fx * cellSize, y + fy * cellSize, 7 * cellSize, 7 * cellSize);
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(x + (fx + 1) * cellSize, y + (fy + 1) * cellSize, 5 * cellSize, 5 * cellSize);
-      ctx.fillStyle = '#4338ca';
+      ctx.fillStyle = '#1d4ed8';
       ctx.fillRect(x + (fx + 2) * cellSize, y + (fy + 2) * cellSize, 3 * cellSize, 3 * cellSize);
     }
     drawFinder(0, 0);
@@ -220,7 +220,7 @@
       ctx.arc(125, 125, 43, 0, Math.PI * 2);
       ctx.stroke();
     } else {
-      ctx.fillStyle = '#4f46e5';
+      ctx.fillStyle = '#2563eb';
       drawRoundRect(ctx, 85, 85, 80, 80, 24, true, false);
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 36px sans-serif';
@@ -268,14 +268,14 @@
     const profY = 215;
     const profH = 145;
     ctx.fillStyle = 'rgba(15, 23, 42, 0.7)';
-    ctx.strokeStyle = 'rgba(99, 102, 241, 0.28)';
+    ctx.strokeStyle = 'rgba(37, 99, 235, 0.28)';
     ctx.lineWidth = 1.5;
     drawRoundRect(ctx, 80, profY, 920, profH, 28, true, true);
 
     // Avatar
     const avGrad = ctx.createLinearGradient(110, profY + 25, 205, profY + 120);
-    avGrad.addColorStop(0, '#4338ca');
-    avGrad.addColorStop(1, '#6366f1');
+    avGrad.addColorStop(0, '#1d4ed8');
+    avGrad.addColorStop(1, '#3b82f6');
     ctx.fillStyle = avGrad;
     drawRoundRect(ctx, 110, profY + 25, 95, 95, 48, true, false);
 
@@ -504,12 +504,12 @@
     // Card 2: Pilihan 2 Cadangan
     const c2Y = c1Y + 195;
     ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-    ctx.strokeStyle = 'rgba(99, 102, 241, 0.4)';
+    ctx.strokeStyle = 'rgba(37, 99, 235, 0.4)';
     ctx.lineWidth = 2;
     drawRoundRect(ctx, 80, c2Y, 920, cH, 26, true, true);
 
     // Tag Pilihan 2
-    ctx.fillStyle = '#6366f1';
+    ctx.fillStyle = '#2563eb';
     drawRoundRect(ctx, 110, c2Y + 20, 155, 34, 10, true, false);
     ctx.fillStyle = '#ffffff';
     ctx.font = '900 16px sans-serif';
@@ -528,13 +528,13 @@
     ctx.fillText('🏛️ ' + target2Ptn, 110, c2Y + 152);
 
     // Chance Badge Right Side
-    ctx.fillStyle = 'rgba(99, 102, 241, 0.12)';
-    ctx.strokeStyle = '#818cf8';
+    ctx.fillStyle = 'rgba(37, 99, 235, 0.12)';
+    ctx.strokeStyle = '#60a5fa';
     ctx.lineWidth = 2;
     drawRoundRect(ctx, 770, c2Y + 22, 200, 130, 22, true, true);
 
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#c7d2fe';
+    ctx.fillStyle = '#bfdbfe';
     ctx.font = 'bold 16px sans-serif';
     ctx.fillText('PELUANG LOLOS', 870, c2Y + 58);
     ctx.fillStyle = '#ffffff';
@@ -710,7 +710,7 @@
     ctx.fillText(rank === 1 ? '👑' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '🏆', 540, 340);
 
     // Rank Badge Pill
-    ctx.fillStyle = rank === 1 ? '#f59e0b' : '#4f46e5';
+    ctx.fillStyle = rank === 1 ? '#f59e0b' : '#2563eb';
     drawRoundRect(ctx, 280, 370, 520, 75, 38, true, false);
     ctx.fillStyle = '#ffffff';
     ctx.font = '900 34px sans-serif';
