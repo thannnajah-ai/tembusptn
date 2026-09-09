@@ -1,0 +1,110 @@
+{
+  ".assetsignore": {
+    "summary": "Daftar berkas dan direktori yang diabaikan saat proses deploy aset statis Cloudflare Pages."
+  },
+  ".gitignore": {
+    "summary": "Konfigurasi Git untuk mengabaikan berkas build, dependensi node_modules, log, file lokal, dan cache sementara."
+  },
+  ".ngodingpakeaiignore": {
+    "summary": "Daftar pola berkas dan folder yang dikecualikan dari pemindaian dan sinkronisasi metadata oleh CLI NgodingPakeAI."
+  },
+  "admin-secret-portal-tembusptn-2026.html": {
+    "summary": "Dasbor portal admin rahasia TembusPTN untuk memantau metrik kunjungan pengunjung realtime (live traffic), kelola daftar akun pengguna, edit skor XP, reset seluruh basis data pengguna, dan hapus akun secara permanen."
+  },
+  "AGENTS.md": {
+    "summary": "Instruksi dan aturan operasional untuk agen AI pengembang proyek TembusPTN terkait arsitektur sistem, aturan kode, dan integrasi NgodingPakeAI."
+  },
+  "functions/api/admin/users.js": {
+    "summary": "Cloudflare Pages Function endpoint /api/admin/users untuk mengelola akun pengguna: GET daftar akun, POST action edit_xp, delete akun dengan pencatatan tombstone registry, serta reset_all seluruh data pengguna di Cloudflare KV."
+  },
+  "functions/api/leaderboard.js": {
+    "summary": "Cloudflare Pages Function endpoint /api/leaderboard untuk query data leaderboard real-time nasional (GET) dengan filter periode dan verifikasi ketersediaan kredensial, serta sinkronisasi data profil pengguna (POST) dengan perlindungan otoritas admin."
+  },
+  "functions/api/snpmb.js": {
+    "summary": "Cloudflare Pages Function endpoint /api/snpmb sebagai proxy pengambilan data resmi universitas PTN dan program studi dari portal SNPMB BPPP Kemdikbud."
+  },
+  "functions/api/traffic.js": {
+    "summary": "Cloudflare Pages Function endpoint /api/traffic untuk mencatat dan mengagregasi analitik traffic pengunjung realtime, status perangkat, browser, lokasi, dan tren halaman per jam."
+  },
+  "halo.html": {
+    "summary": "Halaman native landing page showcase bertema Together AI DNA yang menyajikan hero section modern, kartu fitur interaktif, badge status, dan navigasi cepat menuju fitur utama TembusPTN."
+  },
+  "index.html": {
+    "summary": "Halaman SPA utama TembusPTN yang memuat shell antarmuka 9 tab, banner hasil evaluasi IRT, kontrol navigasi, modal review, dan hook DOM untuk CBT, latihan soal, serta leaderboard."
+  },
+  "js/analytics.js": {
+    "summary": "Modul pelacakan performa belajar siswa di sisi browser, mencatat riwayat durasi belajar, akurasi pengerjaan soal latihan, dan pembuatan grafik visual analitik pengguna."
+  },
+  "js/app.js": {
+    "summary": "Kontroller utama SPA TembusPTN yang mengatur siklus hidup aplikasi, tab switcher, inisialisasi sesi CBT, render rapor evaluasi IRT, dan pemicu pembuatan kartu skor."
+  },
+  "js/cbt_engine.js": {
+    "summary": "Mesin simulasi ujian berbasis komputer (CBT) standar UTBK SNBT, menangani timer subtes, nomor soal, penanda ragu-ragu, penguncian jawaban otomatis, penskoran Item Response Theory (IRT), dan review pembahasan."
+  },
+  "js/cloud_leaderboard.js": {
+    "summary": "Layanan sinkronisasi leaderboard cloud TembusPTN, menyediakan fungsi syncUserToCloud, applyServerUserData untuk rekonsiliasi dua arah dengan server/admin, handleUserDeletedByAdmin, fetchGlobalLeaderboard, dan polling real-time."
+  },
+  "js/data/bimbel_questions.js": {
+    "summary": "Koleksi bank soal latihan intensif UTBK SNBT bimbel lengkap dengan opsi jawaban, kunci jawaban, pembahasan konsep terperinci, dan kategorisasi subtes."
+  },
+  "js/data/flashcards.js": {
+    "summary": "Kumpulan kartu belajar cepat (flashcards) materi UTBK SNBT untuk hafalan rumus penting, konsep kunci, kosakata bahasa Inggris, dan logika matematika."
+  },
+  "js/data/ptn_data.js": {
+    "summary": "Basis data daftar perguruan tinggi negeri (PTN) se-Indonesia beserta fakultas, program studi, daya tampung, perkiraan passing grade skor IRT, dan jenjang S1/D4."
+  },
+  "js/data/questions.js": {
+    "summary": "Katalog utama ribuan butir soal latihan UTBK SNBT mencakup Penalaran Umum (PU), Pengetahuan Kuantitatif (PK), Pemahaman Bacaan & Menulis (PBM), Literasi Bahasa Indonesia, Literasi Bahasa Inggris, dan Penalaran Matematika (PM)."
+  },
+  "js/data/snpmb_ptn.js": {
+    "summary": "Modul JavaScript penyedia data perguruan tinggi negeri yang diselaraskan dengan data resmi portal SNPMB BPPP Kemdikbudristek."
+  },
+  "js/data/snpmb_ptn.json": {
+    "summary": "Berkas dataset JSON terstruktur memuat daftar universitas PTN, kode prodi, kuota SNBP, kuota SNBT, dan statistik peminat resmi SNPMB."
+  },
+  "js/gamification.js": {
+    "summary": "Mesin gamifikasi belajar pejuang PTN yang mengelola streak harian, perolehan XP, level pengguna, sistem tier (Pemula sampai Legenda), lencana pencapaian (badges), dan multi-user session management lokal."
+  },
+  "js/share_card.js": {
+    "summary": "Modul generator kartu skor estetik 9:16 portrait (1080x1920) menggunakan Canvas 2D, mendukung unduh PNG, Web Share API perangkat, salin gambar ke clipboard, dan modal preview interaktif."
+  },
+  "js/snbp_rapor.js": {
+    "summary": "Modul kalkulator prediksi peluang kelulusan jalur SNBP (Seleksi Nasional Berdasarkan Prestasi) berdasarkan nilai rapor semester 1-5, akreditasi sekolah, sertifikat lomba, dan rekam jejak alumni PTN."
+  },
+  "js/snpmb_service.js": {
+    "summary": "Layanan klien untuk pencarian dan pemfilteran data SNPMB, eksplorasi daya tampung program studi, dan perbandingan passing grade kampus negeri."
+  },
+  "js/traffic_tracker.js": {
+    "summary": "Pelacak aktivitas pengunjung di sisi klien yang mengirimkan data heartbeat kunjungan, jenis perangkat, halaman aktif, dan status login ke API /api/traffic."
+  },
+  "kartu-skor.html": {
+    "summary": "Halaman studio pratinjau kartu skor tiruan berformat 9:16 portrait untuk Instagram Story dan Status WhatsApp, dilengkapi form konfigurasi skor IRT, peluang lolos PTN, serta aksi unduh PNG dan salin."
+  },
+  "manifest.webmanifest": {
+    "summary": "Manifest spesifikasi Progressive Web App (PWA) TembusPTN yang mendefinisikan identitas aplikasi, skema warna gelap, ikon aplikasi, dan konfigurasi standalone."
+  },
+  "skills-lock.json": {
+    "summary": "File lock manifest dependency skill agent AI yang mengunci versi dan sumber repository skill yang terpasang di workspace."
+  },
+  "styles.css": {
+    "summary": "Lembar gaya CSS utama aplikasi TembusPTN yang menggabungkan utility classes Tailwind, komponen custom Together AI DNA, serta tema gelap dan terang."
+  },
+  "sw.js": {
+    "summary": "Service Worker untuk kapabilitas PWA TembusPTN yang menangani caching aset statis utama aplikasi dan penyediaan offline shell."
+  },
+  "tokens.css": {
+    "summary": "Definisi design tokens DNA Together AI yang mencakup palet warna dark/light mode, tipografi Inter, skala radius, elevasi shadow, dan transisi antarmuka."
+  },
+  "traffic.html": {
+    "summary": "Halaman HTML statis ringan yang digunakan untuk tautan cepat atau pengalihan ke dasbor metrik traffic pengunjung."
+  },
+  "vercel.json": {
+    "summary": "Konfigurasi perutean URL dan penulisan ulang (rewrite rules) untuk hosting dan deployment pada platform Vercel."
+  },
+  "wrangler.toml": {
+    "summary": "Konfigurasi Cloudflare Pages / Workers yang mendefinisikan binding Cloudflare KV namespace untuk LEADERBOARD_KV dan direktori aset statis."
+  },
+  "_worker.js": {
+    "summary": "Cloudflare Worker dan Pages Advanced mode yang menangani routing API leaderboard KV, sinkronisasi profil multi-user, analitik traffic, dan rute halaman native /halo serta /kartu-skor."
+  }
+}

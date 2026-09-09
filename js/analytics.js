@@ -70,21 +70,37 @@ function renderSubtestRadar(canvasId, subtestScores) {
           angleLines: { color: (typeof document !== 'undefined' && document.documentElement.classList.contains('dark')) ? "rgba(71, 85, 105, 0.6)" : "rgba(203, 213, 225, 0.6)" },
           grid: { color: (typeof document !== 'undefined' && document.documentElement.classList.contains('dark')) ? "rgba(51, 65, 85, 0.8)" : "rgba(226, 232, 240, 0.8)" },
           pointLabels: {
-            font: { size: 11, weight: "600", family: "'Segoe UI', sans-serif" },
-            color: (typeof document !== 'undefined' && document.documentElement.classList.contains('dark')) ? "#e2e8f0" : "#334155"
+            font: { size: 11, weight: "600", family: "'JetBrains Mono', 'Plus Jakarta Sans', monospace" },
+            color: (typeof document !== 'undefined' && document.documentElement.classList.contains('dark')) ? "#f1f5f9" : "#1e293b"
           },
           suggestedMin: 300,
           suggestedMax: 800,
-          ticks: { stepSize: 100, backdropColor: "transparent", color: "#94a3b8", font: { size: 9 } }
+          ticks: { stepSize: 100, backdropColor: "transparent", color: "#94a3b8", font: { size: 9, family: "'JetBrains Mono', monospace" } }
         }
       },
       plugins: {
         legend: {
           position: "bottom",
           labels: { 
-            font: { size: 11, weight: "500" }, 
+            font: { size: 11, weight: "600", family: "'Plus Jakarta Sans', sans-serif" }, 
             padding: 14,
-            color: (typeof document !== 'undefined' && document.documentElement.classList.contains('dark')) ? "#e2e8f0" : "#334155"
+            color: (typeof document !== 'undefined' && document.documentElement.classList.contains('dark')) ? "#f1f5f9" : "#1e293b"
+          }
+        },
+        tooltip: {
+          titleFont: { family: "'Plus Jakarta Sans', sans-serif", weight: "700" },
+          bodyFont: { family: "'JetBrains Mono', monospace" },
+          padding: 10,
+          cornerRadius: 8,
+          callbacks: {
+            label: function(context) {
+              const val = context.raw || 0;
+              const isTarget = context.datasetIndex === 1;
+              if (isTarget) return ` Target Aman: ${val}`;
+              const delta = val - 680;
+              const deltaStr = delta >= 0 ? `(+${delta}) 🔥` : `(${delta}) 📈`;
+              return ` Skor Kamu: ${val} ${deltaStr}`;
+            }
           }
         }
       }

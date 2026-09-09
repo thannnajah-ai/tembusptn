@@ -28,6 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initSettingsModal();
   renderLatex();
   initPwaSupport();
+  initKeyboardAccessibility();
 
   // Sinkronisasi data user aktif ke Cloud Leaderboard saat inisialisasi
   if (typeof isUserLoggedIn === "function" && isUserLoggedIn() && typeof getCurrentUser === "function" && typeof getUserProfile === "function") {
@@ -1859,11 +1860,11 @@ function renderActiveCbtScreen() {
         </div>
 
         <!-- Opsi Pilihan Jawaban CBT -->
-        <div id="cbt-options-list" class="space-y-2 sm:space-y-2.5 pt-1 sm:pt-2">
+        <div id="cbt-options-list" role="radiogroup" aria-label="Pilihan jawaban soal" class="space-y-2 sm:space-y-2.5 pt-1 sm:pt-2">
           ${q.options.map(opt => {
             const isSelected = userAns.selected === opt.key;
             return `
-              <div id="cbt-opt-${opt.key}" data-cbt-key="${opt.key}" onclick="selectCbtOption('${opt.key}')" class="cbt-option-item p-3 sm:p-3.5 rounded-xl sm:rounded-2xl border cursor-pointer transition flex items-start gap-2.5 sm:gap-3 min-h-[46px] sm:min-h-[48px] ${isSelected ? 'bg-indigo-50 dark:bg-indigo-950/60 border-indigo-600 ring-2 ring-indigo-300 dark:ring-indigo-700 shadow-sm' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/80'}">
+              <div id="cbt-opt-${opt.key}" data-cbt-key="${opt.key}" onclick="selectCbtOption('${opt.key}')" role="radio" aria-checked="${isSelected}" tabindex="0" class="cbt-option-item p-3 sm:p-3.5 rounded-xl sm:rounded-2xl border cursor-pointer transition flex items-start gap-2.5 sm:gap-3 min-h-[48px] focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${isSelected ? 'bg-indigo-50 dark:bg-indigo-950/60 border-indigo-600 ring-2 ring-indigo-300 dark:ring-indigo-700 shadow-sm' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/80'}">
                 <span id="cbt-badge-${opt.key}" class="cbt-option-badge w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 transition mt-0.5 ${isSelected ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'}">
                   ${opt.key}
                 </span>
@@ -1871,6 +1872,22 @@ function renderActiveCbtScreen() {
               </div>
             `;
           }).join("")}
+        </div>
+
+        <!-- Keyboard shortcuts hint (Desktop only) -->
+        <div class="hidden sm:flex items-center justify-between text-[11px] font-mono text-slate-400 dark:text-slate-500 px-1 pt-1">
+          <span class="flex items-center gap-1.5">
+            <kbd class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-[10px] font-bold text-slate-700 dark:text-slate-300">A-E</kbd>
+            <span>Pilih Opsi</span>
+          </span>
+          <span class="flex items-center gap-1.5">
+            <kbd class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-[10px] font-bold text-slate-700 dark:text-slate-300">← / →</kbd>
+            <span>Navigasi Soal</span>
+          </span>
+          <span class="flex items-center gap-1.5">
+            <kbd class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-[10px] font-bold text-slate-700 dark:text-slate-300">R</kbd>
+            <span>Tandai Ragu</span>
+          </span>
         </div>
 
         <!-- CBT Bottom Navigation Bar -->
@@ -1928,30 +1945,26 @@ function renderActiveCbtScreen() {
       <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-h-[82vh] flex flex-col p-4 shadow-2xl space-y-3 animate-drawer-slide-up">
         <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800 shrink-0">
           <div class="flex items-center gap-2">
-            <span class="font-black text-sm text-slate-900 dark:text-white">📋 Daftar Nomor Soal</span>
-            <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-100 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300">
-              ${currentCbtSession.currentIndex + 1} / ${currentCbtSession.questions.length}
-            </span>
+            <span class="font-extrabold text-sm text-slate-800 dark:text-slate-100">Daftar Nomor Soal CBT</span>
+            <span class="text-xs text-slate-400 dark:text-slate-500">(${currentCbtSession.questions.length} Butir)</span>
           </div>
-          <button onclick="toggleCbtPaletteDrawer(false)" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center font-bold">
-            ✕
-          </button>
+          <button onclick="toggleCbtPaletteDrawer(false)" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center text-sm font-bold">✕</button>
         </div>
 
-        <div class="flex items-center justify-around py-1 text-[11px] text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800 shrink-0">
+        <div class="grid grid-cols-5 gap-2 overflow-y-auto p-1 flex-1">
+          ${numberButtonsHtml}
+        </div>
+
+        <div class="pt-2 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-around shrink-0">
           <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded bg-emerald-500"></span> Dijawab</span>
           <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded bg-yellow-400"></span> Ragu</span>
-          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded bg-slate-200 dark:bg-slate-700"></span> Belum</span>
-        </div>
-
-        <div class="grid grid-cols-5 sm:grid-cols-8 gap-2 overflow-y-auto p-1 flex-1 max-h-[55vh]">
-          ${numberButtonsHtml}
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded bg-slate-200 dark:bg-slate-700"></span> Kosong</span>
         </div>
       </div>
     </div>
   `;
 
-  renderCbtTimer(currentCbtSession.remainingSeconds);
+  // Focus trap / scroll setup
   const curScale = localStorage.getItem("utbk_font_scale") || "md";
   setFontScale(curScale);
   renderLatex(container);
@@ -1973,12 +1986,18 @@ window.renderCbtTimer = function(seconds) {
 
   const container = document.getElementById("cbt-timer-display");
   if (container) {
-    if (seconds < 180) {
-      container.classList.remove("text-amber-400");
-      container.classList.add("text-rose-400", "animate-pulse");
+    if (seconds <= 60) {
+      container.classList.remove("text-amber-400", "timer-warn");
+      container.classList.add("timer-urgent");
+      container.setAttribute("aria-label", `Sisa waktu darurat: ${el.innerText}`);
+    } else if (seconds <= 300) {
+      container.classList.remove("timer-urgent", "text-amber-400");
+      container.classList.add("timer-warn");
+      container.setAttribute("aria-label", `Sisa waktu kurang dari 5 menit: ${el.innerText}`);
     } else {
-      container.classList.remove("text-rose-400", "animate-pulse");
+      container.classList.remove("timer-warn", "timer-urgent");
       container.classList.add("text-amber-400");
+      container.setAttribute("aria-label", `Sisa waktu: ${el.innerText}`);
     }
   }
 };
@@ -2500,10 +2519,14 @@ function renderRaporSnbtView() {
           <span>Pamerkan hasil belajarmu & ajak teman sekelas simulasi bareng!</span>
         </div>
         <div class="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
-          <button onclick="triggerShareScoreCard()" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 transition active:scale-95">
+          <button id="btn-buat-kartu-skor" onclick="triggerShareScoreCard()" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 transition active:scale-95">
             <span>📸</span>
-            <span>Buat Story IG / Status WA</span>
+            <span>Buat Kartu Skor</span>
           </button>
+          <a href="/kartu-skor" target="_blank" class="px-3 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition border border-white/20" title="Buka Studio Pratinjau Kartu Skor Tiruan">
+            <span>🎨</span>
+            <span class="hidden sm:inline">Studio Desain</span>
+          </a>
           <button onclick="triggerShareScoreWhatsApp()" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs sm:text-sm shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition active:scale-95">
             <span>💬</span>
             <span>Kirim ke WhatsApp</span>
@@ -6065,8 +6088,115 @@ function triggerShareReferral(channel = 'wa') {
   }
 }
 
+function triggerNativeShareScore() {
+  const history = typeof getExamHistory === 'function' ? getExamHistory() : [];
+  const latestResult = (currentReviewResult && currentReviewResult.result) || history[0];
+  if (!latestResult) {
+    alert('Selesaikan minimal 1 sesi Try Out CBT untuk membagikan kartu skor.');
+    return;
+  }
+  const profile = getUserProfile();
+  const major1 = findMajorById(profile.targetMajorId);
+  const major2 = findMajorById(profile.targetMajorId2);
+  const dualStrategy = analyzeDualStrategy(latestResult.overallScore, major1, major2);
+  const analysis = analyzeStrengthsAndWeaknesses(latestResult.subtestScores);
+  const activeUser = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+
+  if (window.ShareCard && typeof window.ShareCard.generateScoreCardCanvas === 'function') {
+    window.ShareCard.generateScoreCardCanvas({
+      overallScore: latestResult.overallScore || 0,
+      studentName: (activeUser && activeUser.name) || profile.name || 'Pejuang PTN 2026',
+      avatar: (activeUser && activeUser.avatar) || profile.avatar || '🎓',
+      target1Name: major1 ? major1.name : 'Pilihan 1 Belum Dipilih',
+      target1Ptn: major1 ? `${major1.ptnName} (${major1.ptnShort})` : '-',
+      target1Chance: dualStrategy && dualStrategy.r1 ? dualStrategy.r1.chancePercent : '-',
+      target2Name: major2 ? major2.name : 'Pilihan 2 Belum Dipilih',
+      target2Ptn: major2 ? `${major2.ptnName} (${major2.ptnShort})` : '-',
+      target2Chance: dualStrategy && dualStrategy.r2 ? dualStrategy.r2.chancePercent : '-',
+      strongestSubtest: analysis && analysis.strongest ? analysis.strongest.name : 'Penalaran Umum',
+      strongestScore: analysis && analysis.strongest ? analysis.strongest.score : '-',
+      date: latestResult.date || new Date().toISOString()
+    }).then(canvas => {
+      const shareText = `Alhamdulillah dapet skor UTBK SNBT ${latestResult.overallScore} di @TembusPTN! Cek dan rasionalisasikan peluang lolos prodimu secara gratis di https://tembusptn.my.id 🔥`;
+      window.ShareCard.nativeShareCanvas(canvas, 'TembusPTN-Skor.png', shareText);
+    });
+  }
+}
+
+// ============================================================
+// UI/UX PRO MAX — GLOBAL ACCESSIBILITY & KEYBOARD SHORTCUTS
+// ============================================================
+function initKeyboardAccessibility() {
+  window.addEventListener("keydown", (e) => {
+    // Abaikan jika fokus sedang berada pada input, textarea, atau editable
+    const activeEl = document.activeElement;
+    if (activeEl && (activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA" || activeEl.isContentEditable)) {
+      return;
+    }
+
+    // 1. ESCAPE: Menutup modal, drawer, atau dialog aktif
+    if (e.key === "Escape") {
+      const activeModal = document.querySelector(".modal-active, #cbt-palette-drawer:not(.hidden), #cbt-leave-modal:not(.hidden), #auth-modal:not(.hidden), #settings-modal:not(.hidden), #share-score-modal");
+      if (activeModal) {
+        if (activeModal.id === "cbt-palette-drawer") {
+          if (typeof toggleCbtPaletteDrawer === "function") toggleCbtPaletteDrawer(false);
+        } else if (activeModal.id === "cbt-leave-modal") {
+          if (typeof closeCbtLeaveModal === "function") closeCbtLeaveModal();
+        } else if (activeModal.id === "share-score-modal") {
+          activeModal.remove();
+        } else if (typeof closeAuthModal === "function" && activeModal.id === "auth-modal") {
+          closeAuthModal();
+        } else if (typeof closeSettingsModal === "function" && activeModal.id === "settings-modal") {
+          closeSettingsModal();
+        }
+        document.body.classList.remove("modal-open");
+      }
+      return;
+    }
+
+    // 2. SHORTCUTS KEYBOARD CBT (Hanya aktif saat sesi ujian CBT sedang berjalan)
+    if (typeof currentCbtSession !== "undefined" && currentCbtSession && currentCbtSession.isRunning) {
+      const keyUpper = e.key.toUpperCase();
+
+      // Pilih Opsi A, B, C, D, E atau 1, 2, 3, 4, 5
+      const numMap = { "1": "A", "2": "B", "3": "C", "4": "D", "5": "E" };
+      const selectedOption = numMap[e.key] || (["A", "B", "C", "D", "E"].includes(keyUpper) ? keyUpper : null);
+      if (selectedOption) {
+        e.preventDefault();
+        if (typeof selectCbtOption === "function") {
+          selectCbtOption(selectedOption);
+        }
+        return;
+      }
+
+      // Navigasi Soal Sebelumnya (Panah Kiri atau P)
+      if (e.key === "ArrowLeft" || keyUpper === "P") {
+        e.preventDefault();
+        if (typeof cbtPrev === "function") cbtPrev();
+        return;
+      }
+
+      // Navigasi Soal Berikutnya (Panah Kanan atau N)
+      if (e.key === "ArrowRight" || keyUpper === "N") {
+        e.preventDefault();
+        if (typeof cbtNext === "function") cbtNext();
+        return;
+      }
+
+      // Tandai Ragu-ragu (Tombol R)
+      if (keyUpper === "R") {
+        e.preventDefault();
+        if (typeof cbtToggleDoubtful === "function") cbtToggleDoubtful();
+        return;
+      }
+    }
+  });
+}
+
 window.initPwaSupport = initPwaSupport;
+window.initKeyboardAccessibility = initKeyboardAccessibility;
 window.triggerShareScoreCard = triggerShareScoreCard;
+window.triggerNativeShareScore = triggerNativeShareScore;
 window.triggerShareScoreWhatsApp = triggerShareScoreWhatsApp;
 window.triggerShareLeaderboard = triggerShareLeaderboard;
 window.triggerShareReferral = triggerShareReferral;

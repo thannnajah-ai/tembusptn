@@ -1,0 +1,122 @@
+/* Hallmark · design tokens · studied-DNA (source: https://www.together.ai) */
+:root {
+  /* Typography */
+  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Type scale */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+  --text-display: clamp(2.5rem, 5vw + 1rem, 4.25rem);
+
+  /* Spacing (4pt grid) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+
+  /* Surfaces (Light Mode) */
+  --color-paper: #ffffff;
+  --color-paper-subtle: #f8fafc;
+  --color-paper-card: #ffffff;
+  --color-ink: #000000;
+  --color-ink-secondary: rgba(0, 0, 0, 0.7);
+  --color-ink-muted: rgba(0, 0, 0, 0.45);
+  --color-ink-subtle: rgba(0, 0, 0, 0.25);
+
+  /* Borders & Rules */
+  --color-border: rgba(0, 0, 0, 0.08);
+  --color-border-hover: rgba(0, 0, 0, 0.2);
+
+  /* Together Brand Accents */
+  --color-brand-orange: #fc4c02;
+  --color-brand-purple: #caaef5;
+  --color-brand-cyan: #70e9f0;
+  --color-brand-blue: #9bcdf5;
+  --color-brand-dark: #010120;
+
+  /* Product Pastel Tints */
+  --color-cyan-tint: rgba(112, 233, 240, 0.12);
+  --color-cyan-border: rgba(112, 233, 240, 0.35);
+  --color-cyan-text: #08838d;
+
+  --color-purple-tint: rgba(202, 174, 245, 0.16);
+  --color-purple-border: rgba(202, 174, 245, 0.4);
+  --color-purple-text: #6943a5;
+
+  --color-blue-tint: rgba(155, 205, 245, 0.16);
+  --color-blue-border: rgba(155, 205, 245, 0.4);
+  --color-blue-text: #197ecf;
+
+  --color-orange-tint: rgba(252, 76, 2, 0.08);
+  --color-orange-border: rgba(252, 76, 2, 0.25);
+  --color-orange-text: #fc4c02;
+
+  /* Radius */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+
+  /* Curves & Durations */
+  --ease-together: cubic-bezier(0.625, 0.05, 0, 1);
+  --ease-button: cubic-bezier(0.215, 0.61, 0.355, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 150ms;
+  --dur-med: 250ms;
+  /* Focus & Accessibility Tokens */
+  --focus-ring-color: #2563eb;
+  --focus-ring-offset: 2px;
+
+  /* Timer Urgency Status */
+  --color-timer-normal-bg: #0f172a;
+  --color-timer-normal-text: #f59e0b;
+  --color-timer-warn-bg: #78350f;
+  --color-timer-warn-text: #fbbf24;
+  --color-timer-urgent-bg: #881337;
+  --color-timer-urgent-text: #f43f5e;
+}
+
+html.dark {
+  --focus-ring-color: #6366f1;
+  --color-timer-normal-bg: #020617;
+  --color-timer-normal-text: #fbbf24;
+  --color-timer-warn-bg: #451a03;
+  --color-timer-warn-text: #fcd34d;
+  --color-timer-urgent-bg: #4c0519;
+  --color-timer-urgent-text: #fb7185;
+  --color-paper: #010120;
+  --color-paper-subtle: #090928;
+  --color-paper-card: rgba(17, 24, 39, 0.7);
+  --color-ink: #ffffff;
+  --color-ink-secondary: rgba(255, 255, 255, 0.75);
+  --color-ink-muted: rgba(255, 255, 255, 0.4);
+  --color-ink-subtle: rgba(255, 255, 255, 0.2);
+
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border-hover: rgba(255, 255, 255, 0.25);
+
+  --color-cyan-text: #70e9f0;
+  --color-purple-text: #dfddfe;
+  --color-blue-text: #c1dff9;
+  --color-orange-text: #febea3;
+}

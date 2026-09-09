@@ -893,6 +893,53 @@
   }
 
   /**
+   * Salin gambar PNG langsung ke clipboard (ClipboardItem) dengan fallback salin teks dan simpan gambar
+   */
+  async function copyImageToClipboard(canvas, fallbackText = '', filename = 'TembusPTN-Skor.png') {
+    if (!canvas) return;
+
+    try {
+      if (navigator.clipboard && typeof ClipboardItem !== 'undefined' && navigator.clipboard.write) {
+        const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+        if (blob) {
+          const item = new ClipboardItem({ 'image/png': blob });
+          await navigator.clipboard.write([item]);
+          if (typeof showXpToast === 'function') {
+            showXpToast(5, 'Gambar kartu skor berhasil disalin! Siap ditempel di sosmed/chat 📋');
+          } else {
+            alert('Gambar kartu skor berhasil disalin ke clipboard! 📋');
+          }
+          return true;
+        }
+      }
+    } catch (err) {
+      console.warn('Copy image to clipboard failed, falling back:', err);
+    }
+
+    // Fallback 1: Salin teks tantangan jika ada
+    if (fallbackText) {
+      await copyToClipboard(fallbackText, 'Pesan teks berhasil disalin! Mengunduh gambar...');
+    }
+
+    // Fallback 2: Simpan/unduh gambar sebagai fallback
+    downloadCanvasAsPng(canvas, filename);
+    return false;
+  }
+
+  /**
+   * Render kartu skor menjadi gambar PNG (DataURL & Blob)
+   */
+  async function renderScoreCardToPng(dataOrCanvas) {
+    let canvas = dataOrCanvas;
+    if (!(canvas instanceof HTMLCanvasElement)) {
+      canvas = await generateScoreCardCanvas(dataOrCanvas);
+    }
+    const dataUrl = canvas.toDataURL('image/png');
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+    return { canvas, dataUrl, blob };
+  }
+
+  /**
    * Downloads a Canvas as PNG file
    */
   function downloadCanvasAsPng(canvas, filename) {
@@ -1024,13 +1071,13 @@
               <!-- Web Share API (Story / Other apps) -->
               <button id="btn-native-share" class="w-full py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition">
                 <span>🚀</span>
-                <span>Bagikan Langsung (Story/App)</span>
+                <span>Bagikan Lewat Menu Perangkat (Story/App)</span>
               </button>
 
-              <!-- Copy Text Link -->
-              <button id="btn-copy-text" class="w-full py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-700 flex items-center justify-center gap-1.5 transition">
+              <!-- Copy Image / Text with Save Fallback -->
+              <button id="btn-copy-card" class="w-full py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-700 flex items-center justify-center gap-1.5 transition">
                 <span>📋</span>
-                <span>Salin Pesan & Link</span>
+                <span>Salin Gambar / Teks</span>
               </button>
             </div>
           </div>
@@ -1057,8 +1104,8 @@
         nativeShareCanvas(canvas, fileName, shareText);
       };
 
-      document.getElementById('btn-copy-text').onclick = () => {
-        copyToClipboard(shareText, 'Pesan viral & link TembusPTN berhasil disalin! Tinggal tempel di chat teman 💬');
+      document.getElementById('btn-copy-card').onclick = () => {
+        copyImageToClipboard(canvas, shareText, fileName);
       };
     } catch (err) {
       loadingToast.remove();
@@ -1182,6 +1229,8 @@
     shareToWhatsApp,
     copyToClipboard,
     downloadCanvasAsPng,
-    nativeShareCanvas
+    nativeShareCanvas,
+    renderScoreCardToPng,
+    copyImageToClipboard
   };
 })();

@@ -620,31 +620,33 @@ function showXpNotification(amount, reason) {
   if (typeof document === "undefined") return;
   const isXp = typeof amount === "number" && amount > 0;
   const toast = document.createElement("div");
+  toast.setAttribute("role", "status");
+  toast.setAttribute("aria-live", "polite");
   toast.className = isXp
-    ? "fixed top-20 right-6 z-50 flex items-center gap-2.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white font-bold px-4 py-2.5 rounded-xl shadow-xl transform transition-all duration-500 translate-y-[-20px] opacity-0 pointer-events-none"
-    : "fixed top-20 right-6 z-50 flex items-center gap-2.5 bg-slate-900/95 dark:bg-slate-800 text-white px-4 py-2 rounded-xl shadow-xl border border-slate-700/60 transform transition-all duration-500 translate-y-[-20px] opacity-0 pointer-events-none backdrop-blur-md";
+    ? "fixed top-16 sm:top-20 right-4 left-4 sm:left-auto sm:right-6 sm:max-w-xs z-50 flex items-center gap-2.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-bold px-4 py-2.5 rounded-xl shadow-2xl transform transition-all duration-300 translate-y-[-16px] opacity-0 pointer-events-none"
+    : "fixed top-16 sm:top-20 right-4 left-4 sm:left-auto sm:right-6 sm:max-w-xs z-50 flex items-center gap-2.5 bg-slate-900/95 dark:bg-slate-800 text-white px-4 py-2.5 rounded-xl shadow-2xl border border-slate-700/60 transform transition-all duration-300 translate-y-[-16px] opacity-0 pointer-events-none backdrop-blur-md";
   toast.innerHTML = isXp ? `
-    <span class="text-xl">⚡</span>
-    <div>
-      <div class="text-sm tracking-wide">+${amount} XP</div>
-      <div class="text-[11px] font-normal opacity-90">${reason}</div>
+    <span class="text-xl shrink-0">⚡</span>
+    <div class="min-w-0">
+      <div class="text-xs sm:text-sm font-black font-mono tracking-wide">+${amount} XP</div>
+      <div class="text-[11px] font-normal text-slate-900 truncate">${reason}</div>
     </div>
   ` : `
-    <span class="text-base">✨</span>
-    <div class="text-xs font-semibold text-slate-100">${reason}</div>
+    <span class="text-base shrink-0">✨</span>
+    <div class="text-xs font-semibold text-slate-100 min-w-0">${reason}</div>
   `;
   document.body.appendChild(toast);
 
   requestAnimationFrame(() => {
-    toast.classList.remove("translate-y-[-20px]", "opacity-0");
+    toast.classList.remove("translate-y-[-16px]", "opacity-0");
     toast.classList.add("translate-y-0", "opacity-100");
   });
 
   setTimeout(() => {
     toast.classList.remove("translate-y-0", "opacity-100");
-    toast.classList.add("translate-y-[-20px]", "opacity-0");
-    setTimeout(() => toast.remove(), 500);
-  }, 2200);
+    toast.classList.add("translate-y-[-16px]", "opacity-0");
+    setTimeout(() => toast.remove(), 400);
+  }, 2400);
 }
 
 // Selebrasi Confetti menggunakan canvas-confetti

@@ -24,6 +24,18 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
+    // 0. RUTE HALAMAN NATIVE
+    if (url.pathname === "/halo" || url.pathname === "/halo/") {
+      if (env && env.ASSETS && typeof env.ASSETS.fetch === "function") {
+        return env.ASSETS.fetch(new Request(new URL("/halo.html", request.url), request));
+      }
+    }
+    if (url.pathname === "/kartu-skor" || url.pathname === "/kartu-skor/") {
+      if (env && env.ASSETS && typeof env.ASSETS.fetch === "function") {
+        return env.ASSETS.fetch(new Request(new URL("/kartu-skor.html", request.url), request));
+      }
+    }
+
     // 1. RUTE API LEADERBOARD
     if (url.pathname === "/api/leaderboard" || url.pathname.startsWith("/api/leaderboard")) {
       // Handle CORS Preflight

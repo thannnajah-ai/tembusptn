@@ -7,10 +7,19 @@
   <link rel="icon" type="image/png" href="assets/logo.png" />
   <link rel="apple-touch-icon" href="assets/logo.png" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <meta name="theme-color" content="#0f172a" />
+  <meta name="theme-color" content="#ffffff" id="meta-theme-color" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="TembusPTN" />
+
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Together AI Design System Tokens -->
+  <link rel="stylesheet" href="tokens.css" />
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -19,12 +28,14 @@
       theme: {
         extend: {
           colors: {
+            togetherOrange: '#fc4c02',
+            togetherDark: '#010120',
             primary: {
-              50: '#eef2ff',
-              100: '#e0e7ff',
-              500: '#6366f1',
-              600: '#4f46e5',
-              700: '#4338ca',
+              50: '#fff7ed',
+              100: '#ffedd5',
+              500: '#fc4c02',
+              600: '#ea3e00',
+              700: '#c23200',
             }
           }
         }
@@ -66,109 +77,109 @@
   <!-- Custom Stylesheet -->
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body class="bg-slate-50 text-slate-900 min-h-full flex flex-col">
+<body class="min-h-full flex flex-col selection:bg-[#000] selection:text-[#fff] dark:selection:bg-[#fff] dark:selection:text-[#000]">
 
   <!-- ======================================================== -->
-  <!-- TOP APP BAR (Gamification Header - UI/UX PRO MAX) -->
+  <!-- TOP APP BAR (Together AI Minimalist Archetype)          -->
   <!-- ======================================================== -->
-  <header class="glass-header sticky top-0 z-30 transition-colors duration-200">
-    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-1.5 sm:gap-3">
+  <header class="glass-header sticky top-0 z-30 transition-colors" style="border-bottom: 1px solid var(--color-border);">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
       <!-- Logo & Brand -->
       <div class="flex items-center gap-2.5 sm:gap-3.5 cursor-pointer group shrink-0" onclick="switchTab('dashboard')">
-        <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl overflow-hidden shadow-md shadow-orange-500/20 group-hover:scale-105 transition shrink-0 border border-slate-700/40 bg-slate-950 flex items-center justify-center ring-1 ring-orange-500/30">
-          <img src="assets/logo.png" alt="TembusPTN Logo" class="w-full h-full object-cover scale-105" />
+        <div style="width: 34px; height: 34px; border: 1px solid var(--color-border); border-radius: var(--radius-xs);" class="flex items-center justify-center p-0.5 bg-black dark:bg-white text-white dark:text-black shrink-0 transition group-hover:scale-105">
+          <img src="assets/logo.png" alt="TembusPTN Logo" class="w-full h-full object-cover rounded-[2px]" />
         </div>
-        <div class="min-w-0">
-          <div class="font-black text-sm sm:text-lg tracking-tight text-slate-900 dark:text-white leading-none flex items-center gap-1 sm:gap-1.5">
-            <span>Tembus<span class="bg-gradient-to-r from-amber-500 via-orange-500 to-indigo-500 bg-clip-text text-transparent">PTN</span></span>
-            <span class="px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 text-[10px] sm:text-xs font-black tracking-wider uppercase shadow-sm">
-              PRO
-            </span>
-          </div>
-          <div class="text-[11px] sm:text-xs text-slate-400 dark:text-slate-400 font-medium hidden sm:block">Analisis Presisi, Tembus PTN Favorit</div>
+        <div class="flex items-baseline gap-2">
+          <span style="font-family: var(--font-display); font-weight: 800; font-size: 1.125rem; letter-spacing: -0.03em;">Tembus<span style="color: var(--color-brand-orange);">PTN</span></span>
+          <span class="tg-badge tg-badge--neutral hidden sm:inline-flex">AI-NATIVE CLOUD</span>
         </div>
       </div>
 
       <!-- Live Gamification Stats, Theme Switcher & User Profile -->
-      <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+      <div class="flex items-center gap-2 sm:gap-3 shrink-0">
         <!-- Target PTN Quick Pill -->
-        <div id="header-target-ptn" class="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-slate-800/80 text-indigo-700 dark:text-indigo-300 font-bold text-xs border border-indigo-200/80 dark:border-slate-700 cursor-pointer hover:bg-indigo-100 dark:hover:bg-slate-700 transition" onclick="switchTab('ptn-explorer')" title="Target PTN Pilihan">
+        <div id="header-target-ptn" class="hidden xl:flex tg-badge tg-badge--blue cursor-pointer items-center gap-1.5" onclick="switchTab('ptn-explorer')" title="Target PTN Pilihan">
           <span>🎯</span>
           <span id="header-target-name" class="truncate max-w-[150px]">UI • Ilkom (718)</span>
         </div>
 
         <!-- Streak Counter with Flame Animation -->
-        <div id="header-streak" class="flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold text-xs shadow-md shadow-orange-500/20 cursor-pointer" title="Streak Belajar Harian">
-          <span class="text-sm sm:text-base animate-flame">🔥</span>
-          <span id="streak-count" class="font-extrabold">1</span>
-          <span class="hidden md:inline text-xs opacity-90">Hari</span>
+        <div id="header-streak" class="tg-badge tg-badge--orange cursor-pointer flex items-center gap-1" title="Streak Belajar Harian">
+          <span class="animate-flame">🔥</span>
+          <span id="streak-count">1</span>
+          <span class="hidden md:inline">Hari</span>
         </div>
 
         <!-- XP Points with Shimmer -->
-        <div id="header-xp" class="flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 font-black text-xs shadow-md shadow-amber-400/20" title="Total XP Terkumpul">
-          <span class="text-xs sm:text-sm">⚡</span>
+        <div id="header-xp" class="tg-badge tg-badge--cyan cursor-pointer flex items-center gap-1" title="Total XP Terkumpul">
+          <span>⚡</span>
           <span id="xp-count">50</span>
-          <span class="hidden sm:inline text-xs opacity-80">XP</span>
+          <span>XP</span>
         </div>
 
         <!-- Level & Tier Badge -->
         <div id="header-tier" class="hidden lg:block">
-          <span id="tier-badge" class="px-2.5 py-1 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
+          <span id="tier-badge" class="tg-badge tg-badge--neutral">
             Lvl 1 • Pemula
           </span>
         </div>
 
         <!-- Theme Toggle Switch (Dark / Light Mode) -->
-        <button id="theme-toggle-btn" onclick="toggleTheme()" class="p-1.5 sm:px-2.5 sm:py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-amber-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition flex items-center justify-center shadow-sm" title="Ubah Tampilan (Terang / Gelap)">
-          <span id="theme-icon" class="text-sm sm:text-base">🌙</span>
+        <button id="theme-toggle-btn" onclick="toggleTheme()" class="tg-button tg-button--secondary" style="width: 2.625rem; padding: 0;" title="Ubah Tampilan (Terang / Gelap)" aria-label="Alihkan tema tampilan gelap atau terang">
+          <span id="theme-icon">🌙</span>
         </button>
 
         <!-- Guest Login Button (Displayed when not logged in) -->
-        <button id="header-login-btn" onclick="openAuthModal('login')" class="hidden items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm transition">
+        <button id="header-login-btn" onclick="openAuthModal('login')" class="hidden tg-button tg-button--primary">
           <span>🔑</span>
-          <span>Masuk / Daftar</span>
+          <span>Masuk</span>
         </button>
 
         <!-- Profile & Account Dropdown Trigger (Displayed when logged in) -->
         <div class="relative" id="header-user-menu-wrap">
-          <button id="header-avatar-btn" onclick="toggleUserDropdown()" class="flex items-center gap-1 sm:gap-2 p-1 sm:px-2.5 sm:py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-left">
-            <span id="header-avatar-icon" class="text-base sm:text-xl">👨‍🎓</span>
-            <span id="header-avatar-name" class="hidden md:inline font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-200">Siswa</span>
-            <i data-lucide="chevron-down" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400"></i>
+          <button id="header-avatar-btn" onclick="toggleUserDropdown()" class="tg-button tg-button--secondary flex items-center gap-1.5 sm:gap-2 text-left" style="height: 2.625rem; padding: 0 0.875rem;">
+            <span id="header-avatar-icon" class="text-base">👨‍🎓</span>
+            <span id="header-avatar-name" class="hidden md:inline font-mono font-semibold text-xs">Siswa</span>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 opacity-60"></i>
           </button>
 
           <!-- User Dropdown Menu Popup -->
-          <div id="user-dropdown-menu" class="hidden absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl py-2 z-50 animate-fade-in text-xs sm:text-sm">
-            <div class="px-4 py-2.5 border-b border-slate-100 dark:border-slate-700">
-              <div class="text-xs font-medium text-slate-400">Akun Aktif:</div>
-              <div class="font-bold text-slate-900 dark:text-white truncate" id="dropdown-user-name">Siswa (Pejuang PTN)</div>
-              <div class="text-xs text-indigo-600 dark:text-indigo-400 truncate" id="dropdown-user-email">@siswa</div>
+          <div id="user-dropdown-menu" class="hidden absolute right-0 mt-2 w-64 bg-[var(--color-paper-card)] border border-[var(--color-border)] rounded-[var(--radius-md)] shadow-2xl py-2 z-50 animate-fade-in text-xs">
+            <div class="px-4 py-2.5 border-b border-[var(--color-border)]">
+              <div class="font-mono text-[10px] uppercase text-[var(--color-ink-muted)]">Akun Aktif:</div>
+              <div class="font-bold text-[var(--color-ink)] truncate" id="dropdown-user-name">Siswa (Pejuang PTN)</div>
+              <div class="font-mono text-xs text-[var(--color-cyan-text)] truncate" id="dropdown-user-email">@siswa</div>
             </div>
 
             <div class="py-1">
-              <button onclick="switchTab('profile'); closeUserDropdown();" class="w-full px-4 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2.5 transition font-semibold text-indigo-600 dark:text-indigo-400">
+              <button onclick="switchTab('profile'); closeUserDropdown();" class="w-full px-4 py-2 text-left text-[var(--color-ink)] hover:bg-[var(--color-paper-subtle)] flex items-center gap-2.5 transition font-semibold">
                 <span>👤</span>
                 <div>Profil & Statistik Saya</div>
               </button>
 
-              <button onclick="openSettingsModal(); closeUserDropdown();" class="w-full px-4 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2.5 transition">
+              <button onclick="openSettingsModal(); closeUserDropdown();" class="w-full px-4 py-2 text-left text-[var(--color-ink)] hover:bg-[var(--color-paper-subtle)] flex items-center gap-2.5 transition">
                 <span>🎯</span>
                 <div class="font-medium">Target PTN & Jurusan</div>
               </button>
 
-              <button onclick="openAuthModal('login'); closeUserDropdown();" class="w-full px-4 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2.5 transition">
+              <button onclick="openAuthModal('login'); closeUserDropdown();" class="w-full px-4 py-2 text-left text-[var(--color-ink)] hover:bg-[var(--color-paper-subtle)] flex items-center gap-2.5 transition">
                 <span>👥</span>
                 <div class="font-medium">Ganti Akun / Masuk</div>
               </button>
 
-              <button onclick="openAuthModal('register'); closeUserDropdown();" class="w-full px-4 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2.5 transition">
+              <button onclick="openAuthModal('register'); closeUserDropdown();" class="w-full px-4 py-2 text-left text-[var(--color-ink)] hover:bg-[var(--color-paper-subtle)] flex items-center gap-2.5 transition">
                 <span>➕</span>
                 <div class="font-medium">Daftar Akun Baru</div>
               </button>
+
+              <a href="halo.html" class="w-full px-4 py-2 text-left text-[var(--color-ink)] hover:bg-[var(--color-paper-subtle)] flex items-center gap-2.5 transition">
+                <span>👋</span>
+                <div class="font-medium">Halaman Halo (Showcase)</div>
+              </a>
             </div>
 
-            <div class="pt-1 border-t border-slate-100 dark:border-slate-700">
-              <button onclick="handleLogout(); closeUserDropdown();" class="w-full px-4 py-2 text-left text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 flex items-center gap-2.5 transition font-semibold">
+            <div class="pt-1 border-t border-[var(--color-border)]">
+              <button onclick="handleLogout(); closeUserDropdown();" class="w-full px-4 py-2 text-left text-rose-600 hover:bg-rose-500/10 flex items-center gap-2.5 transition font-semibold">
                 <span>🚪</span>
                 <div>Keluar (Logout)</div>
               </button>
@@ -178,37 +189,114 @@
       </div>
     </div>
 
-    <!-- Secondary Tab Navigation Bar -->
-    <nav class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 flex items-center gap-1 sm:gap-2 overflow-x-auto py-2 scrollbar-none border-t border-slate-100 dark:border-slate-800 text-xs sm:text-sm font-bold">
-      <button data-nav-tab="dashboard" class="px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap nav-active flex items-center gap-1.5 shrink-0">
+    <!-- Secondary Tab Navigation Bar (Together AI Monospace Accent) -->
+    <nav class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 flex items-center gap-1 sm:gap-2 overflow-x-auto py-2 scrollbar-none border-t border-[var(--color-border)] text-xs font-mono font-semibold">
+      <button data-nav-tab="dashboard" class="nav-tab-btn px-3 py-1.5 transition whitespace-nowrap nav-active flex items-center gap-1.5 shrink-0">
         <span>🏠</span> <span>Beranda</span>
       </button>
-      <button data-nav-tab="drill" class="px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5 shrink-0">
+      <button data-nav-tab="drill" class="nav-tab-btn px-3 py-1.5 transition whitespace-nowrap text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)] hover:bg-[var(--color-paper-subtle)] flex items-center gap-1.5 shrink-0">
         <span>⚡</span> <span>Latihan Kilat</span>
       </button>
-      <button data-nav-tab="cbt" class="px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5 shrink-0">
+      <button data-nav-tab="cbt" class="nav-tab-btn px-3 py-1.5 transition whitespace-nowrap text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)] hover:bg-[var(--color-paper-subtle)] flex items-center gap-1.5 shrink-0">
         <span>📝</span> <span>Try Out CBT</span>
       </button>
-      <button data-nav-tab="rapor" class="px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5 shrink-0">
-        <span>📊</span> <span>Rapor & Peluang</span>
+      <button data-nav-tab="rapor" class="nav-tab-btn px-3 py-1.5 transition whitespace-nowrap text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)] hover:bg-[var(--color-paper-subtle)] flex items-center gap-1.5 shrink-0">
+        <span>📊</span> <span>Rapor & IRT</span>
       </button>
-      <button data-nav-tab="bank-soal" class="px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5 shrink-0">
+      <button data-nav-tab="bank-soal" class="nav-tab-btn px-3 py-1.5 transition whitespace-nowrap text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)] hover:bg-[var(--color-paper-subtle)] flex items-center gap-1.5 shrink-0">
         <span>📖</span> <span>Bank Soal</span>
       </button>
-      <button data-nav-tab="flashcards" class="px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5 shrink-0">
+      <button data-nav-tab="flashcards" class="nav-tab-btn px-3 py-1.5 transition whitespace-nowrap text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)] hover:bg-[var(--color-paper-subtle)] flex items-center gap-1.5 shrink-0">
         <span>🃏</span> <span>Flashcard</span>
       </button>
-      <button data-nav-tab="ptn-explorer" class="px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5 shrink-0">
+      <button data-nav-tab="ptn-explorer" class="nav-tab-btn px-3 py-1.5 transition whitespace-nowrap text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)] hover:bg-[var(--color-paper-subtle)] flex items-center gap-1.5 shrink-0">
         <span>🏛️</span> <span>Eksplorasi PTN</span>
       </button>
-      <button data-nav-tab="leaderboard" class="px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5 shrink-0">
+      <button data-nav-tab="leaderboard" class="nav-tab-btn px-3 py-1.5 transition whitespace-nowrap text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)] hover:bg-[var(--color-paper-subtle)] flex items-center gap-1.5 shrink-0">
         <span>🏆</span> <span>Leaderboard</span>
       </button>
-      <button data-nav-tab="profile" class="px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5 shrink-0">
+      <button data-nav-tab="profile" class="nav-tab-btn px-3 py-1.5 transition whitespace-nowrap text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)] hover:bg-[var(--color-paper-subtle)] flex items-center gap-1.5 shrink-0">
         <span>👤</span> <span>Profil</span>
       </button>
+      <a href="halo.html" class="nav-tab-btn px-3 py-1.5 transition whitespace-nowrap text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)] hover:bg-[var(--color-paper-subtle)] flex items-center gap-1.5 shrink-0" title="Halaman Halo">
+        <span>👋</span> <span>Showcase</span>
+      </a>
     </nav>
   </header>
+
+  <!-- ============================================================ -->
+  <!-- CONTINUOUS RUNNING TICKER (TOGETHER.AI SIGNATURE)           -->
+  <!-- ============================================================ -->
+  <section style="border-bottom: 1px solid var(--color-border); background: var(--color-paper-subtle); overflow: hidden; padding: 0.625rem 0;">
+    <div class="marquee-track flex items-center gap-8 text-xs font-mono tracking-wider uppercase" style="color: var(--color-ink-muted);">
+      <div class="flex items-center gap-2 shrink-0">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+        <span class="text-[var(--color-ink)] font-semibold">IRT 3-PL Model</span>
+        <span>•</span>
+        <span>Latensi Evaluasi &lt; 12ms</span>
+      </div>
+      <span>/</span>
+      <div class="flex items-center gap-2 shrink-0">
+        <span class="tg-badge tg-badge--cyan">PENALARAN UMUM</span>
+        <span>Bank Soal Terkalibrasi</span>
+      </div>
+      <span>/</span>
+      <div class="flex items-center gap-2 shrink-0">
+        <span class="tg-badge tg-badge--purple">PENGETAHUAN KUANTITATIF</span>
+        <span>Taraf Kesukaran b: -2.5 s/d +2.5</span>
+      </div>
+      <span>/</span>
+      <div class="flex items-center gap-2 shrink-0">
+        <span class="tg-badge tg-badge--blue">LITERASI BAHASA</span>
+        <span>SNBT Standar 2026/2027</span>
+      </div>
+      <span>/</span>
+      <div class="flex items-center gap-2 shrink-0">
+        <span class="tg-badge tg-badge--orange">PENALARAN MATEMATIKA</span>
+        <span>Daya Pembeda a &gt; 1.20</span>
+      </div>
+      <span>/</span>
+      <div class="flex items-center gap-2 shrink-0">
+        <span class="text-[var(--color-ink)] font-semibold">RASIONALISASI PTN</span>
+        <span>Passing Grade Real-Time</span>
+      </div>
+      <span>/</span>
+
+      <!-- Duplicate Set for Seamless Infinite Loop -->
+      <div class="flex items-center gap-2 shrink-0">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+        <span class="text-[var(--color-ink)] font-semibold">IRT 3-PL Model</span>
+        <span>•</span>
+        <span>Latensi Evaluasi &lt; 12ms</span>
+      </div>
+      <span>/</span>
+      <div class="flex items-center gap-2 shrink-0">
+        <span class="tg-badge tg-badge--cyan">PENALARAN UMUM</span>
+        <span>Bank Soal Terkalibrasi</span>
+      </div>
+      <span>/</span>
+      <div class="flex items-center gap-2 shrink-0">
+        <span class="tg-badge tg-badge--purple">PENGETAHUAN KUANTITATIF</span>
+        <span>Taraf Kesukaran b: -2.5 s/d +2.5</span>
+      </div>
+      <span>/</span>
+      <div class="flex items-center gap-2 shrink-0">
+        <span class="tg-badge tg-badge--blue">LITERASI BAHASA</span>
+        <span>SNBT Standar 2026/2027</span>
+      </div>
+      <span>/</span>
+      <div class="flex items-center gap-2 shrink-0">
+        <span class="tg-badge tg-badge--orange">PENALARAN MATEMATIKA</span>
+        <span>Daya Pembeda a &gt; 1.20</span>
+      </div>
+      <span>/</span>
+      <div class="flex items-center gap-2 shrink-0">
+        <span class="text-[var(--color-ink)] font-semibold">RASIONALISASI PTN</span>
+        <span>Passing Grade Real-Time</span>
+      </div>
+      <span>/</span>
+    </div>
+  </section>
 
   <!-- ======================================================== -->
   <!-- MAIN CONTAINER WITH SPA VIEWS -->
@@ -244,21 +332,29 @@
     <!-- VIEW 1: DASHBOARD (BERANDA) -->
     <!-- ------------------------------------------------------ -->
     <div id="view-dashboard" class="space-y-6">
-      <!-- Countdown & Motivation Hero -->
-      <div class="bg-slate-900 dark:bg-slate-950 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-sm relative overflow-hidden border border-slate-800">
-        <div class="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6 items-center">
-          <div class="lg:col-span-2 space-y-3.5 sm:space-y-4" id="hero-content-col">
-            <div class="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-slate-800/80 border border-slate-700 text-xs font-semibold text-amber-400">
-              <span class="animate-flame">🔥</span>
-              <span id="hero-greeting">Semangat Belajar, Pejuang PTN 2027! 🚀</span>
+      <!-- Countdown & Motivation Hero (Together AI Opacity Split Archetype) -->
+      <div class="rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-xl relative overflow-hidden" style="background: var(--color-brand-dark); border: 1px solid var(--color-border); color: #ffffff;">
+        <div class="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+          <div class="lg:col-span-2 space-y-4" id="hero-content-col">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="tg-badge tg-badge--cyan">
+                <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+                Sistem Evaluasi UTBK-SNBT 2026/2027
+              </span>
+              <span class="tg-badge tg-badge--orange" id="hero-greeting">
+                <span class="animate-flame">🔥</span>
+                Semangat Belajar, Pejuang PTN 2027! 🚀
+              </span>
             </div>
 
-            <h1 class="text-xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight text-white font-heading">
-              Taklukkan UTBK SNBT Bersama <span class="bg-gradient-to-r from-amber-400 via-orange-400 to-indigo-400 bg-clip-text text-transparent">TembusPTN</span>!
+            <!-- Signature H1 Marquee Opacity Split -->
+            <h1 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight text-white font-display">
+              Taklukkan UTBK SNBT<br/>
+              <span style="color: rgba(255, 255, 255, 0.4);">di atas platform analitik adaptif.</span>
             </h1>
 
             <p class="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
-              Platform persiapan komprehensif: simulasi CBT resmi SNPMB, pembobotan IRT akurat, bank soal 2021–2026, dan prediksi rasionalisasi PTN impianmu.
+              Model penskoran Item Response Theory (IRT 3-PL), bank soal terkalibrasi, simulasi CBT resmi SNPMB, dan prediksi rasionalisasi passing grade PTN impianmu.
             </p>
 
             <!-- Digital Countdown Timer Display & Live Online Counter -->
@@ -277,77 +373,262 @@
                   <span>Live</span>
                 </div>
               </div>
-              <div class="grid grid-cols-4 gap-1.5 sm:gap-3 max-w-xs sm:max-w-sm">
-                <div class="countdown-box rounded-xl p-2 sm:p-3 text-center">
-                  <div id="countdown-days" class="countdown-num text-lg sm:text-2xl font-bold text-slate-900 dark:text-white">--</div>
-                  <div class="text-[10px] sm:text-xs uppercase font-semibold text-slate-400 dark:text-slate-500 tracking-wider">Hari</div>
+              <div class="grid grid-cols-4 gap-1.5 sm:gap-3 max-w-xs sm:max-w-sm font-mono">
+                <div class="countdown-box rounded-xl p-2 sm:p-3 text-center" style="background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.1);">
+                  <div id="countdown-days" class="countdown-num text-lg sm:text-2xl font-bold text-white">--</div>
+                  <div class="text-[10px] sm:text-xs uppercase font-semibold text-slate-400 tracking-wider">Hari</div>
                 </div>
-                <div class="countdown-box rounded-xl p-2 sm:p-3 text-center">
-                  <div id="countdown-hours" class="countdown-num text-lg sm:text-2xl font-bold text-slate-900 dark:text-white">--</div>
-                  <div class="text-[10px] sm:text-xs uppercase font-semibold text-slate-400 dark:text-slate-500 tracking-wider">Jam</div>
+                <div class="countdown-box rounded-xl p-2 sm:p-3 text-center" style="background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.1);">
+                  <div id="countdown-hours" class="countdown-num text-lg sm:text-2xl font-bold text-white">--</div>
+                  <div class="text-[10px] sm:text-xs uppercase font-semibold text-slate-400 tracking-wider">Jam</div>
                 </div>
-                <div class="countdown-box rounded-xl p-2 sm:p-3 text-center">
-                  <div id="countdown-minutes" class="countdown-num text-lg sm:text-2xl font-bold text-slate-900 dark:text-white">--</div>
-                  <div class="text-[10px] sm:text-xs uppercase font-semibold text-slate-400 dark:text-slate-500 tracking-wider">Menit</div>
+                <div class="countdown-box rounded-xl p-2 sm:p-3 text-center" style="background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.1);">
+                  <div id="countdown-minutes" class="countdown-num text-lg sm:text-2xl font-bold text-white">--</div>
+                  <div class="text-[10px] sm:text-xs uppercase font-semibold text-slate-400 tracking-wider">Menit</div>
                 </div>
-                <div class="countdown-box rounded-xl p-2 sm:p-3 text-center">
-                  <div id="countdown-seconds" class="countdown-num text-lg sm:text-2xl font-bold text-rose-500">--</div>
-                  <div class="text-[10px] sm:text-xs uppercase font-semibold text-slate-400 dark:text-slate-500 tracking-wider">Detik</div>
+                <div class="countdown-box rounded-xl p-2 sm:p-3 text-center" style="background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.1);">
+                  <div id="countdown-seconds" class="countdown-num text-lg sm:text-2xl font-bold text-rose-400">--</div>
+                  <div class="text-[10px] sm:text-xs uppercase font-semibold text-slate-400 tracking-wider">Detik</div>
                 </div>
               </div>
             </div>
 
-            <div class="pt-2 flex flex-col sm:flex-row gap-2.5 sm:gap-3">
-              <button onclick="switchTab('cbt')" class="w-full sm:w-auto px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
-                <span>Simulasi Try Out CBT</span>
-                <span>🚀</span>
+            <!-- Action Buttons -->
+            <div class="pt-2 flex flex-col sm:flex-row gap-3">
+              <button onclick="switchTab('cbt')" class="tg-button tg-button--orange font-mono text-xs shadow-md">
+                <span>Mulai Simulasi CBT</span>
+                <span>→</span>
               </button>
-              <button onclick="switchTab('drill')" class="w-full sm:w-auto px-5 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-sm rounded-xl transition flex items-center justify-center gap-2">
+              <button onclick="switchTab('drill')" class="tg-button tg-button--secondary font-mono text-xs" style="color: #ffffff; border-color: rgba(255, 255, 255, 0.25);">
                 <span>Latihan Kilat</span>
                 <span>⚡</span>
               </button>
             </div>
+
+            <!-- Technical Parameter Grid (Together AI Spec Style) -->
+            <div class="pt-3 grid grid-cols-2 sm:grid-cols-4 gap-3 text-[11px] font-mono" style="border-top: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.65);">
+              <div><span class="text-slate-400 block text-[9px] uppercase">Engine</span><strong class="text-white">IRT 3-PL (a,b,c)</strong></div>
+              <div><span class="text-slate-400 block text-[9px] uppercase">Bank Soal</span><strong class="text-white">2021–2026</strong></div>
+              <div><span class="text-slate-400 block text-[9px] uppercase">Prediksi</span><strong class="text-white">&lt; 12ms</strong></div>
+              <div><span class="text-slate-400 block text-[9px] uppercase">Status</span><strong class="text-emerald-400">CALIBRATED</strong></div>
+            </div>
           </div>
 
           <!-- Target PTN Widget -->
-          <div id="dash-target-ptn" class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 sm:p-5 space-y-3">
+          <div id="dash-target-ptn" class="bg-slate-900/90 border border-slate-700/80 rounded-2xl p-4 sm:p-5 space-y-3">
             <!-- Rendered by JS -->
           </div>
         </div>
       </div>
 
-      <!-- Quick Action Cards -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
-        <div onclick="switchTab('drill')" class="glass-card card-hover-lift p-5 rounded-2xl cursor-pointer group border border-slate-200 dark:border-slate-800">
-          <div class="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl mb-3 border border-amber-200/60 dark:border-amber-900/60">
+      <!-- ======================================================== -->
+      <!-- MODULAR BENTO GRID (TOGETHER.AI CLOUD MATRIX)            -->
+      <!-- ======================================================== -->
+      <div class="space-y-4 pt-2">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="tg-badge tg-badge--purple mb-1">ARSITEKTUR PLATFORM</span>
+            <h2 class="text-lg sm:text-2xl font-bold tracking-tight text-[var(--color-ink)] font-display">
+              Matriks Analitik & Evaluasi Skor Mandiri
+            </h2>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-5">
+          <!-- Card 1: IRT 3-PL Scoring Engine (Col 7) -->
+          <div class="md:col-span-7 tg-card flex flex-col justify-between cursor-pointer" onclick="switchTab('rapor')">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="tg-badge tg-badge--cyan">01 / ENGINE ANALITIK</span>
+                <span class="font-mono text-xs text-[var(--color-ink-muted)]">IRT 3-PL</span>
+              </div>
+              <h3 class="text-lg sm:text-xl font-bold mb-2 text-[var(--color-ink)]">Algoritma Item Response Theory</h3>
+              <p class="text-xs sm:text-sm text-[var(--color-ink-secondary)] leading-relaxed mb-4">
+                Setiap butir soal memiliki kurva logistik 3-parameter: daya pembeda (\(a\)), tingkat kesulitan (\(b\)), dan tebakan semu (\(c\)) untuk estimasi kemampuan akurat.
+              </p>
+            </div>
+            <div style="background: var(--color-paper-subtle); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 1rem;" class="font-mono text-xs overflow-x-auto">
+              <div class="flex items-center justify-between pb-1.5 mb-1.5 border-b border-[var(--color-border)] text-[10px] text-[var(--color-ink-muted)]">
+                <span>MODEL PROBABILITAS LOGISTIK</span>
+                <span class="text-emerald-500 font-bold">● LIVE FORMULA</span>
+              </div>
+              <div class="py-1 text-center" id="dash-irt-formula">
+                \( P_i(\theta) = c_i + \frac{1 - c_i}{1 + e^{-1.7 a_i (\theta - b_i)}} \)
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Adaptive Question Bank (Col 5) -->
+          <div class="md:col-span-5 tg-card flex flex-col justify-between cursor-pointer" onclick="switchTab('bank-soal')">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="tg-badge tg-badge--blue">02 / KURASI SOAL</span>
+                <span class="font-mono text-xs text-[var(--color-ink-muted)]">7 SUBTES</span>
+              </div>
+              <h3 class="text-lg sm:text-xl font-bold mb-2 text-[var(--color-ink)]">Bank Soal Adaptif</h3>
+              <p class="text-xs sm:text-sm text-[var(--color-ink-secondary)] leading-relaxed mb-3">
+                Dirancang mengikuti format HOTS terbaru SNPMB dengan analisis pembahasan terperinci.
+              </p>
+            </div>
+            <div class="flex flex-wrap gap-1.5 pt-2">
+              <span class="tg-badge tg-badge--neutral text-[10px]">Penalaran Umum</span>
+              <span class="tg-badge tg-badge--neutral text-[10px]">Pengetahuan Kuantitatif</span>
+              <span class="tg-badge tg-badge--neutral text-[10px]">PPU & PBM</span>
+              <span class="tg-badge tg-badge--neutral text-[10px]">Literasi B. Indonesia</span>
+              <span class="tg-badge tg-badge--neutral text-[10px]">Penalaran Matematika</span>
+            </div>
+          </div>
+
+          <!-- Card 3: Gamification & Streak (Col 4) -->
+          <div class="md:col-span-4 tg-card flex flex-col justify-between cursor-pointer" onclick="switchTab('drill')">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="tg-badge tg-badge--orange">03 / HABIT LOOP</span>
+                <span class="font-mono text-xs text-[var(--color-ink-muted)]">DAILY STREAK</span>
+              </div>
+              <h3 class="text-base sm:text-lg font-bold mb-1.5 text-[var(--color-ink)]">Disiplin Belajar Harian</h3>
+              <p class="text-xs text-[var(--color-ink-secondary)] leading-relaxed mb-3">
+                Pertahankan ritme belajar harian dan kumpulkan XP pada setiap latihan kilat.
+              </p>
+            </div>
+            <div style="background: var(--color-paper-subtle); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.75rem;" class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-xl">🔥</span>
+                <div>
+                  <div class="font-mono font-bold text-xs">Habit Streak</div>
+                  <div class="text-[10px] text-[var(--color-ink-muted)]">Konsistensi harian</div>
+                </div>
+              </div>
+              <span class="tg-badge tg-badge--orange">+10 XP/HARI</span>
+            </div>
+          </div>
+
+          <!-- Card 4: Target PTN Radar (Col 8) -->
+          <div class="md:col-span-8 tg-card flex flex-col justify-between cursor-pointer" onclick="switchTab('ptn-explorer')">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="tg-badge tg-badge--purple">04 / KOMPARASI KAMPUS</span>
+                <span class="font-mono text-xs text-[var(--color-ink-muted)]">PASSING RADAR</span>
+              </div>
+              <h3 class="text-lg sm:text-xl font-bold mb-2 text-[var(--color-ink)]">Proyeksi Kelulusan PTN Impian</h3>
+              <p class="text-xs sm:text-sm text-[var(--color-ink-secondary)] leading-relaxed mb-3">
+                Pantau perbandingan skor IRT Anda secara langsung terhadap ambang batas kelulusan jurusan favorit di Indonesia.
+              </p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+              <div style="border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.75rem; background: var(--color-paper-subtle);">
+                <div class="font-mono text-[10px] text-[var(--color-ink-muted)]">UI • ILKOM</div>
+                <div class="font-mono text-sm font-bold text-[var(--color-ink)] mt-0.5">Target 718+</div>
+              </div>
+              <div style="border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.75rem; background: var(--color-paper-subtle);">
+                <div class="font-mono text-[10px] text-[var(--color-ink-muted)]">ITB • STEI-R</div>
+                <div class="font-mono text-sm font-bold text-[var(--color-ink)] mt-0.5">Target 724+</div>
+              </div>
+              <div style="border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.75rem; background: var(--color-paper-subtle);">
+                <div class="font-mono text-[10px] text-[var(--color-ink-muted)]">UGM • KEDOKTERAN</div>
+                <div class="font-mono text-sm font-bold text-[var(--color-ink)] mt-0.5">Target 735+</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- INTERACTIVE SHOWCASE (TOGETHER.AI PLAYGROUND STYLE)      -->
+      <!-- ======================================================== -->
+      <div class="space-y-4 pt-2">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+          <div>
+            <span class="tg-badge tg-badge--cyan mb-1">LIVE DEMO / ITEM INSPECTOR</span>
+            <h2 class="text-lg sm:text-2xl font-bold tracking-tight text-[var(--color-ink)] font-display">
+              Inspeksi Butir Soal Adaptif
+            </h2>
+          </div>
+          <div class="flex gap-2 font-mono text-xs">
+            <span class="tg-badge tg-badge--neutral">HOT TEST ITEM #048</span>
+          </div>
+        </div>
+
+        <!-- Interactive Terminal Card -->
+        <div style="background: var(--color-paper-card); border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);">
+          <!-- Top Bar -->
+          <div style="border-bottom: 1px solid var(--color-border); padding: 0.75rem 1.25rem; background: var(--color-paper-subtle);" class="flex items-center justify-between text-xs font-mono text-[var(--color-ink-secondary)]">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span>TPS: PENALARAN MATEMATIKA</span>
+            </div>
+            <div class="flex gap-3 text-[0.6875rem] text-[var(--color-ink-muted)]">
+              <span>PARAMETER: a=1.42, b=+0.85, c=0.20</span>
+            </div>
+          </div>
+
+          <!-- Problem Body -->
+          <div class="p-5 sm:p-7 space-y-5">
+            <div style="font-size: 1rem; line-height: 1.6; color: var(--color-ink);">
+              Sebuah deret aritmetika memiliki suku pertama \(a\) dan beda \(b\). Jika jumlah \(n\) suku pertamanya dinyatakan dengan \(S_n = 3n^2 + 5n\), maka nilai suku ke-10 (\(U_{10}\)) adalah...
+            </div>
+
+            <!-- Options Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-xs">
+              <div style="border: 1px solid var(--color-border); border-radius: var(--radius-xs); padding: 0.75rem 1rem;" class="flex items-center gap-3 cursor-pointer hover:border-[var(--color-ink)] transition">
+                <span class="tg-badge tg-badge--neutral">A</span>
+                <span>58</span>
+              </div>
+              <div style="border: 1px solid var(--color-cyan-border); background: var(--color-cyan-tint); border-radius: var(--radius-xs); padding: 0.75rem 1rem;" class="flex items-center gap-3 font-bold text-[var(--color-cyan-text)] cursor-pointer">
+                <span class="tg-badge tg-badge--cyan">B</span>
+                <span>62 (Jawaban Benar)</span>
+              </div>
+              <div style="border: 1px solid var(--color-border); border-radius: var(--radius-xs); padding: 0.75rem 1rem;" class="flex items-center gap-3 cursor-pointer hover:border-[var(--color-ink)] transition">
+                <span class="tg-badge tg-badge--neutral">C</span>
+                <span>64</span>
+              </div>
+              <div style="border: 1px solid var(--color-border); border-radius: var(--radius-xs); padding: 0.75rem 1rem;" class="flex items-center gap-3 cursor-pointer hover:border-[var(--color-ink)] transition">
+                <span class="tg-badge tg-badge--neutral">D</span>
+                <span>68</span>
+              </div>
+            </div>
+
+            <!-- Solution Explanation Box -->
+            <div style="border-top: 1px solid var(--color-border); padding-top: 1rem;" class="text-xs text-[var(--color-ink-secondary)] leading-relaxed">
+              <span class="font-mono font-bold text-[var(--color-ink)] uppercase">Pembahasan Cepat:</span>
+              Gunakan relasi \(U_n = S_n - S_{n-1}\). Untuk \(n=10\): \(U_{10} = S_{10} - S_9 = [3(100) + 50] - [3(81) + 45] = 350 - 288 = 62\). Butir ini memiliki daya pembeda tinggi (\(a=1.42\)) sehingga memberi kontribusi bobot skor signifikan pada peserta yang menjawab benar.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Action Shortcuts -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 pt-2">
+        <div onclick="switchTab('drill')" class="tg-card card-hover-lift cursor-pointer group" style="padding: 1.25rem;">
+          <div class="w-10 h-10 rounded-[var(--radius-xs)] bg-[var(--color-orange-tint)] text-[var(--color-brand-orange)] flex items-center justify-center text-lg mb-2.5 border border-[var(--color-orange-border)]">
             ⚡
           </div>
-          <div class="font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100 font-heading">Latihan Kilat</div>
-          <div class="text-xs text-slate-600 dark:text-slate-400 mt-1">Pembahasan instan per butir soal & reward XP</div>
+          <div class="font-bold text-sm text-[var(--color-ink)] font-display">Latihan Kilat</div>
+          <div class="text-xs text-[var(--color-ink-muted)] mt-0.5">Pembahasan instan per butir soal & reward XP</div>
         </div>
 
-        <div onclick="switchTab('cbt')" class="glass-card card-hover-lift p-5 rounded-2xl cursor-pointer group border border-slate-200 dark:border-slate-800">
-          <div class="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl mb-3 border border-blue-200/60 dark:border-blue-900/60">
+        <div onclick="switchTab('cbt')" class="tg-card card-hover-lift cursor-pointer group" style="padding: 1.25rem;">
+          <div class="w-10 h-10 rounded-[var(--radius-xs)] bg-[var(--color-blue-tint)] text-[var(--color-blue-text)] flex items-center justify-center text-lg mb-2.5 border border-[var(--color-blue-border)]">
             📝
           </div>
-          <div class="font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100 font-heading">Simulasi Try Out</div>
-          <div class="text-xs text-slate-600 dark:text-slate-400 mt-1">Standar BPPP, waktu ketat & skor IRT 200–850</div>
+          <div class="font-bold text-sm text-[var(--color-ink)] font-display">Simulasi Try Out</div>
+          <div class="text-xs text-[var(--color-ink-muted)] mt-0.5">Standar BP3, waktu ketat & skor IRT 200–850</div>
         </div>
 
-        <div onclick="switchTab('rapor')" class="glass-card card-hover-lift p-5 rounded-2xl cursor-pointer group border border-slate-200 dark:border-slate-800">
-          <div class="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl mb-3 border border-emerald-200/60 dark:border-emerald-900/60">
+        <div onclick="switchTab('rapor')" class="tg-card card-hover-lift cursor-pointer group" style="padding: 1.25rem;">
+          <div class="w-10 h-10 rounded-[var(--radius-xs)] bg-[var(--color-cyan-tint)] text-[var(--color-cyan-text)] flex items-center justify-center text-lg mb-2.5 border border-[var(--color-cyan-border)]">
             📊
           </div>
-          <div class="font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100 font-heading">Rapor & Peluang</div>
-          <div class="text-xs text-slate-600 dark:text-slate-400 mt-1">Analisis radar 15 subtes & rasionalisasi PTN</div>
+          <div class="font-bold text-sm text-[var(--color-ink)] font-display">Rapor & Peluang</div>
+          <div class="text-xs text-[var(--color-ink-muted)] mt-0.5">Analisis radar 7 subtes & rasionalisasi PTN</div>
         </div>
 
-        <div onclick="switchTab('flashcards')" class="glass-card card-hover-lift p-5 rounded-2xl cursor-pointer group border border-slate-200 dark:border-slate-800">
-          <div class="w-11 h-11 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xl mb-3 border border-purple-200/60 dark:border-purple-900/60">
+        <div onclick="switchTab('flashcards')" class="tg-card card-hover-lift cursor-pointer group" style="padding: 1.25rem;">
+          <div class="w-10 h-10 rounded-[var(--radius-xs)] bg-[var(--color-purple-tint)] text-[var(--color-purple-text)] flex items-center justify-center text-lg mb-2.5 border border-[var(--color-purple-border)]">
             🃏
           </div>
-          <div class="font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100 font-heading">Flashcard Rumus</div>
-          <div class="text-xs text-slate-600 dark:text-slate-400 mt-1">Hafalan kilat formula PK, PM, & kaidah EYD V</div>
+          <div class="font-bold text-sm text-[var(--color-ink)] font-display">Flashcard Rumus</div>
+          <div class="text-xs text-[var(--color-ink-muted)] mt-0.5">Hafalan kilat formula PK, PM, & kaidah EYD V</div>
         </div>
       </div>
 
@@ -1196,29 +1477,29 @@
   <!-- ======================================================== -->
   <!-- MOBILE BOTTOM NAVIGATION BAR (Duolingo & Skuling Style) -->
   <!-- ======================================================== -->
-  <nav id="mobile-bottom-nav" class="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/95 dark:bg-slate-900/95 border-t border-slate-200 dark:border-slate-800 backdrop-blur-md safe-area-pb shadow-lg">
-    <div class="grid grid-cols-6 h-14 items-center px-1">
-      <button onclick="switchTab('dashboard')" data-mobile-nav="dashboard" class="mobile-nav-btn mobile-nav-active">
+  <nav id="mobile-bottom-nav" aria-label="Navigasi Bawah Mobile" class="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/95 dark:bg-slate-900/95 border-t border-slate-200 dark:border-slate-800 backdrop-blur-md safe-area-pb shadow-lg">
+    <div class="grid grid-cols-6 h-14 items-center px-1" role="tablist">
+      <button onclick="switchTab('dashboard')" data-mobile-nav="dashboard" class="mobile-nav-btn mobile-nav-active" aria-label="Halaman Beranda" role="tab">
         <span class="mobile-nav-icon-wrap text-lg">🏠</span>
         <span>Beranda</span>
       </button>
-      <button onclick="switchTab('drill')" data-mobile-nav="drill" class="mobile-nav-btn">
+      <button onclick="switchTab('drill')" data-mobile-nav="drill" class="mobile-nav-btn" aria-label="Latihan Soal Kilat" role="tab">
         <span class="mobile-nav-icon-wrap text-lg">⚡</span>
         <span>Latihan</span>
       </button>
-      <button onclick="switchTab('cbt')" data-mobile-nav="cbt" class="mobile-nav-btn">
+      <button onclick="switchTab('cbt')" data-mobile-nav="cbt" class="mobile-nav-btn" aria-label="Simulasi Try Out CBT" role="tab">
         <span class="mobile-nav-icon-wrap text-lg">📝</span>
         <span>Try Out</span>
       </button>
-      <button onclick="switchTab('bank-soal')" data-mobile-nav="bank-soal" class="mobile-nav-btn">
+      <button onclick="switchTab('bank-soal')" data-mobile-nav="bank-soal" class="mobile-nav-btn" aria-label="Bank Soal Lengkap" role="tab">
         <span class="mobile-nav-icon-wrap text-lg">📖</span>
         <span>Bank Soal</span>
       </button>
-      <button onclick="switchTab('rapor')" data-mobile-nav="rapor" class="mobile-nav-btn">
+      <button onclick="switchTab('rapor')" data-mobile-nav="rapor" class="mobile-nav-btn" aria-label="Rapor & Rasionalisasi IRT" role="tab">
         <span class="mobile-nav-icon-wrap text-lg">📊</span>
         <span>Rapor</span>
       </button>
-      <button onclick="switchTab('profile')" data-mobile-nav="profile" class="mobile-nav-btn">
+      <button onclick="switchTab('profile')" data-mobile-nav="profile" class="mobile-nav-btn" aria-label="Profil & Pengaturan" role="tab">
         <span class="mobile-nav-icon-wrap text-lg">👤</span>
         <span>Profil</span>
       </button>
@@ -1226,18 +1507,81 @@
   </nav>
 
   <!-- ======================================================== -->
-  <!-- FOOTER -->
+  <!-- FT3 INDEX COLUMNS FOOTER (TOGETHER.AI ARCHETYPE)        -->
   <!-- ======================================================== -->
-  <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-6 text-center text-xs text-slate-500 mt-auto pb-20 md:pb-6">
-    <div class="max-w-7xl mx-auto px-4 space-y-1.5">
-      <div class="flex items-center justify-center gap-2 mb-1">
-        <div class="w-6 h-6 rounded-lg overflow-hidden border border-slate-700/30 bg-slate-950 flex items-center justify-center">
-          <img src="assets/logo.png" alt="TembusPTN Logo" class="w-full h-full object-cover" />
+  <footer style="border-top: 1px solid var(--color-border); background: var(--color-paper-card); padding: 3.5rem 0 2rem;" class="mt-auto pb-24 md:pb-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-10 text-left">
+        <!-- Brand Info (Col 2) -->
+        <div class="col-span-2">
+          <div class="flex items-center gap-2.5 mb-3">
+            <div style="width: 28px; height: 28px; border: 1px solid var(--color-border); border-radius: var(--radius-xs);" class="flex items-center justify-center p-0.5 bg-black dark:bg-white text-white dark:text-black shrink-0">
+              <img src="assets/logo.png" alt="Logo" class="w-full h-full object-cover rounded-[2px]" />
+            </div>
+            <span style="font-family: var(--font-display); font-weight: 800; font-size: 1.125rem;">Tembus<span style="color: var(--color-brand-orange);">PTN</span></span>
+            <span class="tg-badge tg-badge--neutral">AI CLOUD</span>
+          </div>
+          <p style="color: var(--color-ink-muted); font-size: 0.8125rem; line-height: 1.6; max-width: 320px;">
+            Infrastruktur persiapan UTBK-SNBT 2026/2027 dengan pembobotan Item Response Theory (IRT 3-PL) terkalibrasi dan analisis prediksi adaptif.
+          </p>
+          <div class="mt-3.5 flex items-center gap-2 font-mono text-[0.6875rem]" style="color: var(--color-ink-muted);">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span>SYSTEM OPERATIONAL</span>
+          </div>
         </div>
-        <span class="font-bold text-sm text-slate-800 dark:text-slate-200">Tembus<span class="text-orange-500">PTN</span> <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 font-bold ml-0.5">PRO</span></span>
+
+        <!-- Column 1: Subtes -->
+        <div>
+          <div style="font-family: var(--font-mono); font-size: 0.6875rem; color: var(--color-ink-muted); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 1rem;">
+            // SUBTES RESMI
+          </div>
+          <ul class="space-y-2 text-xs font-mono" style="list-style: none; padding: 0; margin: 0; color: var(--color-ink-secondary);">
+            <li><a href="javascript:void(0)" onclick="switchTab('bank-soal')" class="tg-link">Penalaran Umum</a></li>
+            <li><a href="javascript:void(0)" onclick="switchTab('bank-soal')" class="tg-link">Pengetahuan Kuantitatif</a></li>
+            <li><a href="javascript:void(0)" onclick="switchTab('bank-soal')" class="tg-link">PPU & PBM</a></li>
+            <li><a href="javascript:void(0)" onclick="switchTab('bank-soal')" class="tg-link">Literasi Bahasa</a></li>
+            <li><a href="javascript:void(0)" onclick="switchTab('bank-soal')" class="tg-link">Penalaran Matematika</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 2: Simulasi -->
+        <div>
+          <div style="font-family: var(--font-mono); font-size: 0.6875rem; color: var(--color-ink-muted); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 1rem;">
+            // SIMULASI & CBT
+          </div>
+          <ul class="space-y-2 text-xs font-mono" style="list-style: none; padding: 0; margin: 0; color: var(--color-ink-secondary);">
+            <li><a href="javascript:void(0)" onclick="switchTab('drill')" class="tg-link">Latihan Kilat</a></li>
+            <li><a href="javascript:void(0)" onclick="switchTab('cbt')" class="tg-link">Try Out CBT</a></li>
+            <li><a href="javascript:void(0)" onclick="switchTab('rapor')" class="tg-link">Rapor Evaluasi IRT</a></li>
+            <li><a href="javascript:void(0)" onclick="switchTab('leaderboard')" class="tg-link">Peringkat Nasional</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 3: Platform -->
+        <div>
+          <div style="font-family: var(--font-mono); font-size: 0.6875rem; color: var(--color-ink-muted); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 1rem;">
+            // PLATFORM
+          </div>
+          <ul class="space-y-2 text-xs font-mono" style="list-style: none; padding: 0; margin: 0; color: var(--color-ink-secondary);">
+            <li><a href="javascript:void(0)" onclick="switchTab('dashboard')" class="tg-link">Beranda Aplikasi</a></li>
+            <li><a href="javascript:void(0)" onclick="switchTab('ptn-explorer')" class="tg-link">Eksplorasi PTN</a></li>
+            <li><a href="javascript:void(0)" onclick="switchTab('profile')" class="tg-link">Profil Pengguna</a></li>
+            <li><a href="halo.html" class="tg-link">Halaman Showcase</a></li>
+          </ul>
+        </div>
       </div>
-      <p class="font-semibold text-slate-700 dark:text-slate-300">TembusPTN &copy; 2026 — Platform Edukasi & Simulasi CBT UTBK Terpadu</p>
-      <p class="text-slate-400">Analisis Presisi, Tembus PTN Favorit.</p>
+
+      <!-- Bottom Bar -->
+      <div style="border-top: 1px solid var(--color-border); padding-top: 1.5rem;" class="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-[var(--color-ink-muted)]">
+        <div>
+          &copy; 2026 TembusPTN. Built with Together.ai Design DNA.
+        </div>
+        <div class="flex gap-4">
+          <a href="javascript:void(0)" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="tg-link text-inherit">KEMBALI KE ATAS ↑</a>
+        </div>
+      </div>
+
     </div>
   </footer>
 
