@@ -9,7 +9,7 @@
     "summary": "Daftar pola berkas dan folder yang dikecualikan dari pemindaian dan sinkronisasi metadata oleh CLI NgodingPakeAI."
   },
   "admin-secret-portal-tembusptn-2026.html": {
-    "summary": "Dasbor portal admin rahasia TembusPTN untuk memantau metrik kunjungan pengunjung realtime (live traffic), kelola daftar akun pengguna, edit skor XP, reset seluruh basis data pengguna, dan hapus akun secara permanen."
+    "summary": "Dasbor konsol admin privat TembusPTN berdesain obsidian dan aksen Royal Cobalt (#2563EB), memantau analitik pengunjung realtime Chart.js, manajemen akun pengguna, modifikasi saldo XP, pencatatan tombstone registry, dan reset basis data Cloudflare KV."
   },
   "AGENTS.md": {
     "summary": "Instruksi dan aturan operasional untuk agen AI pengembang proyek TembusPTN terkait arsitektur sistem, aturan kode, dan integrasi NgodingPakeAI."
@@ -27,7 +27,7 @@
     "summary": "Cloudflare Pages Function endpoint /api/traffic untuk mencatat dan mengagregasi analitik traffic pengunjung realtime, status perangkat, browser, lokasi, dan tren halaman per jam."
   },
   "index.html": {
-    "summary": "Halaman SPA utama TembusPTN yang memuat shell antarmuka 9 tab, banner hasil evaluasi IRT, kontrol navigasi aksesibel (WCAG AA), modal review, dan hook DOM untuk CBT, latihan soal, serta leaderboard."
+    "summary": "Halaman SPA utama TembusPTN berdesain Educational Platform dengan palet Academic Royal Cobalt dan tipografi Outfit + Plus Jakarta Sans, menyediakan 9 tab antarmuka (Dashboard, Drill, CBT, Bank Soal, Rapor, Flashcards, PTN Explorer, Leaderboard, Profil), navigasi terstruktur, dan integrasi Lucide icons."
   },
   "js/analytics.js": {
     "summary": "Modul pelacakan performa belajar siswa di sisi browser, mencatat riwayat durasi belajar, akurasi pengerjaan soal latihan, dan pembuatan grafik visual analitik pengguna."
@@ -63,7 +63,7 @@
     "summary": "Mesin gamifikasi belajar pejuang PTN yang mengelola streak harian, perolehan XP, level pengguna, sistem tier (Pemula sampai Legenda), lencana pencapaian (badges), dan multi-user session management lokal."
   },
   "js/share_card.js": {
-    "summary": "Modul generator kartu skor estetik 9:16 portrait (1080x1920) menggunakan Canvas 2D, mendukung unduh PNG, Web Share API perangkat, salin gambar ke clipboard, dan modal preview interaktif."
+    "summary": "Modul generator kartu skor prestasi 9:16 portrait (1080x1920) dengan Canvas 2D dan palet Academic Royal Cobalt (#2563EB), mendukung render lencana peringkat nasional, kalkulasi persentase peluang jurusan PTN, unduh PNG, Web Share API, dan salin gambar clipboard."
   },
   "js/snbp_rapor.js": {
     "summary": "Modul kalkulator prediksi peluang kelulusan jalur SNBP (Seleksi Nasional Berdasarkan Prestasi) berdasarkan nilai rapor semester 1-5, akreditasi sekolah, sertifikat lomba, dan rekam jejak alumni PTN."
@@ -75,7 +75,7 @@
     "summary": "Pelacak aktivitas pengunjung di sisi klien yang mengirimkan data heartbeat kunjungan, jenis perangkat, halaman aktif, dan status login ke API /api/traffic."
   },
   "kartu-skor.html": {
-    "summary": "Halaman studio pratinjau kartu skor tiruan berformat 9:16 portrait bernuansa autentik TembusPTN untuk Instagram Story dan Status WhatsApp, dilengkapi preset skenario, form skor IRT, dan aksi ekspor kanvas PNG."
+    "summary": "Halaman studio pratinjau kartu skor estetik 9:16 portrait bernuansa Academic Royal Cobalt & Focus Gold dengan tipografi Outfit dan Plus Jakarta Sans, dilengkapi preset evaluasi, form parameter skor IRT, serta ekspor kanvas gambar PNG resolusi tinggi."
   },
   "manifest.webmanifest": {
     "summary": "Manifest spesifikasi Progressive Web App (PWA) TembusPTN yang mendefinisikan identitas aplikasi, skema warna gelap, ikon aplikasi, dan konfigurasi standalone."
@@ -84,7 +84,7 @@
     "summary": "File lock manifest dependency skill agent AI yang mengunci versi dan sumber repository skill yang terpasang di workspace."
   },
   "styles.css": {
-    "summary": "Lembar gaya CSS utama aplikasi TembusPTN dengan tema Slate Obsidian natural dark dan Light mode, aturan aksesibilitas fokus visible, target sentuh mobile 48px, dan animasi indikator timer ujian."
+    "summary": "Lembar gaya CSS utama TembusPTN berstandar Educational Platform (UI/UX Pro Max) dengan token palet Academic Royal Cobalt (#2563EB) & Focus Gold (#F59E0B), tipografi Outfit dan Plus Jakarta Sans, kontras tinggi anti-slop, aturan aksesibilitas WCAG AA, dan helper tabular-nums."
   },
   "sw.js": {
     "summary": "Service Worker untuk kapabilitas PWA TembusPTN yang menangani caching aset statis utama aplikasi dan penyediaan offline shell."
@@ -100,5 +100,11 @@
   },
   "_worker.js": {
     "summary": "Cloudflare Worker dan Pages Advanced mode yang menangani routing API leaderboard KV, sinkronisasi profil multi-user, analitik traffic, dan penyajian rute halaman native /kartu-skor."
+  },
+  "design-system/tembusptn/MASTER.md": {
+    "summary": "Dokumen panduan desain kanonis TembusPTN berstandar Educational Platform (UI/UX Pro Max), merinci token palet Academic Royal Cobalt (#2563EB) dan Focus Gold (#F59E0B), tipografi Outfit, Plus Jakarta Sans, dan JetBrains Mono, serta spesifikasi tombol, kartu, dan aturan aksesibilitas anti-slop."
+  },
+  "PRD.md": {
+    "summary": "Dokumen Product Requirements Document (PRD) platform simulasi UTBK SNBT TembusPTN, merinci visi produk, arsitektur CBT bersistem penilaian IRT, analitik belajar, leaderboard cloud, dan generator kartu skor viral 9:16."
   }
 }
