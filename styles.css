@@ -1,45 +1,42 @@
 /* ============================================================ */
-/* TEMBUSPTN — TOGETHER.AI NATIVE DESIGN SYSTEM                 */
-/* Hallmark · macrostructure: Modular Bento · studied-DNA       */
+/* SNBT Master 2027 — HUMAN-CRAFTED DESIGN SYSTEM               */
+/* Authentic, accessible, editorial precision for UTBK SNBT     */
 /* ============================================================ */
 
-@import "tokens.css";
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Outfit:wght@500;600;700;800&display=swap');
 
 :root {
-  --font-heading: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
   
-  /* Brand Tokens */
-  --primary: #fc4c02;
-  --primary-hover: #e04402;
-  --accent: #fc4c02;
+  /* Authentic Editorial Palette */
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --accent: #d97706;
   --success: #059669;
   --danger: #dc2626;
 }
 
 html {
-  overflow-x: clip;
+  overflow-x: hidden;
   -webkit-text-size-adjust: 100%;
 }
 
 body {
   font-family: var(--font-body);
-  background-color: var(--color-paper-subtle);
-  color: var(--color-ink);
+  background-color: #f8fafc;
+  color: #0f172a;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.5;
-  overflow-x: clip;
+  overflow-x: hidden;
   width: 100%;
 }
 
 h1, h2, h3, h4, h5, h6, .font-heading, .font-display {
-  font-family: var(--font-display);
-  font-style: normal;
-  letter-spacing: -0.025em;
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
   text-wrap: balance;
 }
 
@@ -49,207 +46,55 @@ p, .exam-text {
 
 /* UI/UX Pro Max Accessible Focus Indicator */
 :focus-visible {
-  outline: 2px solid var(--focus-ring-color) !important;
-  outline-offset: var(--focus-ring-offset) !important;
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: 2px !important;
 }
 
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex="0"]:focus-visible {
-  outline: 2px solid var(--focus-ring-color) !important;
+  outline: 2px solid #3b82f6 !important;
   outline-offset: 2px !important;
 }
 
 /* Custom Clean Scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--color-paper);
+  background: #f1f5f9;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: var(--radius-full);
+  background: #cbd5e1;
+  border-radius: 4px;
+  transition: background 0.15s;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-ink-muted);
-}
-
-/* ============================================================ */
-/* TOGETHER.AI CORE COMPONENTS (DNA SPEC)                      */
-/* ============================================================ */
-
-/* Signature Together.ai Button */
-.tg-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  height: 2.625rem;
-  padding: 0 1.25rem;
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  text-decoration: none;
-  border-radius: var(--radius-xs);
-  transition: opacity 0.2s var(--ease-button), background-color 0.2s var(--ease-button), border-color 0.2s var(--ease-button), transform 0.15s ease;
-  cursor: pointer;
-  white-space: nowrap;
-  user-select: none;
-}
-
-.tg-button--primary {
-  background-color: var(--color-ink);
-  color: var(--color-paper);
-  border: 1px solid var(--color-ink);
-}
-.tg-button--primary:hover {
-  opacity: 0.88;
-  transform: translateY(-1px);
-}
-
-.tg-button--secondary {
-  background-color: transparent;
-  color: var(--color-ink);
-  border: 1px solid var(--color-border);
-}
-.tg-button--secondary:hover {
-  border-color: var(--color-ink);
-  background-color: var(--color-paper-subtle);
-  transform: translateY(-1px);
-}
-
-.tg-button--orange {
-  background-color: var(--color-brand-orange);
-  color: #ffffff;
-  border: 1px solid var(--color-brand-orange);
-}
-.tg-button--orange:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
-/* Monospace Technical Chip / Badge */
-.tg-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.25rem 0.625rem;
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  border-radius: var(--radius-xs);
-  border: 1px solid transparent;
-  line-height: 1;
-}
-
-.tg-badge--cyan {
-  background: var(--color-cyan-tint);
-  border-color: var(--color-cyan-border);
-  color: var(--color-cyan-text);
-}
-.tg-badge--purple {
-  background: var(--color-purple-tint);
-  border-color: var(--color-purple-border);
-  color: var(--color-purple-text);
-}
-.tg-badge--blue {
-  background: var(--color-blue-tint);
-  border-color: var(--color-blue-border);
-  color: var(--color-blue-text);
-}
-.tg-badge--orange {
-  background: var(--color-orange-tint);
-  border-color: var(--color-orange-border);
-  color: var(--color-orange-text);
-}
-.tg-badge--neutral {
-  background: var(--color-border);
-  border-color: var(--color-border);
-  color: var(--color-ink-secondary);
-}
-
-/* Bento Card */
-.tg-card {
-  background-color: var(--color-paper-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: 1.5rem;
-  position: relative;
-  overflow: hidden;
-  transition: border-color 0.25s var(--ease-together), box-shadow 0.25s var(--ease-together);
-}
-.tg-card:hover {
-  border-color: var(--color-border-hover);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
-}
-
-/* Continuous Marquee Ticker */
-@keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-.marquee-track {
-  display: flex;
-  width: max-content;
-  animation: marquee 35s linear infinite;
-}
-.marquee-track:hover {
-  animation-play-state: paused;
-}
-
-/* Underline link animation (exact together.ai physics) */
-.tg-link {
-  position: relative;
-  color: var(--color-ink);
-  text-decoration: none;
-  font-weight: 500;
-}
-.tg-link::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background-color: currentColor;
-  transform: scaleX(0);
-  transform-origin: right;
-  transition: transform 0.3s var(--ease-together);
-}
-.tg-link:hover::after {
-  transform: scaleX(1);
-  transform-origin: left;
+  background: #94a3b8;
 }
 
 /* ============================================================ */
 /* SURFACE & ELEVATION                                         */
 /* ============================================================ */
 .glass-header {
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .glass-card {
-  background: var(--color-paper-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
 }
 
-/* Ergonomic Card Lift */
+/* Subtle, Ergonomic Card Lift (Standard ease, no elastic bounce) */
 .card-hover-lift {
   transition: transform 0.15s ease-out, box-shadow 0.15s ease-out, border-color 0.15s ease-out;
 }
 .card-hover-lift:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.06);
-  border-color: var(--color-border-hover);
+  box-shadow: 0 6px 16px -2px rgba(0, 0, 0, 0.06);
 }
 
 /* Daily Streak Flame Icon */
@@ -263,33 +108,27 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 /* ============================================================ */
 .nav-tab-btn {
   position: relative;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease;
   font-weight: 600;
-  border-radius: var(--radius-xs);
-  border: 1px solid transparent;
+  border-radius: 0.75rem;
 }
 
 .nav-active {
-  background-color: var(--color-ink) !important;
-  color: var(--color-paper) !important;
-  border-color: var(--color-ink) !important;
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 2px 0 rgba(37, 99, 235, 0.25);
 }
 
-.nav-active i, .nav-active span {
-  color: inherit;
+.nav-active i {
+  color: #ffffff !important;
 }
 
 /* ============================================================ */
 /* COUNTDOWN TIMER BOX                                         */
 /* ============================================================ */
 .countdown-box {
-  background: var(--color-paper-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
 }
 
@@ -352,7 +191,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   height: 100%;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  border-radius: var(--radius-lg);
+  border-radius: 1.5rem;
 }
 
 .flashcard-front {
@@ -408,7 +247,7 @@ body.font-scale-lg .exam-text {
   align-items: center;
   vertical-align: middle;
   padding: 0 0.15em;
-  color: var(--color-cyan-text);
+  color: #1e3a8a;
 }
 
 .math-tex.display-math {
@@ -417,7 +256,7 @@ body.font-scale-lg .exam-text {
   margin: 0.75rem 0;
   overflow-x: auto;
   padding: 0.5rem 0;
-  color: var(--color-cyan-text);
+  color: #1e3a8a;
 }
 
 .inline-fraction {
@@ -437,112 +276,114 @@ body.font-scale-lg .exam-text {
 .math-tex strong { font-style: normal; font-weight: 700; }
 
 /* ============================================================ */
-/* DARK MODE THEME STYLES (TOGETHER.AI NATURAL DARK)           */
-/* Deep space black #010120 with high-contrast surfaces        */
+/* DARK MODE THEME STYLES (SLATE OBSIDIAN NATURAL DARK)        */
+/* Clean, high-contrast, zero-glow aesthetic                   */
 /* ============================================================ */
 .dark body {
-  background-color: var(--color-paper-subtle) !important;
-  color: var(--color-ink) !important;
+  background-color: #0b0f19 !important;
+  color: #f1f5f9 !important;
 }
 
 .dark .glass-header {
-  background: rgba(1, 1, 32, 0.88) !important;
-  border-color: var(--color-border) !important;
+  background: rgba(15, 23, 42, 0.94) !important;
+  border-color: #1e293b !important;
 }
 
 .dark .glass-card {
-  background: var(--color-paper-card) !important;
-  border-color: var(--color-border) !important;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+  background: #111827 !important;
+  border-color: #1f2937 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
 }
 
 .dark .card-hover-lift:hover {
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-  border-color: var(--color-border-hover) !important;
+  box-shadow: 0 6px 16px -2px rgba(0, 0, 0, 0.4);
+  border-color: #3b82f6 !important;
 }
 
 .dark ::-webkit-scrollbar-track {
-  background: var(--color-paper);
+  background: #0b0f19;
 }
 .dark ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
+  background: #1e293b;
 }
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-ink-muted);
+  background: #334155;
 }
 
 /* Dark Mode Background Overrides */
 .dark .bg-white {
-  background-color: var(--color-paper-card) !important;
+  background-color: #111827 !important;
 }
 .dark .bg-slate-50 {
-  background-color: var(--color-paper-subtle) !important;
+  background-color: #0b0f19 !important;
 }
 .dark .bg-slate-100 {
-  background-color: rgba(255, 255, 255, 0.05) !important;
+  background-color: #1e293b !important;
 }
 
 /* Dark Mode Borders */
 .dark .border-slate-200,
 .dark .border-slate-100 {
-  border-color: var(--color-border) !important;
+  border-color: #1f2937 !important;
 }
 
 /* Dark Mode Text */
 .dark .text-slate-900,
 .dark .text-slate-800 {
-  color: var(--color-ink) !important;
+  color: #f8fafc !important;
 }
 .dark .text-slate-700 {
-  color: var(--color-ink-secondary) !important;
+  color: #e2e8f0 !important;
 }
 .dark .text-slate-600 {
-  color: var(--color-ink-muted) !important;
+  color: #cbd5e1 !important;
 }
-.dark .text-slate-500,
+.dark .text-slate-500 {
+  color: #94a3b8 !important;
+}
 .dark .text-slate-400 {
-  color: var(--color-ink-subtle) !important;
+  color: #94a3b8 !important;
 }
 
 .dark footer {
-  background-color: var(--color-paper) !important;
-  border-color: var(--color-border) !important;
+  background-color: #0b0f19 !important;
+  border-color: #1e293b !important;
 }
 
 .dark input, 
 .dark select, 
 .dark textarea {
-  background-color: var(--color-paper-card) !important;
-  color: var(--color-ink) !important;
-  border-color: var(--color-border) !important;
+  background-color: #111827 !important;
+  color: #f8fafc !important;
+  border-color: #374151 !important;
 }
 
 .dark input:focus, 
 .dark select:focus, 
 .dark textarea:focus {
-  border-color: var(--color-border-hover) !important;
-  background-color: var(--color-paper) !important;
+  border-color: #3b82f6 !important;
+  background-color: #1f2937 !important;
 }
 
 .dark .countdown-box {
-  background: var(--color-paper-card) !important;
-  border-color: var(--color-border) !important;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  background: #111827 !important;
+  border-color: #1f2937 !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
 }
 
 .dark .math-tex.inline-math,
 .dark .math-tex.display-math,
 .dark .katex {
-  color: var(--color-cyan-text) !important;
+  color: #93c5fd !important;
 }
 
 .dark .fraction-bar {
-  background-color: var(--color-cyan-text) !important;
+  background-color: #93c5fd !important;
 }
 
 .dark .flashcard-front {
-  background: var(--color-paper-card) !important;
-  border-color: var(--color-border) !important;
+  background: #111827 !important;
+  border-color: #1f2937 !important;
 }
 
 /* ============================================================ */
@@ -562,25 +403,22 @@ body.font-scale-lg .exam-text {
   min-height: 48px;
   min-width: 44px;
   padding: 6px 4px;
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
-  letter-spacing: 0.04em;
+  font-size: 10px;
   font-weight: 600;
-  text-transform: uppercase;
-  color: var(--color-ink-muted);
+  color: #64748b;
   transition: color 0.15s ease, transform 0.15s ease, background-color 0.15s ease;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  border-radius: var(--radius-xs);
+  border-radius: 8px;
 }
 
 .mobile-nav-btn:hover {
-  color: var(--color-ink);
-  background-color: var(--color-border);
+  color: #0f172a;
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
 .mobile-nav-btn.mobile-nav-active {
-  color: var(--color-ink);
+  color: #2563eb;
   font-weight: 700;
 }
 
@@ -589,16 +427,16 @@ body.font-scale-lg .exam-text {
 }
 
 .dark .mobile-nav-btn {
-  color: var(--color-ink-muted);
+  color: #94a3b8;
 }
 
 .dark .mobile-nav-btn:hover {
-  color: var(--color-ink);
+  color: #ffffff;
   background-color: rgba(255, 255, 255, 0.05);
 }
 
 .dark .mobile-nav-btn.mobile-nav-active {
-  color: var(--color-ink);
+  color: #60a5fa;
 }
 
 /* Modal backdrop smooth lock */
@@ -618,20 +456,20 @@ body.modal-open {
 }
 
 .timer-warn {
-  background-color: var(--color-timer-warn-bg) !important;
-  color: var(--color-timer-warn-text) !important;
+  background-color: #78350f !important;
+  color: #fbbf24 !important;
   border-color: rgba(245, 158, 11, 0.5) !important;
   animation: timerPulseWarn 1.5s ease-in-out infinite;
 }
 
 .timer-urgent {
-  background-color: var(--color-timer-urgent-bg) !important;
-  color: var(--color-timer-urgent-text) !important;
+  background-color: #881337 !important;
+  color: #f43f5e !important;
   border-color: rgba(244, 63, 94, 0.6) !important;
   animation: timerPulseUrgent 0.8s ease-in-out infinite;
 }
 
-/* Slide-up Bottom Sheet / Drawer */
+/* Slide-up Bottom Sheet / Drawer for Mobile CBT Palette */
 @keyframes slideUpDrawer {
   from {
     transform: translateY(100%);
@@ -644,16 +482,6 @@ body.modal-open {
 }
 
 .animate-drawer-slide-up {
-  animation: slideUpDrawer 0.25s var(--ease-out) forwards;
+  animation: slideUpDrawer 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Reduced Motion Accessibility */
-@media (prefers-reduced-motion: reduce) {
-  .marquee-track {
-    animation: none !important;
-  }
-  *, *::before, *::after {
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
-  }
-}

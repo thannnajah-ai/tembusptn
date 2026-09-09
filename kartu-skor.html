@@ -14,9 +14,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Design System Tokens -->
-  <link rel="stylesheet" href="tokens.css" />
-
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -24,17 +21,22 @@
       darkMode: 'class',
       theme: {
         extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+            heading: ['Plus Jakarta Sans', 'sans-serif'],
+          },
           colors: {
-            togetherOrange: '#fc4c02',
-            togetherDark: '#010120',
+            brand: {
+              amber: '#f59e0b',
+              orange: '#ea580c',
+              indigo: '#4f46e5',
+            }
           }
         }
       }
     }
   </script>
-
-  <!-- Lucide Icons CDN -->
-  <script src="https://unpkg.com/lucide@latest"></script>
 
   <!-- Instant Theme Restoration -->
   <script>
@@ -54,13 +56,8 @@
   <link rel="stylesheet" href="styles.css" />
 
   <style>
-    /* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V5 */
-    /* Hallmark · macrostructure: Modular Bento · theme: studied-DNA (source: https://www.together.ai) · anchor hue: 24 */
-    html, body {
-      overflow-x: clip;
-      background-color: var(--color-paper-subtle);
-      color: var(--color-ink);
-      font-family: var(--font-body);
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
     .preview-canvas-wrapper {
@@ -68,14 +65,19 @@
       width: 100%;
       max-width: 380px;
       aspect-ratio: 9 / 16;
-      border-radius: var(--radius-lg);
+      border-radius: 1.25rem;
       overflow: hidden;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-      border: 1px solid var(--color-border);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3);
+      border: 1px solid #e2e8f0;
       background: #030712;
       display: flex;
       align-items: center;
       justify-content: center;
+    }
+
+    .dark .preview-canvas-wrapper {
+      border-color: #1e293b;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
     }
 
     .preview-canvas-wrapper canvas {
@@ -85,43 +87,45 @@
     }
   </style>
 </head>
-<body class="min-h-full flex flex-col selection:bg-[#000] selection:text-[#fff] dark:selection:bg-[#fff] dark:selection:text-[#000]">
+<body class="min-h-full flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
 
-  <!-- Top Navigation Bar (Together AI Aesthetic) -->
-  <header class="glass-header sticky top-0 z-30 transition-colors" style="border-bottom: 1px solid var(--color-border);">
+  <!-- Top Navigation Bar (Authentic TembusPTN) -->
+  <header class="glass-header sticky top-0 z-30 border-b border-slate-200/80 dark:border-slate-800/80 backdrop-blur-md bg-white/90 dark:bg-slate-900/90 transition-colors">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
       <div class="flex items-center gap-3">
         <a href="index.html" class="flex items-center gap-3 text-inherit no-underline group">
-          <div style="width: 34px; height: 34px; border: 1px solid var(--color-border); border-radius: var(--radius-xs);" class="flex items-center justify-center p-0.5 bg-black dark:bg-white text-white dark:text-black shrink-0 transition group-hover:scale-105">
-            <img src="assets/logo.png" alt="Logo" class="w-full h-full object-cover rounded-[2px]" />
+          <div class="w-8 h-8 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-950 flex items-center justify-center shadow-sm transition group-hover:scale-105">
+            <img src="assets/logo.png" alt="TembusPTN Logo" class="w-full h-full object-cover" />
           </div>
-          <div class="flex items-baseline gap-2">
-            <span style="font-family: var(--font-display); font-weight: 800; font-size: 1.125rem; letter-spacing: -0.03em;">Tembus<span style="color: var(--color-brand-orange);">PTN</span></span>
-            <span class="tg-badge tg-badge--purple hidden sm:inline-flex">PREVIEW LAB</span>
+          <div class="flex items-baseline gap-1.5">
+            <span class="text-lg font-black tracking-tight text-slate-900 dark:text-white font-heading">Tembus<span class="text-orange-500">PTN</span></span>
+            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/70 text-amber-700 dark:text-amber-400">STUDIO</span>
           </div>
         </a>
       </div>
 
-      <div class="flex items-center gap-3">
-        <button onclick="toggleTheme()" class="tg-button tg-button--secondary" style="width: 2.625rem; padding: 0;" title="Ubah Tema">
+      <div class="flex items-center gap-2.5">
+        <button onclick="toggleTheme()" class="p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition" title="Ubah Mode Gelap/Terang" aria-label="Ubah Tema">
           <span id="theme-icon">🌙</span>
         </button>
-        <a href="index.html" class="tg-button tg-button--primary">
-          <span>← Kembali ke App</span>
+        <a href="index.html" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition">
+          <span>← Kembali ke Aplikasi</span>
         </a>
       </div>
     </div>
   </header>
 
   <!-- Main Container -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
     
     <div class="mb-8">
-      <span class="tg-badge tg-badge--cyan mb-2">VIRAL STORY GENERATOR</span>
-      <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight font-display text-[var(--color-ink)]">
-        Pratinjau Kartu Skor Tiruan (Mock Preview)
+      <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 mb-2 border border-amber-200/50 dark:border-amber-900/50">
+        <span>✨ GENERATOR STORY VIRAL</span>
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight font-heading text-slate-900 dark:text-white">
+        Pratinjau Studio Kartu Skor (9:16 Portrait)
       </h1>
-      <p class="text-xs sm:text-sm text-[var(--color-ink-muted)] mt-1 max-w-2xl">
+      <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1 max-w-2xl">
         Uji dan sesuaikan kartu sertifikat skor 9:16 portrait (1080x1920) beresolusi tinggi untuk Instagram Stories, WhatsApp Status, dan media sosial.
       </p>
     </div>
@@ -133,102 +137,102 @@
       <div class="lg:col-span-7 space-y-6">
         
         <!-- Preset Controls -->
-        <div class="tg-card space-y-4">
-          <div class="flex items-center justify-between pb-2 border-b border-[var(--color-border)]">
-            <span class="font-mono text-xs font-bold uppercase text-[var(--color-ink)]">Preset Skenario Tiruan</span>
-            <span class="tg-badge tg-badge--neutral text-[10px]">1-CLICK MOCK</span>
+        <div class="glass-card bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+            <span class="font-mono text-xs font-bold uppercase text-slate-700 dark:text-slate-300">Preset Skenario Tiruan</span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">1-CLICK MOCK</span>
           </div>
           <div class="grid grid-cols-3 gap-2">
-            <button type="button" onclick="loadPreset('dream')" class="tg-button tg-button--secondary text-[11px] py-2">
-              🌟 Skor Impian (745)
+            <button type="button" onclick="loadPreset('dream')" class="px-3 py-2 text-[11px] font-bold rounded-xl bg-slate-100 hover:bg-amber-50 hover:border-amber-300 hover:text-amber-700 dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:hover:text-amber-400 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 transition text-center">
+              🌟 Skor Impian (752)
             </button>
-            <button type="button" onclick="loadPreset('target')" class="tg-button tg-button--secondary text-[11px] py-2">
+            <button type="button" onclick="loadPreset('target')" class="px-3 py-2 text-[11px] font-bold rounded-xl bg-slate-100 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-700 dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:hover:text-indigo-400 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 transition text-center">
               🎯 Lolos Target (718)
             </button>
-            <button type="button" onclick="loadPreset('starter')" class="tg-button tg-button--secondary text-[11px] py-2">
+            <button type="button" onclick="loadPreset('starter')" class="px-3 py-2 text-[11px] font-bold rounded-xl bg-slate-100 hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700 dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:hover:text-emerald-400 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 transition text-center">
               ⚡ Evaluasi Awal (612)
             </button>
           </div>
         </div>
 
         <!-- Custom Data Form -->
-        <form id="mock-form" onsubmit="handleFormSubmit(event)" class="tg-card space-y-4">
-          <div class="pb-2 border-b border-[var(--color-border)]">
-            <span class="font-mono text-xs font-bold uppercase text-[var(--color-ink)]">Parameter Kartu Skor</span>
+        <form id="mock-form" onsubmit="handleFormSubmit(event)" class="glass-card bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+          <div class="pb-3 border-b border-slate-100 dark:border-slate-800">
+            <span class="font-mono text-xs font-bold uppercase text-slate-700 dark:text-slate-300">Parameter Kartu Skor</span>
           </div>
 
           <!-- Nama Siswa & Skor -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div class="sm:col-span-2">
-              <label class="block font-mono text-[11px] uppercase text-[var(--color-ink-muted)] mb-1">Nama Siswa</label>
+              <label class="block font-mono text-[11px] uppercase text-slate-500 dark:text-slate-400 mb-1 font-semibold">Nama Siswa</label>
               <input type="text" id="input-name" value="Siti Rahmawati (Pejuang PTN)" required
-                class="w-full px-3 py-2 text-xs font-semibold rounded-[var(--radius-xs)] border border-[var(--color-border)] bg-[var(--color-paper-subtle)] text-[var(--color-ink)] outline-none focus:border-[var(--color-ink)]" />
+                class="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition" />
             </div>
             <div>
-              <label class="block font-mono text-[11px] uppercase text-[var(--color-ink-muted)] mb-1">Skor IRT</label>
+              <label class="block font-mono text-[11px] uppercase text-slate-500 dark:text-slate-400 mb-1 font-semibold">Skor IRT</label>
               <input type="number" id="input-score" value="718" min="200" max="1000" required
-                class="w-full px-3 py-2 text-xs font-mono font-bold rounded-[var(--radius-xs)] border border-[var(--color-border)] bg-[var(--color-paper-subtle)] text-[var(--color-ink)] outline-none focus:border-[var(--color-ink)]" />
+                class="w-full px-3 py-2 text-xs font-mono font-bold rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition" />
             </div>
           </div>
 
           <!-- Pilihan 1 -->
-          <div class="p-3.5 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-paper-subtle)] space-y-2">
+          <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 space-y-2.5">
             <div class="flex items-center justify-between">
-              <span class="tg-badge tg-badge--orange text-[10px]">PILIHAN 1 (UTAMA)</span>
-              <span class="font-mono text-[11px] text-[var(--color-ink-muted)]">Target Kampus</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 dark:bg-amber-950/70 text-amber-700 dark:text-amber-400">PILIHAN 1 (UTAMA)</span>
+              <span class="font-mono text-[11px] text-slate-500 dark:text-slate-400">Target Kampus</span>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               <input type="text" id="input-p1-prodi" value="Ilmu Komputer" placeholder="Program Studi"
-                class="px-2.5 py-1.5 rounded-[var(--radius-xs)] border border-[var(--color-border)] bg-[var(--color-paper-card)] text-[var(--color-ink)] outline-none" />
+                class="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 outline-none focus:border-amber-500" />
               <input type="text" id="input-p1-ptn" value="Universitas Indonesia (UI)" placeholder="Nama PTN"
-                class="px-2.5 py-1.5 rounded-[var(--radius-xs)] border border-[var(--color-border)] bg-[var(--color-paper-card)] text-[var(--color-ink)] outline-none" />
+                class="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 outline-none focus:border-amber-500" />
             </div>
             <div class="flex items-center gap-2 text-xs">
-              <label class="font-mono text-[10px] text-[var(--color-ink-muted)]">Peluang:</label>
+              <label class="font-mono text-[10px] text-slate-500 dark:text-slate-400">Peluang:</label>
               <input type="text" id="input-p1-chance" value="78% (Tinggi)"
-                class="px-2.5 py-1 text-xs font-mono rounded-[var(--radius-xs)] border border-[var(--color-border)] bg-[var(--color-paper-card)] text-emerald-500 font-bold outline-none" />
+                class="px-2.5 py-1 text-xs font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 font-bold outline-none" />
             </div>
           </div>
 
           <!-- Pilihan 2 -->
-          <div class="p-3.5 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-paper-subtle)] space-y-2">
+          <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 space-y-2.5">
             <div class="flex items-center justify-between">
-              <span class="tg-badge tg-badge--blue text-[10px]">PILIHAN 2 (CADANGAN)</span>
-              <span class="font-mono text-[11px] text-[var(--color-ink-muted)]">Target Cadangan</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-400">PILIHAN 2 (CADANGAN)</span>
+              <span class="font-mono text-[11px] text-slate-500 dark:text-slate-400">Target Cadangan</span>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               <input type="text" id="input-p2-prodi" value="Teknologi Informasi" placeholder="Program Studi"
-                class="px-2.5 py-1.5 rounded-[var(--radius-xs)] border border-[var(--color-border)] bg-[var(--color-paper-card)] text-[var(--color-ink)] outline-none" />
+                class="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 outline-none focus:border-indigo-500" />
               <input type="text" id="input-p2-ptn" value="Institut Teknologi Sepuluh Nopember (ITS)" placeholder="Nama PTN"
-                class="px-2.5 py-1.5 rounded-[var(--radius-xs)] border border-[var(--color-border)] bg-[var(--color-paper-card)] text-[var(--color-ink)] outline-none" />
+                class="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 outline-none focus:border-indigo-500" />
             </div>
             <div class="flex items-center gap-2 text-xs">
-              <label class="font-mono text-[10px] text-[var(--color-ink-muted)]">Peluang:</label>
+              <label class="font-mono text-[10px] text-slate-500 dark:text-slate-400">Peluang:</label>
               <input type="text" id="input-p2-chance" value="84% (Sangat Tinggi)"
-                class="px-2.5 py-1 text-xs font-mono rounded-[var(--radius-xs)] border border-[var(--color-border)] bg-[var(--color-paper-card)] text-blue-500 font-bold outline-none" />
+                class="px-2.5 py-1 text-xs font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 font-bold outline-none" />
             </div>
           </div>
 
           <!-- Subtes Terkuat -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label class="block font-mono text-[11px] uppercase text-[var(--color-ink-muted)] mb-1">Subtes Unggulan</label>
+              <label class="block font-mono text-[11px] uppercase text-slate-500 dark:text-slate-400 mb-1 font-semibold">Subtes Unggulan</label>
               <input type="text" id="input-strongest-sub" value="Pengetahuan Kuantitatif (PK)"
-                class="w-full px-3 py-2 text-xs rounded-[var(--radius-xs)] border border-[var(--color-border)] bg-[var(--color-paper-subtle)] text-[var(--color-ink)] outline-none" />
+                class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 outline-none focus:border-amber-500" />
             </div>
             <div>
-              <label class="block font-mono text-[11px] uppercase text-[var(--color-ink-muted)] mb-1">Skor Subtes</label>
+              <label class="block font-mono text-[11px] uppercase text-slate-500 dark:text-slate-400 mb-1 font-semibold">Skor Subtes</label>
               <input type="number" id="input-strongest-score" value="765"
-                class="w-full px-3 py-2 text-xs font-mono font-bold rounded-[var(--radius-xs)] border border-[var(--color-border)] bg-[var(--color-paper-subtle)] text-[var(--color-ink)] outline-none" />
+                class="w-full px-3 py-2 text-xs font-mono font-bold rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 outline-none focus:border-amber-500" />
             </div>
           </div>
 
           <!-- Action Buttons -->
           <div class="pt-2 flex items-center gap-3">
-            <button type="submit" class="tg-button tg-button--orange font-mono text-xs shadow-md flex-1">
+            <button type="submit" class="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-bold text-xs shadow-md shadow-amber-500/20 transition flex items-center justify-center gap-1.5">
               <span>⚡ Perbarui Pratinjau Kanvas</span>
             </button>
-            <button type="button" onclick="loadRealUserProfile()" class="tg-button tg-button--secondary font-mono text-xs">
+            <button type="button" onclick="loadRealUserProfile()" class="py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs border border-slate-200 dark:border-slate-700 transition flex items-center justify-center gap-1.5">
               <span>👤 Muat Profil Asli</span>
             </button>
           </div>
@@ -240,8 +244,8 @@
       <div class="lg:col-span-5 flex flex-col items-center space-y-4">
         
         <div class="flex items-center justify-between w-full max-w-[380px]">
-          <span class="font-mono text-xs text-[var(--color-ink-muted)] uppercase">Pratinjau Story 9:16</span>
-          <span id="canvas-status" class="tg-badge tg-badge--cyan text-[10px]">RENDERED</span>
+          <span class="font-mono text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold">Pratinjau Story 9:16</span>
+          <span id="canvas-status" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-400">READY</span>
         </div>
 
         <!-- Canvas Container -->
@@ -251,19 +255,19 @@
 
         <!-- Action Group (Export & Sharing) -->
         <div class="w-full max-w-[380px] space-y-2">
-          <button type="button" id="btn-download" onclick="handleDownload()" class="w-full tg-button tg-button--primary text-xs flex items-center justify-center gap-2">
+          <button type="button" id="btn-download" onclick="handleDownload()" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-bold text-xs shadow-md shadow-amber-500/25 transition flex items-center justify-center gap-2">
             <span>📥</span>
             <span>Unduh Gambar PNG (1080x1920)</span>
           </button>
           
           <div class="grid grid-cols-2 gap-2">
-            <button type="button" onclick="handleNativeShare()" class="tg-button tg-button--secondary text-xs flex items-center justify-center gap-1.5">
+            <button type="button" onclick="handleNativeShare()" class="py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold text-xs transition flex items-center justify-center gap-1.5">
               <span>📤</span>
               <span>Menu Perangkat</span>
             </button>
-            <button type="button" onclick="handleCopyImage()" class="tg-button tg-button--secondary text-xs flex items-center justify-center gap-1.5">
+            <button type="button" onclick="handleCopyImage()" class="py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold text-xs transition flex items-center justify-center gap-1.5">
               <span>📋</span>
-              <span>Salin Gambar / Fallback</span>
+              <span>Salin Gambar</span>
             </button>
           </div>
         </div>
@@ -401,13 +405,6 @@
       window.ShareCard.nativeShareCanvas(activeCanvas, 'TembusPTN_Score_Story.png', shareText);
     }
 
-    function handleCopyChallenge() {
-      if (!window.ShareCard) return;
-      const score = document.getElementById('input-score').value;
-      const text = `Gue dapet skor ${score} di Try Out CBT @TembusPTN! Ada yang berani adu skor? Latihan gratis di https://tembusptn.my.id 🔥`;
-      window.ShareCard.copyToClipboard(text, 'Teks tantangan adu skor berhasil disalin! 🚀');
-    }
-
     function handleCopyImage() {
       if (!activeCanvas || !window.ShareCard) return;
       const score = document.getElementById('input-score').value;
@@ -418,17 +415,23 @@
     // Toggle Theme
     function toggleTheme() {
       const isDark = document.documentElement.classList.contains('dark');
+      const icon = document.getElementById('theme-icon');
       if (isDark) {
         document.documentElement.classList.remove('dark');
         localStorage.setItem('utbk_theme', 'light');
+        if (icon) icon.textContent = '🌙';
       } else {
         document.documentElement.classList.add('dark');
         localStorage.setItem('utbk_theme', 'dark');
+        if (icon) icon.textContent = '☀️';
       }
     }
 
     // Init on load
     document.addEventListener('DOMContentLoaded', () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      const icon = document.getElementById('theme-icon');
+      if (icon) icon.textContent = isDark ? '☀️' : '🌙';
       renderCurrentCard();
     });
   </script>

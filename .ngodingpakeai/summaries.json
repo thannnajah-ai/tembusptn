@@ -26,11 +26,8 @@
   "functions/api/traffic.js": {
     "summary": "Cloudflare Pages Function endpoint /api/traffic untuk mencatat dan mengagregasi analitik traffic pengunjung realtime, status perangkat, browser, lokasi, dan tren halaman per jam."
   },
-  "halo.html": {
-    "summary": "Halaman native landing page showcase bertema Together AI DNA yang menyajikan hero section modern, kartu fitur interaktif, badge status, dan navigasi cepat menuju fitur utama TembusPTN."
-  },
   "index.html": {
-    "summary": "Halaman SPA utama TembusPTN yang memuat shell antarmuka 9 tab, banner hasil evaluasi IRT, kontrol navigasi, modal review, dan hook DOM untuk CBT, latihan soal, serta leaderboard."
+    "summary": "Halaman SPA utama TembusPTN yang memuat shell antarmuka 9 tab, banner hasil evaluasi IRT, kontrol navigasi aksesibel (WCAG AA), modal review, dan hook DOM untuk CBT, latihan soal, serta leaderboard."
   },
   "js/analytics.js": {
     "summary": "Modul pelacakan performa belajar siswa di sisi browser, mencatat riwayat durasi belajar, akurasi pengerjaan soal latihan, dan pembuatan grafik visual analitik pengguna."
@@ -78,7 +75,7 @@
     "summary": "Pelacak aktivitas pengunjung di sisi klien yang mengirimkan data heartbeat kunjungan, jenis perangkat, halaman aktif, dan status login ke API /api/traffic."
   },
   "kartu-skor.html": {
-    "summary": "Halaman studio pratinjau kartu skor tiruan berformat 9:16 portrait untuk Instagram Story dan Status WhatsApp, dilengkapi form konfigurasi skor IRT, peluang lolos PTN, serta aksi unduh PNG dan salin."
+    "summary": "Halaman studio pratinjau kartu skor tiruan berformat 9:16 portrait bernuansa autentik TembusPTN untuk Instagram Story dan Status WhatsApp, dilengkapi preset skenario, form skor IRT, dan aksi ekspor kanvas PNG."
   },
   "manifest.webmanifest": {
     "summary": "Manifest spesifikasi Progressive Web App (PWA) TembusPTN yang mendefinisikan identitas aplikasi, skema warna gelap, ikon aplikasi, dan konfigurasi standalone."
@@ -87,13 +84,10 @@
     "summary": "File lock manifest dependency skill agent AI yang mengunci versi dan sumber repository skill yang terpasang di workspace."
   },
   "styles.css": {
-    "summary": "Lembar gaya CSS utama aplikasi TembusPTN yang menggabungkan utility classes Tailwind, komponen custom Together AI DNA, serta tema gelap dan terang."
+    "summary": "Lembar gaya CSS utama aplikasi TembusPTN dengan tema Slate Obsidian natural dark dan Light mode, aturan aksesibilitas fokus visible, target sentuh mobile 48px, dan animasi indikator timer ujian."
   },
   "sw.js": {
     "summary": "Service Worker untuk kapabilitas PWA TembusPTN yang menangani caching aset statis utama aplikasi dan penyediaan offline shell."
-  },
-  "tokens.css": {
-    "summary": "Definisi design tokens DNA Together AI yang mencakup palet warna dark/light mode, tipografi Inter, skala radius, elevasi shadow, dan transisi antarmuka."
   },
   "traffic.html": {
     "summary": "Halaman HTML statis ringan yang digunakan untuk tautan cepat atau pengalihan ke dasbor metrik traffic pengunjung."
@@ -105,6 +99,6 @@
     "summary": "Konfigurasi Cloudflare Pages / Workers yang mendefinisikan binding Cloudflare KV namespace untuk LEADERBOARD_KV dan direktori aset statis."
   },
   "_worker.js": {
-    "summary": "Cloudflare Worker dan Pages Advanced mode yang menangani routing API leaderboard KV, sinkronisasi profil multi-user, analitik traffic, dan rute halaman native /halo serta /kartu-skor."
+    "summary": "Cloudflare Worker dan Pages Advanced mode yang menangani routing API leaderboard KV, sinkronisasi profil multi-user, analitik traffic, dan penyajian rute halaman native /kartu-skor."
   }
 }
