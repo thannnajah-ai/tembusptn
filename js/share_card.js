@@ -462,7 +462,7 @@
 
     // Card 1: Pilihan 1 Utama
     const c1Y = ptnSecY + 22;
-    const cH = 175;
+    const cH = 185;
     ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
     ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
     ctx.lineWidth = 2;
@@ -476,18 +476,18 @@
     ctx.textAlign = 'center';
     ctx.fillText('PILIHAN 1 🎯', 187, c1Y + 43);
 
-    // Major with Auto Wrap!
+    // Major with Auto Wrap — font 22px, maxLines 3 for long names
     ctx.textAlign = 'left';
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 26px sans-serif';
-    drawWrappedText(ctx, target1Name, 110, c1Y + 86, 620, 32, 2);
+    ctx.font = '900 22px sans-serif';
+    drawWrappedText(ctx, target1Name, 110, c1Y + 76, 620, 28, 3);
 
     // Univ
     ctx.fillStyle = '#94a3b8';
-    ctx.font = 'bold 20px sans-serif';
+    ctx.font = 'bold 18px sans-serif';
     ctx.fillText('🏛️ ' + target1Ptn, 110, c1Y + 152);
 
-    // Chance Badge Right Side
+    // Chance Badge Right Side — split number and label to prevent overflow
     ctx.fillStyle = 'rgba(245, 158, 11, 0.12)';
     ctx.strokeStyle = '#f59e0b';
     ctx.lineWidth = 2;
@@ -495,11 +495,21 @@
 
     ctx.textAlign = 'center';
     ctx.fillStyle = '#fef08a';
-    ctx.font = 'bold 16px sans-serif';
-    ctx.fillText('PELUANG LOLOS', 870, c1Y + 58);
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillText('PELUANG LOLOS', 870, c1Y + 50);
+    // Number large
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 48px sans-serif';
-    ctx.fillText(target1Chance !== '-' ? `${target1Chance}%` : 'Tinggi', 870, c1Y + 118);
+    ctx.font = '900 44px sans-serif';
+    const c1num = target1Chance !== '-' ? `${target1Chance}%` : '--';
+    ctx.fillText(c1num, 870, c1Y + 100);
+    // Status label small below
+    if (target1Chance !== '-') {
+      const c1pct = Number(target1Chance);
+      const c1label = c1pct >= 75 ? 'Sangat Tinggi' : c1pct >= 50 ? 'Tinggi' : c1pct >= 30 ? 'Sedang' : 'Rendah';
+      ctx.fillStyle = '#fef08a';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.fillText(c1label, 870, c1Y + 138);
+    }
 
     // Card 2: Pilihan 2 Cadangan
     const c2Y = c1Y + 195;
@@ -516,18 +526,18 @@
     ctx.textAlign = 'center';
     ctx.fillText('PILIHAN 2 🛡️', 187, c2Y + 43);
 
-    // Major with Auto Wrap!
+    // Major with Auto Wrap — font 22px, maxLines 3
     ctx.textAlign = 'left';
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 26px sans-serif';
-    drawWrappedText(ctx, target2Name, 110, c2Y + 86, 620, 32, 2);
+    ctx.font = '900 22px sans-serif';
+    drawWrappedText(ctx, target2Name, 110, c2Y + 76, 620, 28, 3);
 
     // Univ
     ctx.fillStyle = '#94a3b8';
-    ctx.font = 'bold 20px sans-serif';
+    ctx.font = 'bold 18px sans-serif';
     ctx.fillText('🏛️ ' + target2Ptn, 110, c2Y + 152);
 
-    // Chance Badge Right Side
+    // Chance Badge Right Side — split number and label
     ctx.fillStyle = 'rgba(37, 99, 235, 0.12)';
     ctx.strokeStyle = '#60a5fa';
     ctx.lineWidth = 2;
@@ -535,11 +545,19 @@
 
     ctx.textAlign = 'center';
     ctx.fillStyle = '#bfdbfe';
-    ctx.font = 'bold 16px sans-serif';
-    ctx.fillText('PELUANG LOLOS', 870, c2Y + 58);
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillText('PELUANG LOLOS', 870, c2Y + 50);
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 48px sans-serif';
-    ctx.fillText(target2Chance !== '-' ? `${target2Chance}%` : 'Aman', 870, c2Y + 118);
+    ctx.font = '900 44px sans-serif';
+    const c2num = target2Chance !== '-' ? `${target2Chance}%` : '--';
+    ctx.fillText(c2num, 870, c2Y + 100);
+    if (target2Chance !== '-') {
+      const c2pct = Number(target2Chance);
+      const c2label = c2pct >= 75 ? 'Sangat Tinggi' : c2pct >= 50 ? 'Tinggi' : c2pct >= 30 ? 'Sedang' : 'Rendah';
+      ctx.fillStyle = '#bfdbfe';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.fillText(c2label, 870, c2Y + 138);
+    }
 
     // 6. Value Feature Chips (Harmoniously spaced)
     const chipY = c2Y + 215;
