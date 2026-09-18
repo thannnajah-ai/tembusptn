@@ -131,7 +131,7 @@
   }
 
   /**
-   * Generates a 1080x1920 (9:16 Portrait) Ultra-Modern Aesthetic Score Story Card Canvas
+   * Generates a 1080x1920 (9:16 Portrait) EdTech Gamification Score Story Card Canvas
    */
   async function generateScoreCardCanvas(data) {
     const canvas = document.createElement('canvas');
@@ -151,148 +151,107 @@
     const strongestScore = data.strongestScore || '-';
     const dateStr = formatIndoDate(data.date ? new Date(data.date) : new Date());
 
-    // 1. Deep Space Cybernetic Mesh Gradient Background
-    const bgGrad = ctx.createLinearGradient(0, 0, 1080, 1920);
-    bgGrad.addColorStop(0, '#030712');
-    bgGrad.addColorStop(0.3, '#090d1e');
-    bgGrad.addColorStop(0.7, '#070b18');
-    bgGrad.addColorStop(1, '#02040a');
-    ctx.fillStyle = bgGrad;
+    // 1. Playful Background
+    ctx.fillStyle = '#e0e7ff';
     ctx.fillRect(0, 0, 1080, 1920);
 
-    // Ambient Mesh Glows
-    const glowTopRight = ctx.createRadialGradient(920, 160, 40, 920, 160, 650);
-    glowTopRight.addColorStop(0, 'rgba(99, 102, 241, 0.35)');
-    glowTopRight.addColorStop(0.5, 'rgba(124, 58, 237, 0.12)');
-    glowTopRight.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = glowTopRight;
-    ctx.fillRect(400, 0, 680, 800);
-
-    const glowMidLeft = ctx.createRadialGradient(100, 850, 40, 100, 850, 600);
-    glowMidLeft.addColorStop(0, 'rgba(245, 158, 11, 0.2)');
-    glowMidLeft.addColorStop(0.6, 'rgba(234, 88, 12, 0.08)');
-    glowMidLeft.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = glowMidLeft;
-    ctx.fillRect(0, 450, 700, 850);
-
-    const glowBottomCyan = ctx.createRadialGradient(540, 1850, 50, 540, 1850, 650);
-    glowBottomCyan.addColorStop(0, 'rgba(6, 182, 212, 0.22)');
-    glowBottomCyan.addColorStop(0.6, 'rgba(59, 130, 246, 0.08)');
-    glowBottomCyan.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = glowBottomCyan;
-    ctx.fillRect(100, 1400, 880, 520);
-
-    // Subtle tech grid lines
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.025)';
-    ctx.lineWidth = 1;
-    for (let x = 60; x < 1080; x += 80) {
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 1920); ctx.stroke();
-    }
-    for (let y = 60; y < 1920; y += 80) {
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1080, y); ctx.stroke();
+    // Subtle polka dot pattern
+    ctx.fillStyle = '#c7d2fe';
+    for(let i=0; i<=1080; i+=40) {
+      for(let j=0; j<=1920; j+=40) {
+        ctx.beginPath();
+        ctx.arc(i, j, 4, 0, Math.PI*2);
+        ctx.fill();
+      }
     }
 
-    // Outer Card Container Frame (Modern Floating Glass Card)
-    const frameX = 45;
-    const frameY = 45;
-    const frameW = 990;
-    const frameH = 1830;
+    // Main Canvas Card Frame
+    const frameX = 40;
+    const frameY = 40;
+    const frameW = 1000;
+    const frameH = 1840;
     const frameRadius = 40;
 
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.4)';
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-    ctx.lineWidth = 1.5;
-    drawRoundRect(ctx, frameX, frameY, frameW, frameH, frameRadius, true, true);
+    // Helper: Neo-Brutalist Card
+    function drawNeoCard(cx, cy, cw, ch, cradius, bgFill, shadowDepth = 10, outline = '#0f172a', lineWidth = 5) {
+      ctx.fillStyle = outline;
+      drawRoundRect(ctx, cx, cy + shadowDepth, cw, ch, cradius, true, false);
+      ctx.fillStyle = bgFill;
+      drawRoundRect(ctx, cx, cy, cw, ch, cradius, true, false);
+      ctx.strokeStyle = outline;
+      ctx.lineWidth = lineWidth;
+      drawRoundRect(ctx, cx, cy, cw, ch, cradius, false, true);
+    }
 
-    // 2. Header: Logo, Brand & Verification
+    drawNeoCard(frameX, frameY, frameW, frameH, frameRadius, '#ffffff', 14, '#0f172a', 8);
+
+    // 2. Header
     const logoImg = await loadImage('assets/logo.png');
     if (logoImg) {
       ctx.save();
       ctx.beginPath();
-      ctx.arc(125, 125, 42, 0, Math.PI * 2);
+      ctx.arc(130, 130, 42, 0, Math.PI * 2);
       ctx.clip();
-      ctx.drawImage(logoImg, 83, 83, 84, 84);
+      ctx.drawImage(logoImg, 88, 88, 84, 84);
       ctx.restore();
-
-      ctx.strokeStyle = 'rgba(245, 158, 11, 0.7)';
-      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 5;
       ctx.beginPath();
-      ctx.arc(125, 125, 43, 0, Math.PI * 2);
+      ctx.arc(130, 130, 42, 0, Math.PI * 2);
       ctx.stroke();
     } else {
-      ctx.fillStyle = '#2563eb';
-      drawRoundRect(ctx, 85, 85, 80, 80, 24, true, false);
+      drawNeoCard(90, 90, 80, 80, 24, '#3b82f6', 6, '#0f172a', 4);
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 36px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('TP', 125, 138);
+      ctx.fillText('TP', 130, 143);
     }
 
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '900 38px sans-serif';
-    ctx.fillText('TEMBUS', 188, 122);
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 42px sans-serif';
+    ctx.fillText('TEMBUS', 190, 126);
 
     const tembusMetrics = ctx.measureText('TEMBUS');
-    ctx.fillStyle = '#f59e0b';
-    ctx.fillText('PTN', 188 + tembusMetrics.width, 122);
+    ctx.fillStyle = '#ea580c';
+    ctx.fillText('PTN', 190 + tembusMetrics.width, 126);
 
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = 'bold 18px sans-serif';
-    ctx.fillText('OFFICIAL CBT UTBK SNBT REPORT', 188, 152);
+    ctx.fillStyle = '#475569';
+    ctx.font = '900 18px sans-serif';
+    ctx.fillText('OFFICIAL CBT UTBK SNBT REPORT', 190, 156);
 
     // Verified Pill Top Right
-    ctx.fillStyle = 'rgba(6, 182, 212, 0.12)';
-    ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)';
-    ctx.lineWidth = 1.5;
-    drawRoundRect(ctx, 755, 96, 240, 56, 28, true, true);
-
-    ctx.fillStyle = '#38bdf8';
-    ctx.font = 'bold 18px sans-serif';
+    drawNeoCard(755, 96, 240, 56, 28, '#fde047', 6, '#0f172a', 4);
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 18px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('✓ HASIL RESMI CBT', 875, 131);
+    ctx.fillText('✓ HASIL RESMI', 875, 132);
 
-    // Top Divider
-    const divGrad = ctx.createLinearGradient(frameX + 40, 185, frameX + frameW - 40, 185);
-    divGrad.addColorStop(0, 'rgba(255, 255, 255, 0.02)');
-    divGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.18)');
-    divGrad.addColorStop(1, 'rgba(255, 255, 255, 0.02)');
-    ctx.strokeStyle = divGrad;
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(frameX + 30, 185);
-    ctx.lineTo(frameX + frameW - 30, 185);
-    ctx.stroke();
+    // Divider
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(40, 200); ctx.lineTo(1040, 200); ctx.stroke();
 
-    // 3. Student Profile Glass Card
-    const profY = 215;
+    // 3. Student Profile (Gamified Card)
+    const profY = 230;
     const profH = 145;
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.7)';
-    ctx.strokeStyle = 'rgba(37, 99, 235, 0.28)';
-    ctx.lineWidth = 1.5;
-    drawRoundRect(ctx, 80, profY, 920, profH, 28, true, true);
+    drawNeoCard(80, profY, 920, profH, 28, '#dbeafe', 8, '#0f172a', 5);
 
     // Avatar
-    const avGrad = ctx.createLinearGradient(110, profY + 25, 205, profY + 120);
-    avGrad.addColorStop(0, '#1d4ed8');
-    avGrad.addColorStop(1, '#3b82f6');
-    ctx.fillStyle = avGrad;
-    drawRoundRect(ctx, 110, profY + 25, 95, 95, 48, true, false);
-
-    ctx.fillStyle = '#ffffff';
+    drawNeoCard(110, profY + 25, 95, 95, 48, '#60a5fa', 4, '#0f172a', 4);
+    ctx.fillStyle = '#0f172a';
     ctx.font = '46px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(data.avatar || '🎓', 157, profY + 88);
 
     // Student Info
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = 'bold 17px sans-serif';
-    ctx.fillText('PESERTA TRY OUT NASIONAL', 230, profY + 55);
+    ctx.fillStyle = '#334155';
+    ctx.font = '900 16px sans-serif';
+    ctx.fillText('PESERTA TRY OUT', 230, profY + 55);
 
-    // Name with Smart Auto-fit (preventing ugly truncation!)
-    ctx.fillStyle = '#ffffff';
-    let nameFont = 34;
+    ctx.fillStyle = '#0f172a';
+    let nameFont = 36;
     ctx.font = '900 ' + nameFont + 'px sans-serif';
     while (ctx.measureText(studentName).width > 480 && nameFont > 24) {
       nameFont -= 2;
@@ -300,323 +259,231 @@
     }
     ctx.fillText(studentName, 230, profY + 98);
 
-    // Right side date pill
-    ctx.textAlign = 'right';
-    ctx.fillStyle = '#64748b';
-    ctx.font = 'bold 16px sans-serif';
-    ctx.fillText('Tanggal Ujian', 960, profY + 55);
-    ctx.fillStyle = '#cbd5e1';
-    ctx.font = 'bold 20px sans-serif';
-    ctx.fillText(dateStr, 960, profY + 95);
-
-    // 4. Hero IRT Score Card Showcase
-    const scoreY = 385;
-    const scoreH = 475;
-
-    // Gradient & Glass
-    const scoreGrad = ctx.createLinearGradient(80, scoreY, 1000, scoreY + scoreH);
-    scoreGrad.addColorStop(0, 'rgba(30, 27, 75, 0.7)');
-    scoreGrad.addColorStop(0.5, 'rgba(15, 23, 42, 0.9)');
-    scoreGrad.addColorStop(1, 'rgba(19, 24, 45, 0.7)');
-    ctx.fillStyle = scoreGrad;
-    ctx.strokeStyle = 'rgba(245, 158, 11, 0.45)';
-    ctx.lineWidth = 2.5;
-    drawRoundRect(ctx, 80, scoreY, 920, scoreH, 36, true, true);
-
-    // Section Top Pill
-    ctx.fillStyle = 'rgba(245, 158, 11, 0.15)';
-    ctx.strokeStyle = 'rgba(245, 158, 11, 0.5)';
-    ctx.lineWidth = 1.5;
-    drawRoundRect(ctx, 240, scoreY + 28, 600, 48, 24, true, true);
-
+    // Date
+    drawNeoCard(780, profY + 45, 190, 55, 16, '#ffffff', 4, '#0f172a', 4);
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#fbbf24';
-    ctx.font = '900 19px sans-serif';
-    ctx.fillText('⚡ SKOR EVALUASI IRT (ITEM RESPONSE THEORY)', 540, scoreY + 59);
-
-    // Score Big Number
-    const scoreNumGrad = ctx.createLinearGradient(350, scoreY + 80, 700, scoreY + 220);
-    scoreNumGrad.addColorStop(0, '#ffffff');
-    scoreNumGrad.addColorStop(0.4, '#fef08a');
-    scoreNumGrad.addColorStop(1, '#f59e0b');
-    ctx.fillStyle = scoreNumGrad;
-    ctx.font = '900 142px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(`${score}`, 480, scoreY + 205);
-
-    ctx.fillStyle = '#64748b';
-    ctx.font = 'bold 44px sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText('/ 850', 620, scoreY + 205);
-
-    // IRT National Gauge Track (Visual Score Scale!)
-    const gaugeX = 140;
-    const gaugeY = scoreY + 235;
-    const gaugeW = 800;
-    const gaugeH = 12;
-
-    // Background track
-    const trackGrad = ctx.createLinearGradient(gaugeX, gaugeY, gaugeX + gaugeW, gaugeY);
-    trackGrad.addColorStop(0, '#f43f5e');
-    trackGrad.addColorStop(0.35, '#f59e0b');
-    trackGrad.addColorStop(0.7, '#3b82f6');
-    trackGrad.addColorStop(1, '#10b981');
-    ctx.fillStyle = trackGrad;
-    drawRoundRect(ctx, gaugeX, gaugeY, gaugeW, gaugeH, 6, true, false);
-
-    // Pin location along 200..850
-    const ratio = Math.max(0, Math.min(1, (score - 200) / 650));
-    const pinX = gaugeX + ratio * gaugeW;
-
-    // Pin Glow & Circle
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.arc(pinX, gaugeY + 6, 12, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.strokeStyle = '#0f172a';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.arc(pinX, gaugeY + 6, 12, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Scale Labels under gauge
-    ctx.font = 'bold 15px sans-serif';
-    ctx.fillStyle = '#64748b';
-    ctx.textAlign = 'left';
-    ctx.fillText('200 (Min)', gaugeX, gaugeY + 34);
-    ctx.textAlign = 'center';
-    ctx.fillText('525 (Rata-rata Nasional)', gaugeX + gaugeW / 2, gaugeY + 34);
-    ctx.textAlign = 'right';
-    ctx.fillText('850 (Maks)', gaugeX + gaugeW, gaugeY + 34);
-
-    // Status Badge Pill
-    const statusY = scoreY + 295;
-    let statusLabel = 'POTENSIAL LOLOS PTN FAVORIT';
-    let statusBg = 'rgba(16, 185, 129, 0.15)';
-    let statusBorder = 'rgba(52, 211, 153, 0.6)';
-    let statusColor = '#34d399';
-
-    if (score >= 700) {
-      statusLabel = '🌟 TINGKAT KOMPETITIF TINGGI (TOP 5% NASIONAL)';
-      statusBg = 'rgba(245, 158, 11, 0.2)';
-      statusBorder = 'rgba(251, 191, 36, 0.8)';
-      statusColor = '#fbbf24';
-    } else if (score >= 600) {
-      statusLabel = '🔥 AMAN UNTUK JURUSAN & PTN KELAS 1';
-      statusBg = 'rgba(14, 165, 233, 0.2)';
-      statusBorder = 'rgba(56, 189, 248, 0.7)';
-      statusColor = '#38bdf8';
-    } else if (score >= 500) {
-      statusLabel = '📈 POTENSIAL & SIAP BERSAING NASIONAL';
-      statusBg = 'rgba(99, 102, 241, 0.2)';
-      statusBorder = 'rgba(129, 140, 248, 0.6)';
-      statusColor = '#a5b4fc';
-    } else {
-      statusLabel = '💪 LANGKAH AWAL BAGUS — TERUS TINGKATKAN!';
-      statusBg = 'rgba(244, 63, 94, 0.15)';
-      statusBorder = 'rgba(251, 113, 133, 0.6)';
-      statusColor = '#fb7185';
-    }
-
-    ctx.fillStyle = statusBg;
-    ctx.strokeStyle = statusBorder;
-    ctx.lineWidth = 1.5;
-    drawRoundRect(ctx, 160, statusY, 760, 60, 30, true, true);
-
-    ctx.fillStyle = statusColor;
-    ctx.font = '900 21px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(statusLabel, 540, statusY + 38);
-
-    // Sub-box inside Score Card (Subtes Terkuat & Standar Penilaian)
-    const subBoxY = scoreY + 375;
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-    ctx.lineWidth = 1;
-    drawRoundRect(ctx, 110, subBoxY, 860, 76, 20, true, true);
-
-    ctx.textAlign = 'left';
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = 'bold 16px sans-serif';
-    ctx.fillText('SUBTES TERKUAT', 140, subBoxY + 32);
-    ctx.fillStyle = '#34d399';
-    ctx.font = '900 21px sans-serif';
-    let strongDisplay = strongestScore !== '-' ? `${strongestSub} (${strongestScore})` : strongestSub;
-    ctx.fillText('⚡ ' + strongDisplay, 140, subBoxY + 60);
-
-    ctx.textAlign = 'right';
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = 'bold 16px sans-serif';
-    ctx.fillText('STANDAR EVALUASI', 940, subBoxY + 32);
-    ctx.fillStyle = '#f8fafc';
-    ctx.font = '900 21px sans-serif';
-    ctx.fillText('Standar BPPP SNPMB 2026', 940, subBoxY + 60);
-
-    // 5. Dual PTN Choices Cards (Evenly Spaced, No Ugly Text Clippings!)
-    const ptnSecY = 890;
-    ctx.textAlign = 'left';
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '900 26px sans-serif';
-    ctx.fillText('🎯 Rasionalisasi Peluang Kelulusan PTN', 80, ptnSecY);
-
-    // Card 1: Pilihan 1 Utama
-    const c1Y = ptnSecY + 22;
-    const cH = 185;
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-    ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
-    ctx.lineWidth = 2;
-    drawRoundRect(ctx, 80, c1Y, 920, cH, 26, true, true);
-
-    // Tag Pilihan 1
-    ctx.fillStyle = '#f59e0b';
-    drawRoundRect(ctx, 110, c1Y + 20, 155, 34, 10, true, false);
+    ctx.fillStyle = '#475569';
+    ctx.font = '900 12px sans-serif';
+    ctx.fillText('TANGGAL', 875, profY + 65);
     ctx.fillStyle = '#0f172a';
     ctx.font = '900 16px sans-serif';
+    ctx.fillText(dateStr, 875, profY + 85);
+
+    // 4. Hero IRT Score Card Showcase (Neu-brutalist)
+    const scoreY = 410;
+    const scoreH = 430;
+    drawNeoCard(80, scoreY, 920, scoreH, 36, '#fde047', 12, '#0f172a', 6);
+
+    // Section Pill
+    drawNeoCard(240, scoreY + 30, 600, 48, 24, '#ffffff', 6, '#0f172a', 4);
     ctx.textAlign = 'center';
-    ctx.fillText('PILIHAN 1 🎯', 187, c1Y + 43);
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 18px sans-serif';
+    ctx.fillText('⚡ SKOR EVALUASI IRT (SNPMB)', 540, scoreY + 61);
 
-    // Major with Auto Wrap — font 22px, maxLines 3 for long names
-    ctx.textAlign = 'left';
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '900 22px sans-serif';
-    drawWrappedText(ctx, target1Name, 110, c1Y + 76, 620, 28, 3);
-
-    // Univ
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = 'bold 18px sans-serif';
-    ctx.fillText('🏛️ ' + target1Ptn, 110, c1Y + 152);
-
-    // Chance Badge Right Side — split number and label to prevent overflow
-    ctx.fillStyle = 'rgba(245, 158, 11, 0.12)';
-    ctx.strokeStyle = '#f59e0b';
-    ctx.lineWidth = 2;
-    drawRoundRect(ctx, 770, c1Y + 22, 200, 130, 22, true, true);
-
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#fef08a';
-    ctx.font = 'bold 14px sans-serif';
-    ctx.fillText('PELUANG LOLOS', 870, c1Y + 50);
-    // Number large
-    ctx.fillStyle = '#ffffff';
+    // Big Score
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 160px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(`${score}`, 580, scoreY + 230);
+    ctx.fillStyle = '#475569';
     ctx.font = '900 44px sans-serif';
-    const c1num = target1Chance !== '-' ? `${target1Chance}%` : '--';
-    ctx.fillText(c1num, 870, c1Y + 100);
-    // Status label small below
-    if (target1Chance !== '-') {
-      const c1pct = Number(target1Chance);
-      const c1label = c1pct >= 75 ? 'Sangat Tinggi' : c1pct >= 50 ? 'Tinggi' : c1pct >= 30 ? 'Sedang' : 'Rendah';
-      ctx.fillStyle = '#fef08a';
-      ctx.font = 'bold 14px sans-serif';
-      ctx.fillText(c1label, 870, c1Y + 138);
+    ctx.textAlign = 'left';
+    ctx.fillText('/ 850', 600, scoreY + 230);
+
+    // Progress gauge (Chunky)
+    const gaugeX = 140;
+    const gaugeY = scoreY + 265;
+    const gaugeW = 800;
+    const gaugeH = 26;
+    drawNeoCard(gaugeX, gaugeY, gaugeW, gaugeH, 13, '#ffffff', 0, '#0f172a', 4);
+    
+    // Fill
+    const ratio = Math.max(0, Math.min(1, (score - 200) / 650));
+    const fillW = ratio * gaugeW;
+    ctx.fillStyle = '#22c55e'; // Bright green fill
+    if(fillW > 10) {
+      ctx.beginPath();
+      ctx.roundRect(gaugeX + 4, gaugeY + 4, fillW - 8, gaugeH - 8, 9);
+      ctx.fill();
     }
 
-    // Card 2: Pilihan 2 Cadangan
-    const c2Y = c1Y + 195;
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-    ctx.strokeStyle = 'rgba(37, 99, 235, 0.4)';
-    ctx.lineWidth = 2;
-    drawRoundRect(ctx, 80, c2Y, 920, cH, 26, true, true);
+    // Status Badge Pill
+    const statusY = scoreY + 325;
+    let statusLabel = 'POTENSIAL LOLOS';
+    let statusBg = '#a7f3d0';
 
-    // Tag Pilihan 2
-    ctx.fillStyle = '#2563eb';
-    drawRoundRect(ctx, 110, c2Y + 20, 155, 34, 10, true, false);
+    if (score >= 700) {
+      statusLabel = '🌟 TINGKAT KOMPETITIF (TOP 5%)';
+      statusBg = '#ffffff';
+    } else if (score >= 600) {
+      statusLabel = '🔥 AMAN UNTUK PTN KELAS 1';
+      statusBg = '#bae6fd';
+    } else if (score >= 500) {
+      statusLabel = '📈 SIAP BERSAING NASIONAL';
+      statusBg = '#c7d2fe';
+    } else {
+      statusLabel = '💪 TERUS TINGKATKAN BELAJARMU!';
+      statusBg = '#fecdd3';
+    }
+    drawNeoCard(180, statusY, 720, 60, 30, statusBg, 6, '#0f172a', 5);
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 22px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(statusLabel, 540, statusY + 39);
+
+    // 5. Dual PTN Choices Cards (Gamified)
+    const ptnSecY = 880;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 28px sans-serif';
+    ctx.fillText('🎯 Analisis Peluang Kelulusan', 80, ptnSecY);
+
+    // Card 1
+    const c1Y = ptnSecY + 30;
+    const cH = 185;
+    drawNeoCard(80, c1Y, 920, cH, 26, '#dcfce7', 10, '#0f172a', 5);
+    
+    // Tag P1
+    drawNeoCard(110, c1Y + 25, 165, 38, 12, '#22c55e', 4, '#0f172a', 3);
     ctx.fillStyle = '#ffffff';
     ctx.font = '900 16px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('PILIHAN 2 🛡️', 187, c2Y + 43);
+    ctx.fillText('PILIHAN 1 🎯', 192, c1Y + 50);
 
-    // Major with Auto Wrap — font 22px, maxLines 3
+    // Major
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '900 22px sans-serif';
-    drawWrappedText(ctx, target2Name, 110, c2Y + 76, 620, 28, 3);
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 26px sans-serif';
+    drawWrappedText(ctx, target1Name, 110, c1Y + 100, 620, 32, 2);
 
     // Univ
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = 'bold 18px sans-serif';
-    ctx.fillText('🏛️ ' + target2Ptn, 110, c2Y + 152);
+    ctx.fillStyle = '#334155';
+    ctx.font = '900 18px sans-serif';
+    ctx.fillText('🏛️ ' + target1Ptn, 110, c1Y + 155);
 
-    // Chance Badge Right Side — split number and label
-    ctx.fillStyle = 'rgba(37, 99, 235, 0.12)';
-    ctx.strokeStyle = '#60a5fa';
-    ctx.lineWidth = 2;
-    drawRoundRect(ctx, 770, c2Y + 22, 200, 130, 22, true, true);
-
+    // Chance Badge P1
+    drawNeoCard(770, c1Y + 22, 200, 135, 22, '#ffffff', 6, '#0f172a', 4);
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#bfdbfe';
-    ctx.font = 'bold 14px sans-serif';
-    ctx.fillText('PELUANG LOLOS', 870, c2Y + 50);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '900 44px sans-serif';
-    const c2num = target2Chance !== '-' ? `${target2Chance}%` : '--';
-    ctx.fillText(c2num, 870, c2Y + 100);
-    if (target2Chance !== '-') {
-      const c2pct = Number(target2Chance);
-      const c2label = c2pct >= 75 ? 'Sangat Tinggi' : c2pct >= 50 ? 'Tinggi' : c2pct >= 30 ? 'Sedang' : 'Rendah';
-      ctx.fillStyle = '#bfdbfe';
-      ctx.font = 'bold 14px sans-serif';
-      ctx.fillText(c2label, 870, c2Y + 138);
+    ctx.fillStyle = '#475569';
+    ctx.font = '900 14px sans-serif';
+    ctx.fillText('PELUANG LOLOS', 870, c1Y + 52);
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 52px sans-serif';
+    let c1pct = 0;
+    let c1numStr = '--';
+    if (target1Chance !== '-') {
+      c1pct = parseInt(target1Chance, 10) || 0;
+      c1numStr = `${c1pct}%`;
+    }
+    ctx.fillText(c1numStr, 870, c1Y + 108);
+    if (target1Chance !== '-') {
+      const c1label = c1pct >= 75 ? 'Sangat Tinggi' : c1pct >= 50 ? 'Tinggi' : c1pct >= 30 ? 'Sedang' : 'Rendah';
+      drawNeoCard(790, c1Y + 120, 160, 28, 14, '#fde047', 2, '#0f172a', 2);
+      ctx.fillStyle = '#0f172a';
+      ctx.font = '900 14px sans-serif';
+      ctx.fillText(c1label, 870, c1Y + 140);
     }
 
-    // 6. Value Feature Chips (Harmoniously spaced)
-    const chipY = c2Y + 215;
-    const chipW = 295;
-    const chipH = 65;
-    const perks = [
-      { icon: '📚', text: '1.800+ Bank Soal' },
-      { icon: '⏱️', text: 'Timer Mirip Asli' },
-      { icon: '📊', text: 'Analisis 7 Subtes' }
-    ];
-
-    perks.forEach((p, idx) => {
-      const cx = 80 + idx * 312;
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-      ctx.lineWidth = 1;
-      drawRoundRect(ctx, cx, chipY, chipW, chipH, 18, true, true);
-
-      ctx.textAlign = 'center';
-      ctx.fillStyle = '#e2e8f0';
-      ctx.font = 'bold 19px sans-serif';
-      ctx.fillText(p.icon + ' ' + p.text, cx + chipW / 2, chipY + 41);
-    });
-
-    // 7. Ultra-Sleek Modern Footer (Filling the bottom space cleanly with QR code + URL!)
-    const footY = chipY + 95;
-    const footH = 220;
-
-    const footGrad = ctx.createLinearGradient(80, footY, 1000, footY + footH);
-    footGrad.addColorStop(0, '#111827');
-    footGrad.addColorStop(1, '#0f172a');
-    ctx.fillStyle = footGrad;
-    ctx.strokeStyle = 'rgba(99, 102, 241, 0.4)';
-    ctx.lineWidth = 2;
-    drawRoundRect(ctx, 80, footY, 920, footH, 32, true, true);
-
-    // Draw Stylized QR Code Left Side
-    drawStylizedQr(ctx, 120, footY + 30, 155);
-
-    // Right side footer text
-    ctx.textAlign = 'left';
-    ctx.fillStyle = '#fbbf24';
-    ctx.font = '900 17px sans-serif';
-    ctx.fillText('🔥 COBA SIMULASI CBT UTBK SEKARANG', 320, footY + 68);
-
+    // Card 2
+    const c2Y = c1Y + 215;
+    drawNeoCard(80, c2Y, 920, cH, 26, '#e0e7ff', 10, '#0f172a', 5);
+    
+    // Tag P2
+    drawNeoCard(110, c2Y + 25, 165, 38, 12, '#6366f1', 4, '#0f172a', 3);
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 38px sans-serif';
-    ctx.fillText('tembusptn.my.id', 320, footY + 115);
+    ctx.font = '900 16px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('PILIHAN 2 🛡️', 192, c2Y + 50);
 
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = 'bold 19px sans-serif';
-    ctx.fillText('Bank Soal INTEN & Rasionalisasi IRT 100% Gratis!', 320, footY + 152);
+    // Major
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 26px sans-serif';
+    drawWrappedText(ctx, target2Name, 110, c2Y + 100, 620, 32, 2);
+
+    // Univ
+    ctx.fillStyle = '#334155';
+    ctx.font = '900 18px sans-serif';
+    ctx.fillText('🏛️ ' + target2Ptn, 110, c2Y + 155);
+
+    // Chance Badge P2
+    drawNeoCard(770, c2Y + 22, 200, 135, 22, '#ffffff', 6, '#0f172a', 4);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#475569';
+    ctx.font = '900 14px sans-serif';
+    ctx.fillText('PELUANG LOLOS', 870, c2Y + 52);
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 52px sans-serif';
+    let c2pct = 0;
+    let c2numStr = '--';
+    if (target2Chance !== '-') {
+      c2pct = parseInt(target2Chance, 10) || 0;
+      c2numStr = `${c2pct}%`;
+    }
+    ctx.fillText(c2numStr, 870, c2Y + 108);
+    if (target2Chance !== '-') {
+      const c2label = c2pct >= 75 ? 'Sangat Tinggi' : c2pct >= 50 ? 'Tinggi' : c2pct >= 30 ? 'Sedang' : 'Rendah';
+      drawNeoCard(790, c2Y + 120, 160, 28, 14, '#c7d2fe', 2, '#0f172a', 2);
+      ctx.fillStyle = '#0f172a';
+      ctx.font = '900 14px sans-serif';
+      ctx.fillText(c2label, 870, c2Y + 140);
+    }
+
+    // 6. Subtes Terkuat & Perks (Replacing the simple chips with a big block)
+    const botY = c2Y + 215;
+    
+    // Subtes Terkuat
+    drawNeoCard(80, botY, 580, 110, 24, '#fef08a', 8, '#0f172a', 5);
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 16px sans-serif';
+    ctx.fillText('⚡ SUBTES TERKUAT', 110, botY + 38);
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 24px sans-serif';
+    let strongDisplay = strongestScore !== '-' ? `${strongestSub} (${strongestScore})` : strongestSub;
+    ctx.fillText(strongDisplay, 110, botY + 75);
+
+    // Small Perks
+    drawNeoCard(680, botY, 320, 110, 24, '#ffedd5', 8, '#0f172a', 5);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 20px sans-serif';
+    ctx.fillText('📚 1.800+ Soal', 840, botY + 48);
+    ctx.fillText('⏱️ Timer Asli', 840, botY + 85);
+
+    // 7. Playful Footer with QR
+    const footY = botY + 140;
+    const footH = 190;
+    drawNeoCard(80, footY, 920, footH, 32, '#f8fafc', 10, '#0f172a', 6);
+
+    drawStylizedQr(ctx, 110, footY + 18, 155);
+    // Thick border for QR
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 5;
+    drawRoundRect(ctx, 100, footY + 8, 175, 175, 16, false, true);
+
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#ea580c';
+    ctx.font = '900 18px sans-serif';
+    ctx.fillText('🔥 COBA SIMULASI GRATIS SEKARANG', 310, footY + 55);
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 46px sans-serif';
+    ctx.fillText('tembusptn.my.id', 310, footY + 105);
+
+    ctx.fillStyle = '#475569';
+    ctx.font = '900 18px sans-serif';
+    ctx.fillText('Rasionalisasi IRT Akurat 100% Gratis!', 310, footY + 145);
 
     // Small tag
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-    drawRoundRect(ctx, 320, footY + 168, 280, 32, 16, true, false);
-    ctx.fillStyle = '#38bdf8';
-    ctx.font = 'bold 14px sans-serif';
-    ctx.fillText('⚡ Scan QR / Buka di Browser HP', 335, footY + 190);
+    drawNeoCard(750, footY + 120, 130, 40, 20, '#38bdf8', 4, '#0f172a', 3);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 14px sans-serif';
+    ctx.fillText('Scan QR ➔', 815, footY + 145);
 
     return canvas;
   }
