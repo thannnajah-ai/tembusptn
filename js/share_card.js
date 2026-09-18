@@ -150,13 +150,23 @@
     const strongestSub = data.strongestSubtest || 'Penalaran Umum (PU)';
     const strongestScore = data.strongestScore || '-';
     const dateStr = formatIndoDate(data.date ? new Date(data.date) : new Date());
+    const theme = data.theme || 'indigo';
+
+    // Theme definitions
+    const themes = {
+      indigo: { bg: '#e0e7ff', dots: '#c7d2fe' },
+      mint: { bg: '#d1fae5', dots: '#a7f3d0' },
+      pink: { bg: '#fce7f3', dots: '#fbcfe8' },
+      amber: { bg: '#fef3c7', dots: '#fde68a' }
+    };
+    const activeTheme = themes[theme] || themes.indigo;
 
     // 1. Playful Background
-    ctx.fillStyle = '#e0e7ff';
+    ctx.fillStyle = activeTheme.bg;
     ctx.fillRect(0, 0, 1080, 1920);
 
     // Subtle polka dot pattern
-    ctx.fillStyle = '#c7d2fe';
+    ctx.fillStyle = activeTheme.dots;
     for(let i=0; i<=1080; i+=40) {
       for(let j=0; j<=1920; j+=40) {
         ctx.beginPath();
