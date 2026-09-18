@@ -330,8 +330,8 @@ function renderHeaderStats() {
 
   if (!loggedIn) {
     // Sembunyikan streak, xp, level/tier, dan target ptn jika belum login
-    if (streakEl) streakEl.classList.add("hidden");
-    if (xpEl) xpEl.classList.add("hidden");
+    if (streakEl) { streakEl.classList.add("hidden"); streakEl.classList.remove("sm:flex"); }
+    if (xpEl) { xpEl.classList.add("hidden"); xpEl.classList.remove("sm:flex"); }
     if (tierEl) tierEl.classList.add("hidden");
     if (targetPtnEl) {
       targetPtnEl.classList.add("hidden");
@@ -353,8 +353,8 @@ function renderHeaderStats() {
     }
   } else {
     // Tampilkan streak, xp, level/tier, dan target ptn jika sudah login
-    if (streakEl) streakEl.classList.remove("hidden");
-    if (xpEl) xpEl.classList.remove("hidden");
+    if (streakEl) { streakEl.classList.remove("hidden"); streakEl.classList.add("sm:flex"); }
+    if (xpEl) { xpEl.classList.remove("hidden"); xpEl.classList.add("sm:flex"); }
     if (tierEl) tierEl.classList.remove("hidden");
     if (targetPtnEl) {
       targetPtnEl.classList.remove("hidden");
